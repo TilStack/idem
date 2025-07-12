@@ -359,18 +359,18 @@ export class DeploymentService {
               // If the response contains code blocks, ensure they're properly formatted
               if (response.sender === 'ai') {
                 console.log('Processing AI response for markdown formatting');
-                
+
                 // Ensure code blocks are properly formatted with language identifiers
                 // This regex finds code blocks that might not have language specifiers
                 response.text = response.text.replace(
-                  /```(\s*)(\w+)?\s*([\s\S]*?)```/g, 
+                  /```(\s*)(\w+)?\s*([\s\S]*?)```/g,
                   (match, space, lang, code) => {
                     // If language is not specified, try to detect it or default to text
                     const language = lang || 'text';
                     return `\`\`\`${language}\n${code}\`\`\``;
                   }
                 );
-                
+
                 // Ensure inline code is properly formatted
                 response.text = response.text.replace(
                   /`([^`]+)`/g,
@@ -388,6 +388,63 @@ export class DeploymentService {
             })
           )
       )
+    );
+  }
+
+  /**
+   * Generate a deployment pipeline for an existing deployment
+   * @param projectId The ID of the project
+   * @param deploymentId The ID of the deployment
+   */
+  generatePipeline(
+    projectId: string,
+    deploymentId: string
+  ): Observable<DeploymentModel> {
+    return this.getAuthHeaders().pipe(
+      switchMap((headers) =>
+        this.http.post<DeploymentModel>(
+          `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/pipeline/generate`,
+          {},
+          { headers }
+        )
+      ),
+      tap((deployment) =>
+        console.log('Generated pipeline for deployment', deployment)
+      ),
+      catchError((error) => {
+        console.error('Error generating pipeline', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Generate Terraform files for an existing deployment
+   * @param projectId The ID of the project
+   * @param deploymentId The ID of the deployment
+   */
+  generateTerraformFiles(
+    projectId: string,
+    deploymentId: string
+  ): Observable<DeploymentModel> {
+    return this.getAuthHeaders().pipe(
+      switchMap((headers) =>
+        this.http.post<DeploymentModel>(
+          `${this.apiUrl}/deployments/generate`,
+          {
+            projectId,
+            deploymentId,
+          },
+          { headers }
+        )
+      ),
+      tap((deployment) =>
+        console.log('Generated Terraform files for deployment', deployment)
+      ),
+      catchError((error) => {
+        console.error('Error generating Terraform files', error);
+        return throwError(() => error);
+      })
     );
   }
 }

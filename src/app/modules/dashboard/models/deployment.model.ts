@@ -125,7 +125,7 @@ export interface BaseDeploymentModel {
 
   // Monitoring of the pipeline
   pipelines?: {
-    currentStage: string;
+    id: string;
     steps: PipelineStep[];
     startedAt?: Date;
     estimatedCompletionTime?: Date;

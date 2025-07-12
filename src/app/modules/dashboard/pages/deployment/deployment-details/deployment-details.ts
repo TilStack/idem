@@ -6,7 +6,7 @@ import { DeploymentModel } from '../../../models/deployment.model';
 import { DeploymentService } from '../../../services/deployment.service';
 import { CookieService } from '../../../../../shared/services/cookie.service';
 import { TerraformFiles } from '../create-deployment/components/terraform-files/terraform-files';
-import { Loader } from "../../../../../components/loader/loader";
+import { Loader } from '../../../../../components/loader/loader';
 
 @Component({
   selector: 'app-deployment-details',
@@ -139,5 +139,74 @@ export class DeploymentDetails implements OnInit {
   protected formatDate(date: Date | undefined): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString();
+  }
+
+  /**
+   * Generates a deployment pipeline for the current deployment
+   */
+  protected generatePipeline(): void {
+    const deploymentId =
+      this.deploymentId() || this.route.snapshot.paramMap.get('id');
+    const projectId = this.projectId();
+
+    if (!deploymentId || !projectId) {
+      this.error.set(
+        'Cannot generate pipeline: Missing deployment ID or project ID'
+      );
+      return;
+    }
+
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.deploymentService.generatePipeline(projectId, deploymentId).subscribe({
+      next: (updatedDeployment: DeploymentModel) => {
+        console.log('Pipeline generated successfully:', updatedDeployment);
+        this.deployment.set(updatedDeployment);
+        this.loading.set(false);
+      },
+      error: (error: Error) => {
+        console.error('Error generating pipeline:', error);
+        this.error.set('Failed to generate deployment pipeline');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  /**
+   * Generates Terraform files for the current deployment
+   */
+  protected generateTerraformFiles(): void {
+    const deploymentId =
+      this.deploymentId() || this.route.snapshot.paramMap.get('id');
+    const projectId = this.projectId();
+
+    if (!deploymentId || !projectId) {
+      this.error.set(
+        'Cannot generate Terraform files: Missing deployment ID or project ID'
+      );
+      return;
+    }
+
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.deploymentService
+      .generateTerraformFiles(projectId, deploymentId)
+      .subscribe({
+        next: (updatedDeployment: DeploymentModel) => {
+          console.log(
+            'Terraform files generated successfully:',
+            updatedDeployment
+          );
+          this.deployment.set(updatedDeployment);
+          this.loading.set(false);
+        },
+        error: (error: Error) => {
+          console.error('Error generating Terraform files:', error);
+          this.error.set('Failed to generate Terraform files');
+          this.loading.set(false);
+        },
+      });
   }
 }
