@@ -431,143 +431,161 @@
     </h2>
     @if (deployment()?.pipelines && deployment()?.pipelines!.length > 0) {
     <div class="space-y-8">
-      @for (pipeline of deployment()?.pipelines; track $index) {
-      <div
-        class="bg-gray-800/30 backdrop-blur-xl rounded-2xl shadow-sm shadow-blue-900/10 border border-gray-700/30 p-6 transition-all duration-300 hover:shadow-blue-900/15"
-      >
-        <!-- Pipeline Header -->
-        <div
-          class="flex justify-between items-center mb-4 pb-3 border-b border-gray-700/30"
+      <div class="flex justify-end">
+        <button
+          (click)="generatePipeline()"
+          class="mt-2 px-6 py-2 inner-button"
         >
-          <div>
-            <h3 class="text-lg font-semibold text-white">
-              Pipeline #{{ $index + 1 }}
-            </h3>
-            <p class="text-gray-400 text-sm mt-1">
-              Current Stage:
-              <span class="text-blue-300">{{ pipeline.id }}</span>
-            </p>
-          </div>
-          <div class="flex flex-col items-end">
-            @if (pipeline.startedAt) {
-            <span class="text-sm text-gray-400"
-              >Started: {{ formatDate(pipeline.startedAt) }}</span
-            >
-            } @if (pipeline.estimatedCompletionTime) {
-            <span class="text-sm text-gray-400 mt-1"
-              >Est. Completion: {{ formatDate(pipeline.estimatedCompletionTime)
-              }}</span
-            >
-            }
-          </div>
-        </div>
-        <div class="space-y-4">
-          @for (step of pipeline.steps; track step.name; let i = $index) {
-          <div class="flex items-start">
-            <div class="relative flex-shrink-0">
-              <div
-                [class.bg-green-500]="step.status === 'succeeded'"
-                [class.bg-red-500]="step.status === 'failed'"
-                [class.bg-yellow-500]="step.status === 'in-progress'"
-                [class.bg-blue-500]="step.status === 'pending'"
-                [class.bg-gray-500]="step.status === 'skipped'"
-                class="w-8 h-8 rounded-full flex items-center justify-center z-10 relative shadow-lg shadow-current/20 border border-current/30"
-              >
-                @if (step.status === 'succeeded') {
-                <svg
-                  class="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  ></path>
-                </svg>
-                } @else if (step.status === 'failed') {
-                <svg
-                  class="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  ></path>
-                </svg>
-                } @else if (step.status === 'in-progress') {
-                <div
-                  class="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"
-                ></div>
-                } @else if (step.status === 'pending') {
-                <svg
-                  class="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-                } @else if (step.status === 'skipped') {
-                <svg
-                  class="w-4 h-4 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                  ></path>
-                </svg>
-                }
-              </div>
-              @if (i < pipeline.steps.length - 1) {
-              <div
-                class="absolute top-8 left-4 -ml-px h-full w-0.5 bg-gray-600"
-              ></div>
-              }
-            </div>
-            <div class="ml-4 min-w-0 flex-1 pt-1.5">
-              <div class="flex flex-col">
-                <p class="text-gray-200 font-medium">{{ step.name }}</p>
+          New Pipeline
+        </button>
+      </div>
+
+      <p-accordion
+        [multiple]="false"
+        expandIcon="pi pi-chevron-down"
+        collapseIcon="pi pi-chevron-up"
+      >
+        @for (pipeline of deployment()?.pipelines; track $index) {
+        <p-accordionTab
+          [header]="'Pipeline #' + ($index + 1)"
+          [selected]="true"
+          styleClass="bg-gray-800/30 backdrop-blur-xl rounded-2xl shadow-sm shadow-blue-900/10 border border-gray-700/30 transition-all duration-300 hover:shadow-blue-900/15"
+        >
+          <ng-template pTemplate="header">
+            <div class="flex justify-between items-center w-full">
+              <div>
+                <h3 class="text-lg font-semibold text-white">
+                  Pipeline #{{ $index + 1 }}
+                </h3>
                 <p class="text-gray-400 text-sm mt-1">
-                  @if (step.startedAt) { {{ formatDate(step.startedAt) }} }
+                  Current Stage:
+                  <span class="text-blue-300">{{ pipeline.id }}</span>
                 </p>
               </div>
-              @if (step.errorMessage) {
-              <div
-                class="mt-2 bg-red-900/30 border border-red-800 rounded-md p-3 text-sm text-red-300"
-              >
-                {{ step.errorMessage }}
+              <div class="flex flex-col items-end">
+                @if (pipeline.startedAt) {
+                <span class="text-sm text-gray-400"
+                  >Started: {{ formatDate(pipeline.startedAt) }}</span
+                >
+                } @if (pipeline.estimatedCompletionTime) {
+                <span class="text-sm text-gray-400 mt-1"
+                  >Est. Completion: {{
+                  formatDate(pipeline.estimatedCompletionTime) }}</span
+                >
+                }
               </div>
-              } @if (step.aiRecommendation) {
-              <div
-                class="mt-2 bg-blue-900/30 border border-blue-800 rounded-md p-3 text-sm text-blue-300"
-              >
-                <p class="mb-1 font-medium">AI Recommendation:</p>
-                {{ step.aiRecommendation }}
+            </div>
+          </ng-template>
+          <ng-template pTemplate="content">
+            <div class="space-y-4">
+              @for (step of pipeline.steps; track step.name; let i = $index) {
+              <div class="flex items-start">
+                <div class="relative flex-shrink-0">
+                  <div
+                    [class.bg-green-500]="step.status === 'succeeded'"
+                    [class.bg-red-500]="step.status === 'failed'"
+                    [class.bg-yellow-500]="step.status === 'in-progress'"
+                    [class.bg-blue-500]="step.status === 'pending'"
+                    [class.bg-gray-500]="step.status === 'skipped'"
+                    class="w-8 h-8 rounded-full flex items-center justify-center z-10 relative shadow-lg shadow-current/20 border border-current/30"
+                  >
+                    @if (step.status === 'succeeded') {
+                    <svg
+                      class="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                    } @else if (step.status === 'failed') {
+                    <svg
+                      class="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                    } @else if (step.status === 'in-progress') {
+                    <div
+                      class="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"
+                    ></div>
+                    } @else if (step.status === 'pending') {
+                    <svg
+                      class="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    } @else if (step.status === 'skipped') {
+                    <svg
+                      class="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                      ></path>
+                    </svg>
+                    }
+                  </div>
+                  @if (i < pipeline.steps.length - 1) {
+                  <div
+                    class="absolute top-8 left-4 -ml-px h-full w-0.5 bg-gray-600"
+                  ></div>
+                  }
+                </div>
+                <div class="ml-4 min-w-0 flex-1 pt-1.5">
+                  <div class="flex flex-col">
+                    <p class="text-gray-200 font-medium">{{ step.name }}</p>
+                    <p class="text-gray-400 text-sm mt-1">
+                      @if (step.startedAt) { {{ formatDate(step.startedAt) }} }
+                    </p>
+                  </div>
+                  @if (step.errorMessage) {
+                  <div
+                    class="mt-2 bg-red-900/30 border border-red-800 rounded-md p-3 text-sm text-red-300"
+                  >
+                    {{ step.errorMessage }}
+                  </div>
+                  } @if (step.aiRecommendation) {
+                  <div
+                    class="mt-2 bg-blue-900/30 border border-blue-800 rounded-md p-3 text-sm text-blue-300"
+                  >
+                    <p class="mb-1 font-medium">AI Recommendation:</p>
+                    {{ step.aiRecommendation }}
+                  </div>
+                  }
+                </div>
               </div>
               }
             </div>
-          </div>
-          }
-        </div>
-      </div>
-      }
+          </ng-template>
+        </p-accordionTab>
+        }
+      </p-accordion>
     </div>
     } @else {
     <div
@@ -608,7 +626,7 @@
           (click)="generatePipeline()"
           class="mt-2 px-6 py-2 inner-button"
         >
-          Generate Pipeline
+          New Pipeline
         </button>
       </div>
     </div>
@@ -624,6 +642,14 @@
     </h2>
     @if (showTerraformFiles()) {
     <div>
+      <div class="flex justify-end mb-4">
+        <button
+          (click)="generateTerraformFiles()"
+          class="px-6 py-2 inner-button"
+        >
+          Add Terraform Files
+        </button>
+      </div>
       <app-terraform-files [deployment]="deployment()"></app-terraform-files>
     </div>
     } @else {
@@ -657,7 +683,7 @@
         </p>
         <button
           (click)="generateTerraformFiles()"
-          class="mt-2 px-6 py-2 bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-700/80 hover:to-indigo-700/80 text-white text-sm rounded-lg shadow-lg shadow-purple-900/20 border border-purple-500/30 backdrop-blur-sm transition-all duration-300 hover:shadow-purple-900/30 hover:translate-y-[-2px]"
+          class="mt-2 px-6 py-2 inner-button"
         >
           Generate Terraform Files
         </button>

@@ -7,11 +7,13 @@ import { DeploymentService } from '../../../services/deployment.service';
 import { CookieService } from '../../../../../shared/services/cookie.service';
 import { TerraformFiles } from '../create-deployment/components/terraform-files/terraform-files';
 import { Loader } from '../../../../../components/loader/loader';
+// PrimeNG Components
+import { AccordionModule } from 'primeng/accordion';
 
 @Component({
   selector: 'app-deployment-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, TerraformFiles, Loader],
+  imports: [CommonModule, RouterLink, TerraformFiles, Loader, AccordionModule],
   templateUrl: './deployment-details.html',
 })
 export class DeploymentDetails implements OnInit {

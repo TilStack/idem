@@ -403,7 +403,7 @@ export class DeploymentService {
     return this.getAuthHeaders().pipe(
       switchMap((headers) =>
         this.http.post<DeploymentModel>(
-          `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/pipeline/generate`,
+          `${this.apiUrl}/deployments/startPipeline/${deploymentId}`,
           {},
           { headers }
         )
