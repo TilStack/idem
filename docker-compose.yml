@@ -2,12 +2,10 @@ version: '3.8'
 
 services:
   idem:
-    build:
-      context: ..
-      dockerfile: Dockerfile
+    image: ghcr.io/idem-ia/idem:cd72d89
     container_name: idem
     ports:
-      - "80:80"
+      - "4200:4200"
     restart: always
     networks:
       - idem
