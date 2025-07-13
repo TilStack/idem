@@ -37,9 +37,6 @@ jobs:
             echo "🔄 Construction de l’image avec les variables locales..."
             docker build -t $IMAGE_NAME .
 
-           # echo "🔐 Connexion au GitHub Container Registry..."
-           # echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
-
             echo "📤 Push de l’image vers le GitHub Container Registry..."
             docker push $IMAGE_NAME
 
