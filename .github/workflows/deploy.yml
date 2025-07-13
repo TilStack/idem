@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /Idem-app
+            cd /root/Idem-app/idem
             export IMAGE_NAME=ghcr.io/idem-ia/idem:${{ needs.build.outputs.commit_id }}
 
             echo "📤 Push Docker image $IMAGE_NAME"
