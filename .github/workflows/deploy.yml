@@ -26,7 +26,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /Idem-app
+            cd /root/Idem-app/idem
             export IMAGE_NAME=ghcr.io/idem-ia/idem:${{ steps.vars.outputs.commit_id }}
             echo "🔨 Build Docker image $IMAGE_NAME"
             docker build -t $IMAGE_NAME .
@@ -61,7 +61,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /Idem-app
+            cd /root/Idem-app/idem
             export IMAGE_NAME=ghcr.io/idem-ia/idem:${{ needs.push.needs.build.outputs.commit_id }}
             echo "🔁 Update docker-compose with new image tag"
             sed -i "s|image: ghcr.io/.*/idem:.*|image: $IMAGE_NAME|" docker-compose.yml
