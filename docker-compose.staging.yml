@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   idem:
-    image: ghcr.io/idem-ia/idem:4125478
+    image: ghcr.io/idem-ia/idem:4524
     container_name: idem
     ports:
       - "4300:4200"
