@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   idem:
-    image: ghcr.io/idem-ia/idem:
+    image: ghcr.io/idem-ia/idem:4125478
     container_name: idem
     ports:
-      - "80:80"
+      - "4300:4200"
     restart: always
     networks:
       - idem
