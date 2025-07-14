@@ -24,21 +24,20 @@ jobs:
 
       - name: SSH Build Image
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_ID: ${{ steps.vars.outputs.commit_id }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/Idem-app/idem
-            BRANCH=${{ github.ref_name }}
-          
             git fetch origin
             git checkout $BRANCH || git checkout -b $BRANCH origin/$BRANCH
             git reset --hard origin/$BRANCH
 
-            export COMMIT_ID=${{ steps.vars.outputs.commit_id }}
-            export IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
-
+            IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
             echo "🔨 Build Docker image $IMAGE_NAME"
             docker build -t $IMAGE_NAME .
 
@@ -51,37 +50,39 @@ jobs:
     steps:
       - name: SSH Push Image
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          COMMIT_ID: ${{ needs.build.outputs.commit_id }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/Idem-app/idem
-            export IMAGE_NAME=ghcr.io/idem-ia/idem:${{steps.vars.outputs.commit_id }}
-
+            IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
             echo "📤 Push Docker image $IMAGE_NAME"
             docker push $IMAGE_NAME
 
   deploy:
     name: 🚀 Deploy with docker-compose
     runs-on: ubuntu-latest
-    needs: push
+    needs: [build, push]
     environment:
       name: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     steps:
       - name: SSH Deploy
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_ID: ${{ needs.build.outputs.commit_id }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/Idem-app/idem
+            IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
 
-            export COMMIT_ID=${{ steps.vars.outputs.commit_id }}
-            export IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
-
-            if [ "${{ github.ref_name }}" = "main" ]; then
+            if [ "$BRANCH" = "main" ]; then
               COMPOSE_FILE=docker-compose.yml
             else
               COMPOSE_FILE=docker-compose.staging.yml
@@ -91,4 +92,5 @@ jobs:
             sed -i "s|image: ghcr.io/.*/idem:.*|image: $IMAGE_NAME|" $COMPOSE_FILE
 
             echo "♻️ Restarting docker-compose using $COMPOSE_FILE"
+          
             docker-compose -f $COMPOSE_FILE up -d idem
