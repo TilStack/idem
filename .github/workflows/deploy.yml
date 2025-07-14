@@ -31,8 +31,8 @@ jobs:
           script: |
             cd /root/Idem-app/idem
             BRANCH=${{ github.ref_name }}
-            git fetch origin
-            git reset --hard origin/$BRANCH
+            git checkout dev
+            git pull origin dev
 
             export COMMIT_ID=${{ steps.vars.outputs.commit_id }}
             export IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
