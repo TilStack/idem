@@ -57,7 +57,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /root/Idem-app/idem
-            export IMAGE_NAME=ghcr.io/idem-ia/idem:${{ needs.build.outputs.commit_id }}
+            export IMAGE_NAME=ghcr.io/idem-ia/idem:${{steps.vars.outputs.commit_id }}
 
             echo "📤 Push Docker image $IMAGE_NAME"
             docker push $IMAGE_NAME
@@ -78,7 +78,7 @@ jobs:
           script: |
             cd /root/Idem-app/idem
 
-            export COMMIT_ID=${{ needs.push.needs.build.outputs.commit_id }}
+            export COMMIT_ID=${{ steps.vars.outputs.commit_id }}
             export IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
 
             if [ "${{ github.ref_name }}" = "main" ]; then
