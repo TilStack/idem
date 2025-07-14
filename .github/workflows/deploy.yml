@@ -35,7 +35,6 @@ jobs:
             cd /root/Idem-app/idem
             git fetch origin
             git checkout $BRANCH || git checkout -b $BRANCH origin/$BRANCH
-            git reset --hard origin/$BRANCH
 
             IMAGE_NAME=ghcr.io/idem-ia/idem:$COMMIT_ID
             echo "🔨 Build Docker image $IMAGE_NAME"
