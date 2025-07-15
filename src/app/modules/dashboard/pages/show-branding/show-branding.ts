@@ -62,30 +62,6 @@ export class ShowBrandingComponent {
                 brandModelData.sections &&
                 brandModelData.sections.length > 0
               ) {
-                this.branding = brandModelData;
-                this.globalCss.set(
-                  `<style>
-                ${
-                  this.branding?.sections.filter(
-                    (item) => item.name === 'Global CSS'
-                  )[0].data
-                }
-                </style>`
-                );
-
-                this.branding.sections = this.branding?.sections.filter(
-                  (item) => item.name !== 'Global CSS'
-                );
-                this.branding.sections.unshift({
-                  id: 'global-css',
-                  name: 'Global CSS',
-                  data: this.globalCss(),
-                  summary: 'Global CSS',
-                  type: 'css',
-                });
-                if (this.branding) {
-                  this.isBrandExists.set(true);
-                }
                 this.isBrandingLoaded.set(false);
               } else {
                 this.isBrandExists.set(false);

@@ -11,7 +11,6 @@
     </button>
   </div>
   @if (branding && branding.sections.length > 0) {
-  <div [innerHTML]="branding.logo.svg | safeHtml"></div>
   @for (brand of branding.sections; track brand.id) {
   <div [innerHTML]="brand.data | safeHtml"></div>
   } }@else {
