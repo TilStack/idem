@@ -91,14 +91,7 @@ export const routes: Routes = [
       import(
         './modules/dashboard/pages/deployment/deployment-details/deployment-details'
       ).then((m) => m.DeploymentDetails),
-    data: { layout: 'dashboard' },
-  },
-  {
-    path: 'console/dashboard/:projectId/deployment/:deploymentId',
-    loadComponent: () =>
-      import(
-        './modules/dashboard/pages/deployment/deployment-details/deployment-details'
-      ).then((m) => m.DeploymentDetails),
+      
     data: { layout: 'dashboard' },
   },
   {

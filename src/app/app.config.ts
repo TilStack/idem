@@ -111,9 +111,9 @@ export const appConfig: ApplicationConfig = {
       mermaidOptions: {
         provide: MERMAID_OPTIONS,
         useValue: {
-          darkMode: true,
+          darkMode: false,
           look: 'classic',
-          theme: 'dark',
+          theme: 'default',
         },
       },
     }),
