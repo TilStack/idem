@@ -62,6 +62,10 @@ export class ShowBrandingComponent {
                 brandModelData.sections &&
                 brandModelData.sections.length > 0
               ) {
+                this.branding = brandModelData;
+
+
+                
                 this.isBrandingLoaded.set(false);
               } else {
                 this.isBrandExists.set(false);
