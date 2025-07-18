@@ -1,0 +1,273 @@
+<section class="container p-6 mb-8">
+  <h2 class="text-2xl font-semibold text-white mb-6 border-b border-gray-700/50 pb-3">
+    Deployment Configuration
+  </h2>
+  
+  <form [formGroup]="deploymentForm()!" class="space-y-8">
+    <!-- Deployment Platform Selection -->
+    <div>
+      <h3 class="text-xl font-medium text-white mb-4">Choose Deployment Platform</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @for (platform of deploymentOptions; track platform.id) {
+        <div
+          class="glass-card relative overflow-hidden p-6 cursor-pointer transition-all duration-300 border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('platform')?.value === platform.id"
+          [class.glow-primary]="deploymentForm()!.get('platform')?.value === platform.id"
+          (click)="deploymentForm()!.get('platform')?.setValue(platform.id)"
+        >
+          <!-- Platform Header -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center">
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 text-2xl"
+                [style.background-color]="platform.color + '20'"
+                [style.color]="platform.color"
+              >
+                {{ platform.icon }}
+              </div>
+              <h4 class="text-xl font-semibold text-white">{{ platform.name }}</h4>
+            </div>
+            <div
+              class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+              [class.bg-primary]="deploymentForm()!.get('platform')?.value === platform.id"
+              [class.border-primary]="deploymentForm()!.get('platform')?.value === platform.id"
+              [class.border-gray-500]="deploymentForm()!.get('platform')?.value !== platform.id"
+            >
+              <span class="pi pi-check text-white text-xs" *ngIf="deploymentForm()!.get('platform')?.value === platform.id"></span>
+            </div>
+          </div>
+          
+          <!-- Platform Description -->
+          <p class="text-gray-300 text-sm mb-4">{{ platform.description }}</p>
+          
+          <!-- Platform Badges -->
+          <div class="flex flex-wrap gap-2 mt-auto">
+            @for (badge of platform.badges; track badge) {
+            <span class="text-xs px-2 py-1 rounded-md bg-gray-800/50 text-gray-300">{{ badge }}</span>
+            }
+          </div>
+          
+          <!-- Decorative Background Element -->
+          <div 
+            class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-10"
+            [style.background-color]="platform.color"
+          ></div>
+        </div>
+        }
+      </div>
+    </div>
+    
+    <!-- CI/CD Selection -->
+    <div class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">CI/CD Provider</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (cicd of cicdOptions; track cicd.id) {
+        <div
+          class="glass p-5 rounded-xl cursor-pointer transition-all border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('cicd')?.value === cicd.id"
+          [class.glow-primary]="deploymentForm()!.get('cicd')?.value === cicd.id"
+          (click)="deploymentForm()!.get('cicd')?.setValue(cicd.id)"
+        >
+          <div class="flex items-center">
+            <div class="text-3xl mr-4">{{ cicd.icon }}</div>
+            <div>
+              <div class="text-white text-lg">{{ cicd.name }}</div>
+              <p class="text-gray-400 text-sm">{{ cicd.description }}</p>
+            </div>
+            <div
+              class="ml-auto w-6 h-6 rounded-full border-2 flex items-center justify-center"
+              [class.bg-primary]="deploymentForm()!.get('cicd')?.value === cicd.id"
+              [class.border-primary]="deploymentForm()!.get('cicd')?.value === cicd.id"
+              [class.border-gray-500]="deploymentForm()!.get('cicd')?.value !== cicd.id"
+            >
+              <span class="pi pi-check text-white text-xs" *ngIf="deploymentForm()!.get('cicd')?.value === cicd.id"></span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    
+    <!-- Deployment Features -->
+    <div formGroupName="features" class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">Deployment Features</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Monitoring -->
+        <div 
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('features.monitoring')?.value"
+          (click)="deploymentForm()!.get('features.monitoring')?.setValue(!deploymentForm()!.get('features.monitoring')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Monitoring</div>
+            <p class="text-gray-400 text-sm">Application performance tracking</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="deploymentForm()!.get('features.monitoring')?.value"
+            [class.bg-gray-700]="!deploymentForm()!.get('features.monitoring')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!deploymentForm()!.get('features.monitoring')?.value"
+              [class.left-6]="deploymentForm()!.get('features.monitoring')?.value"
+            ></div>
+          </div>
+        </div>
+        
+        <!-- Continuous Deployment -->
+        <div 
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('features.continuousDeployment')?.value"
+          (click)="deploymentForm()!.get('features.continuousDeployment')?.setValue(!deploymentForm()!.get('features.continuousDeployment')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Continuous Deployment</div>
+            <p class="text-gray-400 text-sm">Automatic deployment pipeline</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="deploymentForm()!.get('features.continuousDeployment')?.value"
+            [class.bg-gray-700]="!deploymentForm()!.get('features.continuousDeployment')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!deploymentForm()!.get('features.continuousDeployment')?.value"
+              [class.left-6]="deploymentForm()!.get('features.continuousDeployment')?.value"
+            ></div>
+          </div>
+        </div>
+        
+        <!-- SSL -->
+        <div 
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('features.ssl')?.value"
+          (click)="deploymentForm()!.get('features.ssl')?.setValue(!deploymentForm()!.get('features.ssl')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">SSL Certificates</div>
+            <p class="text-gray-400 text-sm">HTTPS encryption</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="deploymentForm()!.get('features.ssl')?.value"
+            [class.bg-gray-700]="!deploymentForm()!.get('features.ssl')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!deploymentForm()!.get('features.ssl')?.value"
+              [class.left-6]="deploymentForm()!.get('features.ssl')?.value"
+            ></div>
+          </div>
+        </div>
+        
+        <!-- Load Balancing -->
+        <div 
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('features.loadBalancing')?.value"
+          (click)="deploymentForm()!.get('features.loadBalancing')?.setValue(!deploymentForm()!.get('features.loadBalancing')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Load Balancing</div>
+            <p class="text-gray-400 text-sm">Traffic distribution</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="deploymentForm()!.get('features.loadBalancing')?.value"
+            [class.bg-gray-700]="!deploymentForm()!.get('features.loadBalancing')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!deploymentForm()!.get('features.loadBalancing')?.value"
+              [class.left-6]="deploymentForm()!.get('features.loadBalancing')?.value"
+            ></div>
+          </div>
+        </div>
+        
+        <!-- Backups -->
+        <div 
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="deploymentForm()!.get('features.backups')?.value"
+          (click)="deploymentForm()!.get('features.backups')?.setValue(!deploymentForm()!.get('features.backups')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Automated Backups</div>
+            <p class="text-gray-400 text-sm">Data protection</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="deploymentForm()!.get('features.backups')?.value"
+            [class.bg-gray-700]="!deploymentForm()!.get('features.backups')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!deploymentForm()!.get('features.backups')?.value"
+              [class.left-6]="deploymentForm()!.get('features.backups')?.value"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Advanced Deployment Options (shown only in advanced mode) -->
+    @if (showAdvancedOptions()) {
+    <div class="mt-8 glass p-6 rounded-xl border border-gray-800/50">
+      <h3 class="text-xl font-medium text-white mb-4">Advanced Deployment Settings</h3>
+      
+      <!-- Environment Variables -->
+      <div class="mb-6">
+        <label class="block text-white mb-2">Environment Management</label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div
+            class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
+            [class.border-primary]="deploymentForm()!.get('environment')?.value === 'development'"
+            [class.border]="deploymentForm()!.get('environment')?.value === 'development'"
+            (click)="deploymentForm()!.get('environment')?.setValue('development')"
+          >
+            <span class="text-white">Development</span>
+          </div>
+          <div
+            class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
+            [class.border-primary]="deploymentForm()!.get('environment')?.value === 'staging'"
+            [class.border]="deploymentForm()!.get('environment')?.value === 'staging'"
+            (click)="deploymentForm()!.get('environment')?.setValue('staging')"
+          >
+            <span class="text-white">Staging</span>
+          </div>
+          <div
+            class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
+            [class.border-primary]="deploymentForm()!.get('environment')?.value === 'production'"
+            [class.border]="deploymentForm()!.get('environment')?.value === 'production'"
+            (click)="deploymentForm()!.get('environment')?.setValue('production')"
+          >
+            <span class="text-white">Production</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scaling Options -->
+      <div>
+        <label class="block text-white mb-2">Scaling Strategy</label>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div
+            class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
+            [class.border-primary]="deploymentForm()!.get('scaling')?.value === 'horizontal'"
+            [class.border]="deploymentForm()!.get('scaling')?.value === 'horizontal'"
+            (click)="deploymentForm()!.get('scaling')?.setValue('horizontal')"
+          >
+            <span class="text-white">Horizontal Scaling</span>
+          </div>
+          <div
+            class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
+            [class.border-primary]="deploymentForm()!.get('scaling')?.value === 'vertical'"
+            [class.border]="deploymentForm()!.get('scaling')?.value === 'vertical'"
+            (click)="deploymentForm()!.get('scaling')?.setValue('vertical')"
+          >
+            <span class="text-white">Vertical Scaling</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </form>
+</section>

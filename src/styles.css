@@ -193,6 +193,7 @@ body {
 .inner-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(60, 164, 250, 0.4);
+  cursor: pointer;
 }
 
 @keyframes gradient-shift {
@@ -270,4 +271,8 @@ body {
   );
   opacity: 0.3;
   z-index: -1;
+}
+
+.container {
+  background: rgba(15, 20, 27, 0.7);
 }

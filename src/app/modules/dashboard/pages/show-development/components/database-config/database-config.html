@@ -1,0 +1,219 @@
+<section class="container p-6 mb-8">
+  <h2
+    class="text-2xl font-semibold text-white mb-6 border-b border-gray-700/50 pb-3"
+  >
+    Database Configuration
+  </h2>
+
+  <form [formGroup]="databaseForm()!" class="space-y-8">
+    <!-- Database Selection -->
+    <div>
+      <h3 class="text-xl font-medium text-white mb-4">Choose Database</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @for (db of databases; track db.id) {
+        <div
+          class="glass-card relative overflow-hidden p-6 cursor-pointer transition-all duration-300 border border-gray-800/50"
+          [class.border-primary]="databaseForm()!.get('database')?.value === db.id"
+          [class.glow-primary]="databaseForm()!.get('database')?.value === db.id"
+          (click)="databaseForm()!.get('database')?.setValue(db.id)"
+        >
+          <!-- Database Header -->
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center">
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 text-2xl"
+                [style.background-color]="db.color + '20'"
+                [style.color]="db.color"
+              >
+                {{ db.icon }}
+              </div>
+              <h4 class="text-xl font-semibold text-white">{{ db.name }}</h4>
+            </div>
+            <div
+              class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+              [class.bg-primary]="databaseForm()!.get('database')?.value === db.id"
+              [class.border-primary]="databaseForm()!.get('database')?.value === db.id"
+              [class.border-gray-500]="databaseForm()!.get('database')?.value !== db.id"
+            >
+              <span
+                class="pi pi-check text-white text-xs"
+                *ngIf="databaseForm()!.get('database')?.value === db.id"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Database Description -->
+          <p class="text-gray-300 text-sm mb-4">{{ db.description }}</p>
+
+          <!-- Database Badges -->
+          <div class="flex flex-wrap gap-2 mt-auto">
+            @for (badge of db.badges; track badge) {
+            <span
+              class="text-xs px-2 py-1 rounded-md bg-gray-800/50 text-gray-300"
+              >{{ badge }}</span
+            >
+            }
+          </div>
+
+          <!-- Decorative Background Element -->
+          <div
+            class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-10"
+            [style.background-color]="db.color"
+          ></div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Database Version Selection (shows only in advanced mode) -->
+    @if (showAdvancedOptions()) {
+    <div class="mt-8 glass p-5 rounded-xl border border-gray-800/50">
+      <h3 class="text-xl font-medium text-white mb-4">Database Version</h3>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        @for (version of getDatabaseVersions(); track version) {
+        <div
+          class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
+          [class.border-primary]="databaseForm()!.get('databaseVersion')?.value === version"
+          [class.border]="databaseForm()!.get('databaseVersion')?.value === version"
+          (click)="databaseForm()!.get('databaseVersion')?.setValue(version)"
+        >
+          <span class="text-white">{{ version }}</span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- ORM Selection -->
+    <div class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">ORM/ODM Selection</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (orm of ormOptions; track orm.id) {
+        <div
+          class="glass p-5 rounded-xl cursor-pointer transition-all border border-gray-800/50"
+          [class.border-primary]="databaseForm()!.get('orm')?.value === orm.id"
+          [class.glow-primary]="databaseForm()!.get('orm')?.value === orm.id"
+          (click)="databaseForm()!.get('orm')?.setValue(orm.id)"
+        >
+          <div class="flex items-center">
+            <div class="text-3xl mr-4">{{ orm.icon }}</div>
+            <div>
+              <div class="text-white text-lg">{{ orm.name }}</div>
+              <p class="text-gray-400 text-sm">{{ orm.description }}</p>
+            </div>
+            <div
+              class="ml-auto w-6 h-6 rounded-full border-2 flex items-center justify-center"
+              [class.bg-primary]="databaseForm()!.get('orm')?.value === orm.id"
+              [class.border-primary]="databaseForm()!.get('orm')?.value === orm.id"
+              [class.border-gray-500]="databaseForm()!.get('orm')?.value !== orm.id"
+            >
+              <span
+                class="pi pi-check text-white text-xs"
+                *ngIf="databaseForm()!.get('orm')?.value === orm.id"
+              ></span>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Database Features -->
+    <div formGroupName="features" class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">Database Features</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Migrations -->
+        <div
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="databaseForm()!.get('features.migrations')?.value"
+          (click)="databaseForm()!.get('features.migrations')?.setValue(!databaseForm()!.get('features.migrations')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Migrations</div>
+            <p class="text-gray-400 text-sm">Schema version control</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="databaseForm()!.get('features.migrations')?.value"
+            [class.bg-gray-700]="!databaseForm()!.get('features.migrations')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!databaseForm()!.get('features.migrations')?.value"
+              [class.left-6]="databaseForm()!.get('features.migrations')?.value"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Seeding -->
+        <div
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="databaseForm()!.get('features.seeding')?.value"
+          (click)="databaseForm()!.get('features.seeding')?.setValue(!databaseForm()!.get('features.seeding')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Seeding</div>
+            <p class="text-gray-400 text-sm">Initial data population</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="databaseForm()!.get('features.seeding')?.value"
+            [class.bg-gray-700]="!databaseForm()!.get('features.seeding')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!databaseForm()!.get('features.seeding')?.value"
+              [class.left-6]="databaseForm()!.get('features.seeding')?.value"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Caching -->
+        <div
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="databaseForm()!.get('features.caching')?.value"
+          (click)="databaseForm()!.get('features.caching')?.setValue(!databaseForm()!.get('features.caching')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Caching</div>
+            <p class="text-gray-400 text-sm">Performance optimization</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="databaseForm()!.get('features.caching')?.value"
+            [class.bg-gray-700]="!databaseForm()!.get('features.caching')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!databaseForm()!.get('features.caching')?.value"
+              [class.left-6]="databaseForm()!.get('features.caching')?.value"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Replication -->
+        <div
+          class="glass p-4 rounded-lg cursor-pointer transition-all flex items-center justify-between border border-gray-800/50"
+          [class.border-primary]="databaseForm()!.get('features.replication')?.value"
+          (click)="databaseForm()!.get('features.replication')?.setValue(!databaseForm()!.get('features.replication')?.value)"
+        >
+          <div>
+            <div class="text-white text-lg">Replication</div>
+            <p class="text-gray-400 text-sm">Data redundancy</p>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="databaseForm()!.get('features.replication')?.value"
+            [class.bg-gray-700]="!databaseForm()!.get('features.replication')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform"
+              [class.left-1]="!databaseForm()!.get('features.replication')?.value"
+              [class.left-6]="databaseForm()!.get('features.replication')?.value"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>

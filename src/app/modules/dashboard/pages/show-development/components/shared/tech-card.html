@@ -1,0 +1,67 @@
+<div
+  class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-6 flex flex-col hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg relative overflow-hidden"
+
+>
+  <!-- Card Header -->
+  <div class="flex items-start justify-between mb-4">
+    <div class="flex items-center cursor-pointer" (click)="selectTech()">
+      <div
+        class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 text-2xl"
+        [style.background-color]="tech()!.color + '20'"
+        [style.color]="tech()!.color"
+      >
+        {{ tech()!.icon }}
+      </div>
+      <h4 class="text-xl font-semibold text-white">{{ tech()!.name }}</h4>
+    </div>
+    <div
+      class="w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer"
+      [class.bg-primary]="selected()"
+      [class.border-primary]="selected()"
+      [class.border-gray-500]="!selected()"
+      (click)="selectTech()"
+    >
+      @if (selected()) {
+        <span class="pi pi-check text-white text-xs"></span>
+      }
+    </div>
+  </div>
+  
+  <!-- Description -->
+  <p class="text-gray-300 text-sm mb-4 cursor-pointer flex-grow" (click)="selectTech()">{{ tech()!.description }}</p>
+  
+  <!-- Badges -->
+  <div class="flex flex-wrap gap-2 mt-auto mb-4 cursor-pointer" (click)="selectTech()">
+    @for (badge of tech()!.badges; track badge) {
+    <span class="text-xs px-2 py-1 rounded-md bg-gray-800/50 text-gray-300">{{ badge }}</span>
+    }
+  </div>
+
+  <!-- Advanced Options Button -->
+  @if (showAdvancedOptions() && tech()!.versions && tech()!.versions!.length > 0) {
+  <div class="mt-4 pt-3 border-t border-gray-800/30">
+    @if (isAdvancedOptionsVisible()) {
+      <div class="mb-3 animate-fade-in">
+        <p class="text-sm font-medium text-gray-300 mb-2">Select Version:</p>
+        <p-dropdown 
+          [options]="tech()!.versions" 
+          [(ngModel)]="selectedVersion"
+          (onChange)="selectVersion($event.value)"
+          styleClass="w-full bg-gray-900/80 backdrop-blur-sm text-white border-gray-700 rounded-lg"
+          class="w-full">
+        </p-dropdown>
+      </div>
+    }
+    
+    <button 
+      type="button"
+      class="outer-button w-full text-sm flex items-center justify-center gap-2" 
+      (click)="toggleAdvancedOptions()"
+    >
+      <span>{{ isAdvancedOptionsVisible() ? 'Hide' : 'Advanced Options' }}</span>
+      <span class="pi" [class.pi-angle-up]="isAdvancedOptionsVisible()" [class.pi-angle-down]="!isAdvancedOptionsVisible()"></span>
+    </button>
+  </div>
+  }
+  
+</div>

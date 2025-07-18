@@ -1,0 +1,193 @@
+<section class="container p-6 mb-8 backdrop-blur-sm">
+  <h2
+    class="text-2xl font-semibold text-white mb-6 border-b border-gray-700/50 pb-3"
+  >
+    Backend Framework
+  </h2>
+
+  <form [formGroup]="backendForm()" class="space-y-8">
+    <!-- Framework Selection -->
+    <div>
+      <h3 class="text-xl font-medium text-white mb-4">Choose Framework</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (framework of backendFrameworks; track framework.id) {
+        <app-tech-card
+          [tech]="framework"
+          [selected]="backendForm().get('framework')?.value === framework.id"
+          [selectedVersion]="backendForm().get('frameworkVersion')?.value"
+          [showAdvancedOptions]="true"
+          (techSelect)="backendForm().get('framework')?.setValue($event)"
+          (versionSelect)="backendForm().get('frameworkVersion')?.setValue($event)"
+        ></app-tech-card>
+        }
+      </div>
+    </div>
+
+    <!-- API Type Selection -->
+    <div class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">API Type</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (apiType of apiTypes; track apiType.id) {
+        <div
+          class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-5 hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg"
+          [class.border-primary]="backendForm().get('apiType')?.value === apiType.id"
+          [class.shadow-glow]="backendForm().get('apiType')?.value === apiType.id"
+          (click)="backendForm().get('apiType')?.setValue(apiType.id)"
+        >
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-2xl mr-4 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+            >
+              {{ apiType.icon }}
+            </div>
+            <div>
+              <div class="text-white font-medium">{{ apiType.name }}</div>
+              <p class="text-gray-400 text-sm">{{ apiType.description }}</p>
+            </div>
+            <div
+              class="ml-auto w-6 h-6 rounded-full border-2 flex items-center justify-center"
+              [class.bg-primary]="backendForm().get('apiType')?.value === apiType.id"
+              [class.border-primary]="backendForm().get('apiType')?.value === apiType.id"
+              [class.border-gray-500]="backendForm().get('apiType')?.value !== apiType.id"
+            >
+              @if (backendForm().get('apiType')?.value === apiType.id) {
+              <span class="pi pi-check text-white text-xs"></span>
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Backend Features -->
+    <div formGroupName="features" class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">Backend Features</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Authentication -->
+        <div
+          class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-4 hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg flex items-center justify-between"
+          [class.border-primary]="backendForm().get('features.authentication')?.value"
+          [class.shadow-glow]="backendForm().get('features.authentication')?.value"
+          (click)="backendForm().get('features.authentication')?.setValue(!backendForm().get('features.authentication')?.value)"
+        >
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+            >
+              <span class="pi pi-user"></span>
+            </div>
+            <div>
+              <div class="text-white font-medium">Authentication</div>
+              <p class="text-gray-400 text-sm">User login/registration</p>
+            </div>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="backendForm().get('features.authentication')?.value"
+            [class.bg-gray-700]="!backendForm().get('features.authentication')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
+              [class.left-1]="!backendForm().get('features.authentication')?.value"
+              [class.left-6]="backendForm().get('features.authentication')?.value"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Authorization -->
+        <div
+          class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-4 hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg flex items-center justify-between"
+          [class.border-primary]="backendForm().get('features.authorization')?.value"
+          [class.shadow-glow]="backendForm().get('features.authorization')?.value"
+          (click)="backendForm().get('features.authorization')?.setValue(!backendForm().get('features.authorization')?.value)"
+        >
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+            >
+              <span class="pi pi-lock"></span>
+            </div>
+            <div>
+              <div class="text-white font-medium">Authorization</div>
+              <p class="text-gray-400 text-sm">Role-based permissions</p>
+            </div>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="backendForm().get('features.authorization')?.value"
+            [class.bg-gray-700]="!backendForm().get('features.authorization')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
+              [class.left-1]="!backendForm().get('features.authorization')?.value"
+              [class.left-6]="backendForm().get('features.authorization')?.value"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Logging -->
+        <div
+          class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-4 hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg flex items-center justify-between"
+          [class.border-primary]="backendForm().get('features.logging')?.value"
+          [class.shadow-glow]="backendForm().get('features.logging')?.value"
+          (click)="backendForm().get('features.logging')?.setValue(!backendForm().get('features.logging')?.value)"
+        >
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+            >
+              <span class="pi pi-list"></span>
+            </div>
+            <div>
+              <div class="text-white font-medium">Logging</div>
+              <p class="text-gray-400 text-sm">Comprehensive system logs</p>
+            </div>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="backendForm().get('features.logging')?.value"
+            [class.bg-gray-700]="!backendForm().get('features.logging')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
+              [class.left-1]="!backendForm().get('features.logging')?.value"
+              [class.left-6]="backendForm().get('features.logging')?.value"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Testing -->
+        <div
+          class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-4 hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg flex items-center justify-between"
+          [class.border-primary]="backendForm().get('features.testing')?.value"
+          [class.shadow-glow]="backendForm().get('features.testing')?.value"
+          (click)="backendForm().get('features.testing')?.setValue(!backendForm().get('features.testing')?.value)"
+        >
+          <div class="flex items-center">
+            <div
+              class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+            >
+              <span class="pi pi-check-square"></span>
+            </div>
+            <div>
+              <div class="text-white font-medium">Testing</div>
+              <p class="text-gray-400 text-sm">Unit & integration tests</p>
+            </div>
+          </div>
+          <div
+            class="relative w-10 h-5 rounded-full p-1"
+            [class.bg-primary]="backendForm().get('features.testing')?.value"
+            [class.bg-gray-700]="!backendForm().get('features.testing')?.value"
+          >
+            <div
+              class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
+              [class.left-1]="!backendForm().get('features.testing')?.value"
+              [class.left-6]="backendForm().get('features.testing')?.value"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
