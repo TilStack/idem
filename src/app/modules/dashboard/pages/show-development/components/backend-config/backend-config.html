@@ -26,36 +26,16 @@
     <!-- API Type Selection -->
     <div class="mt-8">
       <h3 class="text-xl font-medium text-white mb-4">API Type</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (apiType of apiTypes; track apiType.id) {
-        <div
-          class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-5 hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg"
-          [class.border-primary]="backendForm().get('apiType')?.value === apiType.id"
-          [class.shadow-glow]="backendForm().get('apiType')?.value === apiType.id"
-          (click)="backendForm().get('apiType')?.setValue(apiType.id)"
-        >
-          <div class="flex items-center">
-            <div
-              class="w-10 h-10 rounded-lg flex items-center justify-center text-2xl mr-4 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
-            >
-              {{ apiType.icon }}
-            </div>
-            <div>
-              <div class="text-white font-medium">{{ apiType.name }}</div>
-              <p class="text-gray-400 text-sm">{{ apiType.description }}</p>
-            </div>
-            <div
-              class="ml-auto w-6 h-6 rounded-full border-2 flex items-center justify-center"
-              [class.bg-primary]="backendForm().get('apiType')?.value === apiType.id"
-              [class.border-primary]="backendForm().get('apiType')?.value === apiType.id"
-              [class.border-gray-500]="backendForm().get('apiType')?.value !== apiType.id"
-            >
-              @if (backendForm().get('apiType')?.value === apiType.id) {
-              <span class="pi pi-check text-white text-xs"></span>
-              }
-            </div>
-          </div>
-        </div>
+        <app-tech-card
+          [tech]="apiType"
+          [selected]="backendForm().get('apiType')?.value === apiType.id"
+          [selectedVersion]="backendForm().get('apiVersion')?.value"
+          [showAdvancedOptions]="true"
+          (techSelect)="backendForm().get('apiType')?.setValue($event)"
+          (versionSelect)="backendForm().get('apiVersion')?.setValue($event)"
+        ></app-tech-card>
         }
       </div>
     </div>

@@ -11,109 +11,49 @@
       <h3 class="text-xl font-medium text-white mb-4">Choose Database</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         @for (db of databases; track db.id) {
-        <div
-          class="glass-card relative overflow-hidden p-6 cursor-pointer transition-all duration-300 border border-gray-800/50"
-          [class.border-primary]="databaseForm()!.get('database')?.value === db.id"
-          [class.glow-primary]="databaseForm()!.get('database')?.value === db.id"
-          (click)="databaseForm()!.get('database')?.setValue(db.id)"
+        <app-tech-card
+          [tech]="db"
+          [selected]="databaseForm()!.get('database')?.value === db.id"
+          [selectedVersion]="databaseForm()!.get('databaseVersion')?.value"
+          [showAdvancedOptions]="showAdvancedOptions() && databaseForm()!.get('database')?.value === db.id"
+          (techSelect)="databaseForm()!.get('database')?.setValue(db.id)"
+          (versionSelect)="databaseForm()!.get('databaseVersion')?.setValue($event)"
+          class="h-full"
         >
-          <!-- Database Header -->
-          <div class="flex items-start justify-between mb-4">
-            <div class="flex items-center">
-              <div
-                class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 text-2xl"
-                [style.background-color]="db.color + '20'"
-                [style.color]="db.color"
-              >
-                {{ db.icon }}
-              </div>
-              <h4 class="text-xl font-semibold text-white">{{ db.name }}</h4>
-            </div>
-            <div
-              class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-              [class.bg-primary]="databaseForm()!.get('database')?.value === db.id"
-              [class.border-primary]="databaseForm()!.get('database')?.value === db.id"
-              [class.border-gray-500]="databaseForm()!.get('database')?.value !== db.id"
-            >
+          <!-- Custom badge content -->
+          <ng-container techCardBadges>
+            <div class="flex flex-wrap gap-2 mt-auto">
+              @for (badge of db.badges; track badge) {
               <span
-                class="pi pi-check text-white text-xs"
-                *ngIf="databaseForm()!.get('database')?.value === db.id"
-              ></span>
+                class="text-xs px-2 py-1 rounded-md bg-gray-800/50 text-gray-300"
+                >{{ badge }}</span
+              >
+              }
             </div>
-          </div>
-
-          <!-- Database Description -->
-          <p class="text-gray-300 text-sm mb-4">{{ db.description }}</p>
-
-          <!-- Database Badges -->
-          <div class="flex flex-wrap gap-2 mt-auto">
-            @for (badge of db.badges; track badge) {
-            <span
-              class="text-xs px-2 py-1 rounded-md bg-gray-800/50 text-gray-300"
-              >{{ badge }}</span
-            >
-            }
-          </div>
-
-          <!-- Decorative Background Element -->
-          <div
-            class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-10"
-            [style.background-color]="db.color"
-          ></div>
-        </div>
+          </ng-container>
+        </app-tech-card>
         }
       </div>
     </div>
 
-    <!-- Database Version Selection (shows only in advanced mode) -->
-    @if (showAdvancedOptions()) {
-    <div class="mt-8 glass p-5 rounded-xl border border-gray-800/50">
-      <h3 class="text-xl font-medium text-white mb-4">Database Version</h3>
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        @for (version of getDatabaseVersions(); track version) {
-        <div
-          class="glass p-3 rounded-lg cursor-pointer transition-all text-center"
-          [class.border-primary]="databaseForm()!.get('databaseVersion')?.value === version"
-          [class.border]="databaseForm()!.get('databaseVersion')?.value === version"
-          (click)="databaseForm()!.get('databaseVersion')?.setValue(version)"
-        >
-          <span class="text-white">{{ version }}</span>
-        </div>
-        }
-      </div>
-    </div>
-    }
+    <!-- Database version selection is now handled inside each tech card's advanced options -->
 
     <!-- ORM Selection -->
     <div class="mt-8">
       <h3 class="text-xl font-medium text-white mb-4">ORM/ODM Selection</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @for (orm of ormOptions; track orm.id) {
-        <div
-          class="glass p-5 rounded-xl cursor-pointer transition-all border border-gray-800/50"
-          [class.border-primary]="databaseForm()!.get('orm')?.value === orm.id"
-          [class.glow-primary]="databaseForm()!.get('orm')?.value === orm.id"
-          (click)="databaseForm()!.get('orm')?.setValue(orm.id)"
+        <app-tech-card
+          [tech]="orm"
+          [selected]="databaseForm()!.get('orm')?.value === orm.id"
+          [selectedVersion]="databaseForm()!.get('ormVersion')?.value"
+          [showAdvancedOptions]="showAdvancedOptions() && databaseForm()!.get('orm')?.value === orm.id"
+          (techSelect)="databaseForm()!.get('orm')?.setValue(orm.id)"
+          (versionSelect)="databaseForm()!.get('ormVersion')?.setValue($event)"
+          class="h-full"
         >
-          <div class="flex items-center">
-            <div class="text-3xl mr-4">{{ orm.icon }}</div>
-            <div>
-              <div class="text-white text-lg">{{ orm.name }}</div>
-              <p class="text-gray-400 text-sm">{{ orm.description }}</p>
-            </div>
-            <div
-              class="ml-auto w-6 h-6 rounded-full border-2 flex items-center justify-center"
-              [class.bg-primary]="databaseForm()!.get('orm')?.value === orm.id"
-              [class.border-primary]="databaseForm()!.get('orm')?.value === orm.id"
-              [class.border-gray-500]="databaseForm()!.get('orm')?.value !== orm.id"
-            >
-              <span
-                class="pi pi-check text-white text-xs"
-                *ngIf="databaseForm()!.get('orm')?.value === orm.id"
-              ></span>
-            </div>
-          </div>
-        </div>
+          <!-- No custom content needed -->
+        </app-tech-card>
         }
       </div>
     </div>

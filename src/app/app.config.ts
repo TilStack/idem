@@ -105,8 +105,8 @@ export const appConfig: ApplicationConfig = {
         useValue: {
           gfm: true,
           breaks: true,
-          pedantic: false
-        }
+          pedantic: false,
+        },
       },
       mermaidOptions: {
         provide: MERMAID_OPTIONS,

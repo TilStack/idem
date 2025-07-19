@@ -1,12 +1,10 @@
-import { 
+import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
-  Input,
   Output,
-  inject,
   input,
-  signal
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -24,18 +22,20 @@ import { TechCardComponent, TechCardModel } from '../shared/tech-card';
 export class FrontendConfigComponent {
   // Input properties
   readonly frontendForm = input.required<FormGroup>();
-  readonly versionOptions = input.required<{[key: string]: {[key: string]: string[]}}>();
+  readonly versionOptions = input.required<{
+    [key: string]: { [key: string]: string[] };
+  }>();
   readonly showAdvancedOptions = input.required<boolean>();
   readonly selectedStylingPreferences = input.required<string[]>();
-  
+
   // Output events
   @Output() readonly stylingPreferencesChange = new EventEmitter<string[]>();
-  
+
   // State signals
   protected readonly advancedOptionsVisibleFor = signal<string | null>(null);
-  
+
   // State signals
-  
+
   /**
    * Available frontend frameworks
    */
@@ -43,95 +43,216 @@ export class FrontendConfigComponent {
     {
       id: 'angular',
       name: 'Angular',
-      icon: '🅰️',
+      icon: 'https://angular.dev/assets/images/press-kit/angular_icon_gradient.gif',
       color: '#DD0031',
       description: 'Powerful framework with reactive programming',
       badges: ['TypeScript', 'RxJS', 'Standalone Components'],
+      versions: ['17.x', '16.x', '15.x'],
     },
     {
       id: 'react',
       name: 'React',
-      icon: '⚛️',
+      icon: 'https://icon.icepanel.io/Technology/svg/React.svg',
       color: '#61DAFB',
       description: 'Modern React with hooks and context API',
       badges: ['JSX', 'Virtual DOM', 'Component-Based'],
+      versions: ['19.x', '18.x', '17.x'],
     },
     {
       id: 'nextjs',
       name: 'Next.js',
-      icon: '▲',
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg',
       color: '#000000',
       description: 'Full-stack React framework with SSR/SSG',
       badges: ['App Router', 'API Routes', 'ISR'],
+      versions: ['14.x', '13.x', '12.x'],
     },
-
     {
       id: 'vue',
       name: 'Vue.js',
-      icon: '🟢',
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vuejs/vuejs-original.svg',
       color: '#42b883',
       description: 'Progressive framework with intuitive API',
       badges: ['Composition API', 'SFCs', 'Pinia'],
+      versions: ['3.x', '2.x'],
     },
     {
       id: 'svelte',
       name: 'Svelte',
-      icon: '🔥',
+      icon: 'https://icon.icepanel.io/Technology/svg/Svelte.svg',
       color: '#FF3E00',
       description: 'Compiled framework with minimal runtime',
       badges: ['No Virtual DOM', 'Reactive', 'SvelteKit'],
+      versions: ['4.x', '3.x'],
     },
     {
       id: 'astro',
       name: 'Astro',
-      icon: '🚀',
-      color: '#FF5D01',
+      icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Astro.png',
+      color: 'white',
       description: 'Content-focused static site generator',
       badges: ['Island Architecture', 'MPA', 'Zero JS by default'],
+      versions: ['4.x', '3.x', '2.x'],
     },
   ];
 
   /**
-   * Available styling options
+   * Framework-specific UI libraries mapping
    */
-  protected readonly stylingOptions = [
+  protected readonly frameworkUiLibraries: { [key: string]: any[] } = {
+    // Angular specific UI libraries
+    angular: [
+      {
+        id: 'angularMaterial',
+        name: 'Angular Material',
+        icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6CY5okaihNPZJIw5tK0cCZd1JaiSsmcSRAA&s',
+        description: 'Official Material Design components for Angular',
+        versions: ['17.x', '16.x', '15.x', '14.x', '13.x', '12.x', '11.x'],
+      },
+      {
+        id: 'primeng',
+        name: 'PrimeNG',
+        icon: 'https://i0.wp.com/www.primefaces.org/wp-content/uploads/2018/05/primeng-logo.png?ssl=1',
+        description: 'Rich set of open source UI components for Angular',
+        versions: ['17.x', '16.x'],
+      },
+      {
+        id: 'ngBootstrap',
+        name: 'NG Bootstrap',
+        icon: 'https://avatars.githubusercontent.com/u/14283866?s=200&v=4',
+        description: 'Angular widgets built with Bootstrap',
+        versions: ['16.x', '15.x'],
+      },
+      {
+        id: 'ngrx',
+        name: 'NgRx',
+        icon: 'https://ngrx.io/assets/images/badge.png',
+        description: 'Reactive state management for Angular',
+        versions: ['17.x', '16.x'],
+      },
+    ],
+
+    // React specific UI libraries
+    react: [
+      {
+        id: 'mui',
+        name: 'Material UI',
+        icon: 'https://icon.icepanel.io/Technology/svg/Material-UI.svg',
+        description: 'React components for Material Design',
+        versions: ['5.x', '4.x'],
+      },
+      {
+        id: 'chakra',
+        name: 'Chakra UI',
+        icon: 'https://img.icons8.com/?size=512&id=r9QJ0VFFrn7T&format=png',
+        description: 'Accessible component library',
+        versions: ['3.x', '2.x', '1.x'],
+      },
+      {
+        id: 'styledComponents',
+        name: 'Styled Components',
+        icon: 'https://avatars.githubusercontent.com/u/20658825?s=200&v=4',
+        description: 'CSS-in-JS solution',
+        versions: ['6.x', '5.x'],
+      },
+      {
+        id: 'antDesign',
+        name: 'Ant Design',
+        icon: 'https://cdn.worldvectorlogo.com/logos/ant-design-2.svg',
+        description: 'Enterprise-level UI design system',
+        versions: ['5.x', '4.x'],
+      },
+    ],
+
+    // Vue specific UI libraries
+    vue: [
+      {
+        id: 'vuetify',
+        name: 'Vuetify',
+        icon: 'https://cdn.vuetifyjs.com/docs/images/brand-kit/v-logo.svg',
+        description: 'Material Design Framework for Vue',
+        versions: ['3.x', '2.x'],
+      },
+      {
+        id: 'quasar',
+        name: 'Quasar',
+        icon: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Quasar_Logo.png',
+        description: 'High-performance material component library',
+        versions: ['2.x', '1.x'],
+      },
+      {
+        id: 'vueBootstrap',
+        name: 'BootstrapVue',
+        icon: 'https://bootstrap-vue.org//_nuxt/icons/icon_512x512.67aef2.png',
+        description: 'Bootstrap components for Vue',
+        versions: ['3.x', '2.x'],
+      },
+    ],
+
+    // Svelte specific UI libraries
+    svelte: [
+      {
+        id: 'svelteKit',
+        name: 'SvelteKit',
+        icon: 'https://icon.icepanel.io/Technology/svg/Svelte.svg',
+        description: 'Framework for building web applications',
+        versions: ['2.x', '1.x'],
+      },
+      {
+        id: 'svelteMaterial',
+        name: 'Svelte Material UI',
+        icon: 'https://madewithsvelte.com/mandant/madewithsvelte/images/logo.png',
+        description: 'Material UI components for Svelte',
+        versions: ['7.x', '6.x'],
+      },
+    ],
+  };
+
+  /**
+   * Common styling options available for all frameworks
+   */
+  protected readonly commonStylingOptions = [
     {
       id: 'tailwind',
       name: 'Tailwind CSS',
-      icon: '🌬️',
-      description: 'Utility-first CSS framework'
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg',
+      description: 'Utility-first CSS framework',
+      versions: ['3.x', '2.x'],
     },
     {
       id: 'scss',
       name: 'SCSS',
-      icon: '🎨',
-      description: 'CSS with superpowers'
-    },
-    {
-      id: 'styledComponents',
-      name: 'Styled Components',
-      icon: '💅',
-      description: 'CSS-in-JS solution'
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sass/sass-original.svg',
+      description: 'CSS with superpowers',
+      versions: ['Latest'],
     },
     {
       id: 'bootstrap',
       name: 'Bootstrap',
-      icon: '🅱️',
-      description: 'Responsive component library'
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg',
+      description: 'Responsive component library',
+      versions: ['5.x', '4.x'],
     },
     {
-      id: 'mui',
-      name: 'Material UI',
-      icon: '📦',
-      description: 'React components for Material Design'
+      id: 'unocss',
+      name: 'UnoCSS',
+      icon: 'https://unocss.dev/logo.svg',
+      description: 'Instant on-demand atomic CSS engine',
+      versions: ['Latest'],
     },
-    {
-      id: 'chakra',
-      name: 'Chakra UI',
-      icon: '✨',
-      description: 'Accessible component library'
-    }
   ];
+
+  /**
+   * Get available styling options based on selected framework
+   */
+  protected get stylingOptions() {
+    const selectedFramework = this.frontendForm()?.get('framework')?.value;
+    const frameworkSpecificOptions = selectedFramework
+      ? this.frameworkUiLibraries[selectedFramework] || []
+      : [];
+
+    return [...this.commonStylingOptions, ...frameworkSpecificOptions];
+  }
 
   /**
    * Toggle a styling preference in multi-select mode
@@ -139,33 +260,33 @@ export class FrontendConfigComponent {
   protected toggleStylingPreference(style: string): void {
     const currentStyles = [...this.selectedStylingPreferences()];
     const index = currentStyles.indexOf(style);
-    
+
     if (index === -1) {
       currentStyles.push(style);
     } else {
       currentStyles.splice(index, 1);
     }
-    
+
     this.stylingPreferencesChange.emit(currentStyles);
     this.frontendForm().get('styling')?.setValue(currentStyles);
   }
-  
+
   /**
    * Toggle advanced options visibility for the specified framework
    */
   protected toggleAdvancedOptions(frameworkId: string): void {
-    this.advancedOptionsVisibleFor.update(current => 
+    this.advancedOptionsVisibleFor.update((current) =>
       current === frameworkId ? null : frameworkId
     );
   }
-  
+
   /**
    * Check if advanced options are visible for a specific framework
    */
   protected isAdvancedOptionsVisible(frameworkId: string): boolean {
     return this.advancedOptionsVisibleFor() === frameworkId;
   }
-  
+
   /**
    * Check if a styling preference is selected
    */
@@ -183,7 +304,9 @@ export class FrontendConfigComponent {
       // Get versions from the first category key or return default
       const categories = Object.keys(this.versionOptions()[selectedFramework]);
       if (categories.length > 0) {
-        return this.versionOptions()[selectedFramework][categories[0]] || ['latest'];
+        return (
+          this.versionOptions()[selectedFramework][categories[0]] || ['latest']
+        );
       }
     }
     return ['latest'];

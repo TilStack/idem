@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
+import { Select } from "primeng/select";
 
 export interface TechCardModel {
   id: string;
@@ -17,7 +17,7 @@ export interface TechCardModel {
 @Component({
   selector: 'app-tech-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownModule, ButtonModule],
+  imports: [CommonModule, FormsModule, ButtonModule, Select],
   templateUrl: './tech-card.html',
   styleUrl: './tech-card.css'
 })

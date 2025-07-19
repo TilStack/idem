@@ -115,6 +115,7 @@ export class ShowDevelopmentComponent implements OnInit {
       framework: ['node', Validators.required],
       frameworkVersion: ['latest', Validators.required],
       apiType: ['rest', Validators.required],
+      apiVersion: ['latest', Validators.required],
       features: this.fb.group({
         authentication: [true],
         authorization: [true],
@@ -129,6 +130,7 @@ export class ShowDevelopmentComponent implements OnInit {
       provider: ['postgresql', Validators.required],
       version: ['latest', Validators.required],
       orm: ['prisma', Validators.required],
+      ormVersion: ['latest', Validators.required],
       features: this.fb.group({
         migrations: [true],
         seeders: [true],
@@ -139,12 +141,20 @@ export class ShowDevelopmentComponent implements OnInit {
 
     this.deploymentForm = this.fb.group({
       platform: ['aws', Validators.required],
+      platformVersion: ['Latest', Validators.required],
       serviceType: ['container', Validators.required],
-      cicd: this.fb.group({
-        githubActions: [true],
-        jenkins: [false],
-        gitlabCi: [false],
-        circleCi: [false],
+      cicd: ['github', Validators.required],
+      cicdVersion: ['Latest'],
+      // Advanced deployment options
+      environment: ['development', Validators.required],
+      scaling: ['horizontal', Validators.required],
+      features: this.fb.group({
+        monitoring: [true],
+        continuousDeployment: [true],
+        ssl: [true],
+        backups: [false],
+        logging: [false],
+        scaling: [false],
       }),
     });
 
