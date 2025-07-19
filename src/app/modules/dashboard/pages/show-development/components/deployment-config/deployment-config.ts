@@ -9,11 +9,12 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TechCardComponent, TechCardModel } from '../shared/tech-card';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
+import { CreateDeployment } from "../../../deployment/create-deployment/create-deployment";
 
 @Component({
   selector: 'app-deployment-config',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TechCardComponent, DropdownModule, ButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, TechCardComponent, DropdownModule, ButtonModule, CreateDeployment],
   templateUrl: './deployment-config.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
