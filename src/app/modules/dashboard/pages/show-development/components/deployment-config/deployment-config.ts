@@ -14,7 +14,7 @@ import { CreateDeployment } from "../../../deployment/create-deployment/create-d
 @Component({
   selector: 'app-deployment-config',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TechCardComponent, DropdownModule, ButtonModule, CreateDeployment],
+  imports: [CommonModule, ReactiveFormsModule, DropdownModule, ButtonModule, CreateDeployment],
   templateUrl: './deployment-config.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

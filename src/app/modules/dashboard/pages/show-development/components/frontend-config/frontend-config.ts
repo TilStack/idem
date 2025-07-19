@@ -107,7 +107,7 @@ export class FrontendConfigComponent {
         name: 'Angular Material',
         icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6CY5okaihNPZJIw5tK0cCZd1JaiSsmcSRAA&s',
         description: 'Official Material Design components for Angular',
-        versions: ['17.x', '16.x', '15.x', '14.x', '13.x', '12.x', '11.x'],
+        versions: ['20.1','19.0','17.x', '16.x', '15.x', '14.x', '13.x', '12.x', '11.x'],
       },
       {
         id: 'primeng',

@@ -64,7 +64,7 @@ export class BackendConfigComponent {
       id: 'dotnet',
       name: '.NET',
       // Icône .NET Core depuis Devicons (représentant la plateforme .NET moderne)
-      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dot-net/dot-net-original.svg',
+      icon: 'https://dotnet.microsoft.com/blob-assets/images/dotnet-icons/square.png',
       color: '#512BD4',
       description: 'Modern cross-platform development',
       badges: ['ASP.NET Core', 'Entity Framework', 'Blazor'],
