@@ -96,11 +96,8 @@ export class FrontendConfigComponent {
     },
   ];
 
-  /**
-   * Framework-specific UI libraries mapping
-   */
+
   protected readonly frameworkUiLibraries: { [key: string]: any[] } = {
-    // Angular specific UI libraries
     angular: [
       {
         id: 'angularMaterial',
