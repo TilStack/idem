@@ -26,7 +26,7 @@
           [selected]="backendForm().get('language')?.value === language.id"
           [selectedVersion]="backendForm().get('languageVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="backendForm().get('language')?.setValue($event)"
+          (techSelect)="onProgrammingLanguageTechSelect($event)"
           (versionSelect)="backendForm().get('languageVersion')?.setValue($event)"
         ></app-tech-card>
         }
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Framework Selection -->
-    @if (backendForm().get('language')?.value) {
+    @if (availableFrameworks().length > 0) {
     <div class="mt-8" aria-labelledby="framework-section">
       <h3 id="framework-section" class="text-xl font-medium text-white mb-4">
         Choose Framework
@@ -51,7 +51,7 @@
           [selected]="backendForm().get('framework')?.value === framework.id"
           [selectedVersion]="backendForm().get('frameworkVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="backendForm().get('framework')?.setValue($event)"
+          (techSelect)="onFrameworkTechSelect($event)"
           (versionSelect)="backendForm().get('frameworkVersion')?.setValue($event)"
         ></app-tech-card>
         }
@@ -67,12 +67,12 @@
     }
 
     <!-- API Type Selection -->
-    @if (backendForm().get('framework')?.value) {
+    @if (availableFrameworks().length > 0) {
     <div class="mt-8" aria-labelledby="api-type-section">
       <h3 id="api-type-section" class="text-xl font-medium text-white mb-4">
         API Type
       </h3>
-      @if (availableApiTypes.length > 0) {
+      @if (availableApiTypes().length > 0) {
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         role="group"
@@ -84,7 +84,7 @@
           [selected]="backendForm().get('apiType')?.value === apiType.id"
           [selectedVersion]="backendForm().get('apiVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="backendForm().get('apiType')?.setValue($event)"
+          (techSelect)="onApiTypeTechSelect($event)"
           (versionSelect)="backendForm().get('apiVersion')?.setValue($event)"
         ></app-tech-card>
         }
@@ -100,12 +100,12 @@
     }
 
     <!-- ORM Selection -->
-    @if (backendForm().get('framework')?.value) {
+    @if (availableOrms().length > 0) {
     <div class="mt-8" aria-labelledby="orm-section">
       <h3 id="orm-section" class="text-xl font-medium text-white mb-4">
         ORM/ODM Selection
       </h3>
-      @if (availableOrms.length > 0) {
+      @if (availableOrms().length > 0) {
       <div
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         role="group"
@@ -117,7 +117,7 @@
           [selected]="backendForm().get('orm')?.value === orm.id"
           [selectedVersion]="backendForm().get('ormVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="backendForm().get('orm')?.setValue($event)"
+          (techSelect)="onOrmTechSelect($event)"
           (versionSelect)="backendForm().get('ormVersion')?.setValue($event)"
         ></app-tech-card>
         }

@@ -3,6 +3,7 @@ import {
   Component,
   effect,
   input,
+  OnInit,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -22,21 +23,55 @@ import {
   templateUrl: './backend-config.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BackendConfigComponent {
-  constructor() {
-    effect(() => {
-      this.backendForm()?.valueChanges.subscribe((value) => {
-        this.availableFrameworks.set(
-          this.languageFrameworks[value.language] || []
-        );
-        this.availableApiTypes.set(
-          this.frameworkApiTypes[value.framework] || []
-        );
-        this.availableOrms.set(
-          this.frameworkSpecificOrms[value.framework] || []
-        );
-      });
-    });
+export class BackendConfigComponent implements OnInit {
+  ngOnInit() {
+    this.availableFrameworks.set(
+      this.languageFrameworks[this.backendForm()?.get('language')?.value] || []
+    );
+    this.availableApiTypes.set(
+      this.frameworkApiTypes[this.backendForm()?.get('framework')?.value] || []
+    );
+    this.availableOrms.set(
+      this.frameworkSpecificOrms[this.backendForm()?.get('framework')?.value] ||
+        []
+    );
+  }
+
+  onProgrammingLanguageTechSelect(event: string): void {
+    this.backendForm()?.get('language')?.setValue(event);
+    this.availableFrameworks.set(
+      this.languageFrameworks[this.backendForm()?.get('language')?.value] || []
+    );
+    this.availableApiTypes.set(
+      this.frameworkApiTypes[this.backendForm()?.get('framework')?.value] || []
+    );
+    this.availableOrms.set(
+      this.frameworkSpecificOrms[this.backendForm()?.get('framework')?.value] ||
+        []
+    );
+  }
+
+  onFrameworkTechSelect(event: string): void {
+    this.backendForm()?.get('framework')?.setValue(event);
+    this.availableApiTypes.set(
+      this.frameworkApiTypes[this.backendForm()?.get('framework')?.value] || []
+    );
+    this.availableOrms.set(
+      this.frameworkSpecificOrms[this.backendForm()?.get('framework')?.value] ||
+        []
+    );
+  }
+
+  onApiTypeTechSelect(event: string): void {
+    this.backendForm()?.get('apiType')?.setValue(event);
+    this.availableOrms.set(
+      this.frameworkSpecificOrms[this.backendForm()?.get('framework')?.value] ||
+        []
+    );
+  }
+
+  onOrmTechSelect(event: string): void {
+    this.backendForm()?.get('orm')?.setValue(event);
   }
   // Input properties
   readonly backendForm = input.required<FormGroup>();
@@ -96,7 +131,6 @@ export class BackendConfigComponent {
     return ['latest'];
   }
 
-
   protected getApiVersions(): string[] {
     const selectedApiType = this.backendForm()?.get('apiType')?.value;
     if (selectedApiType) {
@@ -106,7 +140,6 @@ export class BackendConfigComponent {
     }
     return ['latest'];
   }
-
 
   protected getOrmVersions(): string[] {
     const selectedOrm = this.backendForm()?.get('orm')?.value;
