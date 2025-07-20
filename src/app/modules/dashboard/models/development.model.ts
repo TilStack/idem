@@ -7,42 +7,43 @@ export interface DevelopmentConfigsModel {
   frontendStack: string;
   databaseStack: string;
   additionalStacks: string[];
-  
+
   // Project constraints
   constraints: string[];
-  
+
   // Detailed frontend configuration
   frontend: {
-    framework: string;       // 'react', 'angular', 'vue', 'nextjs', 'astro', 'html'
-    version?: string;       // Framework version
-    styling: string;        // 'tailwind', 'scss', 'css', 'styled-components', etc.
-    stateManagement?: string; // 'redux', 'context', 'signals', 'pinia', etc.
-    features: string[];     // Selected frontend features
+    framework: string;
+    version?: string;
+    styling: string;
+    stateManagement?: string;
+    features: string[];
   };
-  
+
   // Detailed backend configuration
   backend: {
-    framework: string;      // 'express', 'nestjs', 'django', 'spring', etc.
-    version?: string;       // Framework version
-    apiType: string;        // 'rest', 'graphql', 'grpc', etc.
-    features: string[];     // Selected backend features
+    framework: string;
+    version?: string;
+    apiType: string;
+    orm?: string;
+    ormVersion?: string;
+    features: string[];
   };
-  
+
   // Database configuration
   database: {
-    type: string;           // 'sql', 'nosql'
-    provider: string;       // 'postgresql', 'mongodb', 'mysql', etc.
-    orm?: string;           // 'prisma', 'sequelize', 'mongoose', etc.
-    features: string[];     // Selected database features
+    type: string;
+    provider: string;
+    features: string[];
   };
-  
+
   // Deployment preferences
   deployment: {
-    provider: string;       // 'aws', 'gcp', 'azure', 'vercel', 'netlify', etc.
-    containerized: boolean; // Whether to use Docker
-    cicd?: string;         // CI/CD pipeline preference
+    provider: string;
+    containerized: boolean;
+    cicd?: string;
   };
-  
+
   // Project configuration options
   projectConfig: {
     seoEnabled: boolean;

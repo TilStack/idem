@@ -55,19 +55,22 @@ export class ShowDevelopmentComponent implements OnInit {
     'deployment',
   ] as const;
 
-  // Injectable services
+  // Injectable services - suivant le style guide Angular
   protected readonly auth = inject(AuthService);
   protected readonly user$ = this.auth.user$;
   protected readonly projectService = inject(ProjectService);
   protected readonly cookieService = inject(CookieService);
   protected readonly fb = inject(FormBuilder);
 
-  // State signals
+  // State signals - groupés par fonctionnalité
+  // - Project state
   protected readonly isLoaded = signal(true);
   protected readonly projectId = signal('');
   protected readonly project = signal<ProjectModel>(
     initEmptyObject<ProjectModel>()
   );
+
+  // - UI state
   protected readonly selectedTab = signal<
     'frontend' | 'backend' | 'database' | 'deployment'
   >('frontend');
@@ -76,6 +79,7 @@ export class ShowDevelopmentComponent implements OnInit {
 
   /**
    * Select a tab in the form
+   * @param tab The tab to select
    */
   protected selectTab(
     tab: 'frontend' | 'backend' | 'database' | 'deployment'
@@ -103,6 +107,7 @@ export class ShowDevelopmentComponent implements OnInit {
 
   /**
    * Redirects to the web generator application with the project ID
+   * @param projectId The ID of the project to generate
    */
   protected redirectToWebGenerator(projectId: string): void {
     const generatorUrl = `${this.webgenUrl}/generate/${projectId}`;
@@ -124,11 +129,16 @@ export class ShowDevelopmentComponent implements OnInit {
       }),
     });
 
+    // Backend form with language first, then framework
     this.backendForm = this.fb.group({
-      framework: ['nodejs', Validators.required],
+      language: ['python', Validators.required],
+      languageVersion: ['latest', Validators.required],
+      framework: ['flask', Validators.required],
       frameworkVersion: ['latest', Validators.required],
       apiType: ['rest', Validators.required],
       apiVersion: ['latest', Validators.required],
+      orm: ['sqlalchemy'],
+      ormVersion: ['latest'],
       features: this.fb.group({
         authentication: [true],
         authorization: [true],
@@ -195,60 +205,6 @@ export class ShowDevelopmentComponent implements OnInit {
     });
   }
 
-  /**
-   * Available frontend frameworks
-   */
-  protected readonly frontendFrameworks = [
-    {
-      id: 'react',
-      name: 'React',
-      icon: '⚛️',
-      color: '#61DAFB',
-      description: 'Modern React with hooks and context API',
-      badges: ['JSX', 'Virtual DOM', 'Component-Based'],
-    },
-    {
-      id: 'nextjs',
-      name: 'Next.js',
-      icon: '▲',
-      color: '#000000',
-      description: 'Full-stack React framework with SSR/SSG',
-      badges: ['App Router', 'API Routes', 'ISR'],
-    },
-    {
-      id: 'angular',
-      name: 'Angular',
-      icon: '🅰️',
-      color: '#DD0031',
-      description: 'Powerful framework with reactive programming',
-      badges: ['TypeScript', 'RxJS', 'Standalone Components'],
-    },
-    {
-      id: 'vue',
-      name: 'Vue.js',
-      icon: '🟢',
-      color: '#42b883',
-      description: 'Progressive framework with intuitive API',
-      badges: ['Composition API', 'SFCs', 'Pinia'],
-    },
-    {
-      id: 'svelte',
-      name: 'Svelte',
-      icon: '🔥',
-      color: '#FF3E00',
-      description: 'Compiled framework with minimal runtime',
-      badges: ['No Virtual DOM', 'Reactive', 'SvelteKit'],
-    },
-    {
-      id: 'astro',
-      name: 'Astro',
-      icon: '🚀',
-      color: '#FF5D01',
-      description: 'Content-focused static site generator',
-      badges: ['Island Architecture', 'MPA', 'Zero JS by default'],
-    },
-  ];
-
   selectedStackId: string | null = null;
 
   /**
@@ -294,68 +250,6 @@ export class ShowDevelopmentComponent implements OnInit {
   }
 
   /**
-   * Project configuration options
-   */
-  protected readonly configOptions = [
-    {
-      id: 'seoEnabled',
-      name: 'SEO Optimization',
-      icon: '🔍',
-      description: 'Pre-configured meta tags and sitemap',
-      features: ['Meta Tags', 'JSON-LD', 'Sitemap'],
-    },
-    {
-      id: 'contactFormEnabled',
-      name: 'Contact Form',
-      icon: '✉️',
-      description: 'Embedded form with submission handling',
-      features: ['Form Validation', 'reCAPTCHA', 'Email Notifications'],
-    },
-    {
-      id: 'analyticsEnabled',
-      name: 'Analytics',
-      icon: '📊',
-      description: 'Integrated tracking and metrics',
-      features: ['Google Analytics', 'Event Tracking', 'User Insights'],
-    },
-    {
-      id: 'i18nEnabled',
-      name: 'Multilingual',
-      icon: '🌐',
-      description: 'Multi-language support',
-      features: ['i18n', 'Language Switcher', 'RTL Support'],
-    },
-    {
-      id: 'performanceOptimized',
-      name: 'Performance',
-      icon: '⚡',
-      description: 'Optimized loading strategy',
-      features: ['Lazy Loading', 'Image Optimization', 'Critical CSS'],
-    },
-    {
-      id: 'authentication',
-      name: 'Authentication',
-      icon: '🔒',
-      description: 'User authentication system',
-      features: ['JWT', 'OAuth', 'Social Login'],
-    },
-    {
-      id: 'authorization',
-      name: 'Authorization',
-      icon: '🛡️',
-      description: 'Role-based access control',
-      features: ['User Roles', 'Permissions', 'Guards'],
-    },
-    {
-      id: 'paymentIntegration',
-      name: 'Payment Integration',
-      icon: '💳',
-      description: 'E-commerce capabilities',
-      features: ['Stripe', 'PayPal', 'Subscription Billing'],
-    },
-  ];
-
-  /**
    * Toggle a configuration option in the form
    */
   protected toggleOption(id: string): void {
@@ -379,13 +273,13 @@ export class ShowDevelopmentComponent implements OnInit {
     this.formSubmitted.set(true);
     this.errorMessages.set([]);
 
-    if (this.developmentForm.invalid) {
-      this.formHasErrors.set(true);
-      this.errorMessages.set([
-        'Please complete all required fields in the form',
-      ]);
-      return;
-    }
+    // if (this.developmentForm.invalid) {
+    //   this.formHasErrors.set(true);
+    //   this.errorMessages.set([
+    //     'Please complete all required fields in the form',
+    //   ]);
+    //   return;
+    // }
 
     this.isLoaded.set(true);
     const projectId = this.projectId();
@@ -415,19 +309,19 @@ export class ShowDevelopmentComponent implements OnInit {
 
       console.log('Saving development configuration:', developmentConfig);
 
-      // Update the project in the backend
-      await this.projectService
-        .updateProject(projectId, currentProject)
-        .toPromise();
+      // // Update the project in the backend
+      // await this.projectService
+      //   .updateProject(projectId, currentProject)
+      //   .toPromise();
 
-      // Update local state
-      this.project.set(currentProject);
+      // // Update local state
+      // this.project.set(currentProject);
 
-      // Show success feedback
-      console.log('Development configuration saved successfully');
+      // // Show success feedback
+      // console.log('Development configuration saved successfully');
 
-      // Redirect to web generator
-      this.redirectToWebGenerator(projectId);
+      // // Redirect to web generator
+      // this.redirectToWebGenerator(projectId);
     } catch (error) {
       console.error('Error saving development configuration:', error);
       this.errorMessages.set(['Failed to save development configuration']);

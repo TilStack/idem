@@ -1,16 +1,51 @@
-<section class="container p-6 mb-8 backdrop-blur-sm">
+<section
+  class="container p-6 mb-8 backdrop-blur-sm"
+  aria-labelledby="backend-config-title"
+>
   <h2
+    id="backend-config-title"
     class="text-2xl font-semibold text-white mb-6 border-b border-gray-700/50 pb-3"
   >
-    Backend Framework
+    Backend Configuration
   </h2>
 
   <form [formGroup]="backendForm()" class="space-y-8">
+    <!-- Programming Language Selection -->
+    <div aria-labelledby="language-section">
+      <h3 id="language-section" class="text-xl font-medium text-white mb-4">
+        Choose Programming Language
+      </h3>
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        role="group"
+        aria-label="Programming language options"
+      >
+        @for (language of programmingLanguages; track language.id) {
+        <app-tech-card
+          [tech]="language"
+          [selected]="backendForm().get('language')?.value === language.id"
+          [selectedVersion]="backendForm().get('languageVersion')?.value"
+          [showAdvancedOptions]="true"
+          (techSelect)="backendForm().get('language')?.setValue($event)"
+          (versionSelect)="backendForm().get('languageVersion')?.setValue($event)"
+        ></app-tech-card>
+        }
+      </div>
+    </div>
+
     <!-- Framework Selection -->
-    <div>
-      <h3 class="text-xl font-medium text-white mb-4">Choose Framework</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (framework of backendFrameworks; track framework.id) {
+    @if (backendForm().get('language')?.value) {
+    <div class="mt-8" aria-labelledby="framework-section">
+      <h3 id="framework-section" class="text-xl font-medium text-white mb-4">
+        Choose Framework
+      </h3>
+      @if (availableFrameworks().length > 0) {
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        role="group"
+        aria-label="Framework options"
+      >
+        @for (framework of availableFrameworks(); track framework.id) {
         <app-tech-card
           [tech]="framework"
           [selected]="backendForm().get('framework')?.value === framework.id"
@@ -21,13 +56,29 @@
         ></app-tech-card>
         }
       </div>
+      } @else {
+      <div class="text-center py-8">
+        <div class="text-gray-400 text-lg" role="alert">
+          No frameworks available for the selected language
+        </div>
+      </div>
+      }
     </div>
+    }
 
     <!-- API Type Selection -->
-    <div class="mt-8">
-      <h3 class="text-xl font-medium text-white mb-4">API Type</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (apiType of apiTypes; track apiType.id) {
+    @if (backendForm().get('framework')?.value) {
+    <div class="mt-8" aria-labelledby="api-type-section">
+      <h3 id="api-type-section" class="text-xl font-medium text-white mb-4">
+        API Type
+      </h3>
+      @if (availableApiTypes.length > 0) {
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        role="group"
+        aria-label="API type options"
+      >
+        @for (apiType of availableApiTypes(); track apiType.id) {
         <app-tech-card
           [tech]="apiType"
           [selected]="backendForm().get('apiType')?.value === apiType.id"
@@ -38,13 +89,29 @@
         ></app-tech-card>
         }
       </div>
+      } @else {
+      <div class="text-center py-8">
+        <div class="text-gray-400 text-lg" role="alert">
+          No API types available for the selected framework
+        </div>
+      </div>
+      }
     </div>
+    }
 
     <!-- ORM Selection -->
-    <div class="mt-8">
-      <h3 class="text-xl font-medium text-white mb-4">ORM/ODM Selection</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (orm of ormOptions; track orm.id) {
+    @if (backendForm().get('framework')?.value) {
+    <div class="mt-8" aria-labelledby="orm-section">
+      <h3 id="orm-section" class="text-xl font-medium text-white mb-4">
+        ORM/ODM Selection
+      </h3>
+      @if (availableOrms.length > 0) {
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        role="group"
+        aria-label="ORM options"
+      >
+        @for (orm of availableOrms(); track orm.id) {
         <app-tech-card
           [tech]="orm"
           [selected]="backendForm().get('orm')?.value === orm.id"
@@ -55,11 +122,25 @@
         ></app-tech-card>
         }
       </div>
+      } @else {
+      <div class="text-center py-8">
+        <div class="text-gray-400 text-lg" role="alert">
+          No ORMs available for the selected framework
+        </div>
+      </div>
+      }
     </div>
+    }
 
     <!-- Backend Features -->
-    <div formGroupName="features" class="mt-8">
-      <h3 class="text-xl font-medium text-white mb-4">Backend Features</h3>
+    <div
+      formGroupName="features"
+      class="mt-8"
+      aria-labelledby="features-section"
+    >
+      <h3 id="features-section" class="text-xl font-medium text-white mb-4">
+        Backend Features
+      </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Authentication -->
         <div
@@ -67,22 +148,31 @@
           [class.border-primary]="backendForm().get('features.authentication')?.value"
           [class.shadow-glow]="backendForm().get('features.authentication')?.value"
           (click)="backendForm().get('features.authentication')?.setValue(!backendForm().get('features.authentication')?.value)"
+          role="switch"
+          [attr.aria-checked]="backendForm().get('features.authentication')?.value"
+          aria-labelledby="auth-title auth-desc"
         >
           <div class="flex items-center">
             <div
               class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+              aria-hidden="true"
             >
               <span class="pi pi-user"></span>
             </div>
             <div>
-              <div class="text-white font-medium">Authentication</div>
-              <p class="text-gray-400 text-sm">User login/registration</p>
+              <div id="auth-title" class="text-white font-medium">
+                Authentication
+              </div>
+              <p id="auth-desc" class="text-gray-400 text-sm">
+                User login/registration
+              </p>
             </div>
           </div>
           <div
             class="relative w-10 h-5 rounded-full p-1"
             [class.bg-primary]="backendForm().get('features.authentication')?.value"
             [class.bg-gray-700]="!backendForm().get('features.authentication')?.value"
+            aria-hidden="true"
           >
             <div
               class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
@@ -98,22 +188,31 @@
           [class.border-primary]="backendForm().get('features.authorization')?.value"
           [class.shadow-glow]="backendForm().get('features.authorization')?.value"
           (click)="backendForm().get('features.authorization')?.setValue(!backendForm().get('features.authorization')?.value)"
+          role="switch"
+          [attr.aria-checked]="backendForm().get('features.authorization')?.value"
+          aria-labelledby="authz-title authz-desc"
         >
           <div class="flex items-center">
             <div
               class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+              aria-hidden="true"
             >
               <span class="pi pi-lock"></span>
             </div>
             <div>
-              <div class="text-white font-medium">Authorization</div>
-              <p class="text-gray-400 text-sm">Role-based permissions</p>
+              <div id="authz-title" class="text-white font-medium">
+                Authorization
+              </div>
+              <p id="authz-desc" class="text-gray-400 text-sm">
+                Role-based permissions
+              </p>
             </div>
           </div>
           <div
             class="relative w-10 h-5 rounded-full p-1"
             [class.bg-primary]="backendForm().get('features.authorization')?.value"
             [class.bg-gray-700]="!backendForm().get('features.authorization')?.value"
+            aria-hidden="true"
           >
             <div
               class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
@@ -129,22 +228,31 @@
           [class.border-primary]="backendForm().get('features.logging')?.value"
           [class.shadow-glow]="backendForm().get('features.logging')?.value"
           (click)="backendForm().get('features.logging')?.setValue(!backendForm().get('features.logging')?.value)"
+          role="switch"
+          [attr.aria-checked]="backendForm().get('features.logging')?.value"
+          aria-labelledby="logging-title logging-desc"
         >
           <div class="flex items-center">
             <div
               class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+              aria-hidden="true"
             >
               <span class="pi pi-list"></span>
             </div>
             <div>
-              <div class="text-white font-medium">Logging</div>
-              <p class="text-gray-400 text-sm">Comprehensive system logs</p>
+              <div id="logging-title" class="text-white font-medium">
+                Logging
+              </div>
+              <p id="logging-desc" class="text-gray-400 text-sm">
+                Comprehensive system logs
+              </p>
             </div>
           </div>
           <div
             class="relative w-10 h-5 rounded-full p-1"
             [class.bg-primary]="backendForm().get('features.logging')?.value"
             [class.bg-gray-700]="!backendForm().get('features.logging')?.value"
+            aria-hidden="true"
           >
             <div
               class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
@@ -160,22 +268,31 @@
           [class.border-primary]="backendForm().get('features.testing')?.value"
           [class.shadow-glow]="backendForm().get('features.testing')?.value"
           (click)="backendForm().get('features.testing')?.setValue(!backendForm().get('features.testing')?.value)"
+          role="switch"
+          [attr.aria-checked]="backendForm().get('features.testing')?.value"
+          aria-labelledby="testing-title testing-desc"
         >
           <div class="flex items-center">
             <div
               class="w-10 h-10 rounded-lg flex items-center justify-center text-lg mr-3 bg-gradient-to-br from-teal-400/20 to-teal-600/20"
+              aria-hidden="true"
             >
               <span class="pi pi-check-square"></span>
             </div>
             <div>
-              <div class="text-white font-medium">Testing</div>
-              <p class="text-gray-400 text-sm">Unit & integration tests</p>
+              <div id="testing-title" class="text-white font-medium">
+                Testing
+              </div>
+              <p id="testing-desc" class="text-gray-400 text-sm">
+                Unit and integration tests
+              </p>
             </div>
           </div>
           <div
             class="relative w-10 h-5 rounded-full p-1"
             [class.bg-primary]="backendForm().get('features.testing')?.value"
             [class.bg-gray-700]="!backendForm().get('features.testing')?.value"
+            aria-hidden="true"
           >
             <div
               class="absolute top-1 w-3 h-3 rounded-full bg-white transition-transform duration-300"
