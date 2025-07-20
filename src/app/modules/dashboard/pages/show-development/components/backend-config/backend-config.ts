@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TechCardComponent } from '../shared/tech-card';
+import { TechCardComponent, TechCardModel } from '../shared/tech-card';
 
 @Component({
   selector: 'app-backend-config',
@@ -93,6 +93,185 @@ export class BackendConfigComponent {
   ];
 
   /**
+   * Framework-specific ORM options
+   */
+  protected readonly frameworkSpecificOrms: { [key: string]: TechCardModel[] } = {
+    // Node.js specific ORMs
+    nodejs: [
+      {
+        id: 'typeorm',
+        name: 'TypeORM',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/TypeORM.png',
+        description: 'TypeScript ORM for any database',
+        color: '#FE0A5A',
+        badges: ['TypeScript', 'Multi-database', 'Decorators'],
+        versions: ['0.3.x', '0.2.x', '0.1.x'],
+      },
+      {
+        id: 'sequelize',
+        name: 'Sequelize',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Sequelize.png',
+        description: 'ORM for SQL databases',
+        color: '#3A98CB',
+        badges: ['SQL', 'Node.js', 'Promise-based'],
+        versions: ['6.x', '5.x', '4.x'],
+      },
+      {
+        id: 'prisma',
+        name: 'Prisma',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Prisma.png',
+        description: 'Next-generation ORM',
+        color: '#5A67D8',
+        badges: ['Type-safe', 'Auto-migration', 'Multi-database'],
+        versions: ['5.x', '4.x', '3.x'],
+      },
+      {
+        id: 'mongoose',
+        name: 'Mongoose',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Mongoose-ODM.png',
+        description: 'MongoDB object modeling',
+        color: '#800',
+        badges: ['MongoDB', 'Schema-based', 'Validation'],
+        versions: ['7.x', '6.x', '5.x'],
+      },
+    ],
+    
+    // Python specific ORMs
+    python: [
+      {
+        id: 'sqlalchemy',
+        name: 'SQLAlchemy',
+        icon: 'https://icon.icepanel.io/Technology/svg/SQLAlchemy.svg',
+        description: 'SQL toolkit and ORM',
+        color: '#D71F00',
+        badges: ['Pythonic', 'Powerful', 'Flexible'],
+        versions: ['2.0', '1.4', '1.3'],
+      },
+      {
+        id: 'django-orm',
+        name: 'Django ORM',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Django.png',
+        description: 'Built-in ORM for Django',
+        color: '#092E20',
+        badges: ['Integrated', 'Model-based', 'Admin'],
+        versions: ['5.0', '4.2', '3.2'],
+      },
+      {
+        id: 'pony',
+        name: 'Pony ORM',
+        icon: 'https://ponyorm.org/images/pony_logo.svg',
+        description: 'Python ORM with query generator',
+        color: '#3772A4',
+        badges: ['Generator', 'Pythonic', 'Query Syntax'],
+        versions: ['0.7.x', '0.6.x'],
+      },
+    ],
+    
+    // Java specific ORMs
+    java: [
+      {
+        id: 'hibernate',
+        name: 'Hibernate',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Hibernate.png',
+        description: 'ORM framework for Java',
+        color: '#59666C',
+        badges: ['JPA', 'Mature', 'Enterprise'],
+        versions: ['6.x', '5.6.x', '5.5.x'],
+      },
+      {
+        id: 'spring-data',
+        name: 'Spring Data JPA',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Spring.png',
+        description: 'Repository abstraction for JPA',
+        color: '#6DB33F',
+        badges: ['Spring', 'Repository', 'JPA'],
+        versions: ['3.2', '3.1', '3.0', '2.7'],
+      },
+    ],
+    
+    // .NET specific ORMs
+    dotnet: [
+      {
+        id: 'ef-core',
+        name: 'Entity Framework Core',
+        icon: 'https://dotnet.microsoft.com/blob-assets/images/dotnet-icons/square.png',
+        description: 'Modern ORM for .NET',
+        color: '#512BD4',
+        badges: ['.NET', 'LINQ', 'Code-first'],
+        versions: ['8.0', '7.0', '6.0', '5.0'],
+      },
+      {
+        id: 'dapper',
+        name: 'Dapper',
+        icon: 'https://avatars.githubusercontent.com/u/1339709?s=200&v=4',
+        description: 'Micro ORM for .NET',
+        color: '#5C2D91',
+        badges: ['Performance', 'Lightweight', 'Simple'],
+        versions: ['2.1.x', '2.0.x', '1.60.x'],
+      },
+    ],
+    
+    // Ruby specific ORMs
+    ruby: [
+      {
+        id: 'active-record',
+        name: 'Active Record',
+        icon: 'https://icon.icepanel.io/Technology/svg/Ruby-on-Rails.svg',
+        description: 'Rails ORM framework',
+        color: '#CC0000',
+        badges: ['Rails', 'Convention', 'Migration'],
+        versions: ['7.1', '7.0', '6.1', '6.0'],
+      },
+      {
+        id: 'sequel',
+        name: 'Sequel',
+        icon: 'https://avatars.githubusercontent.com/u/1275254?s=200&v=4',
+        description: 'Database toolkit for Ruby',
+        color: '#8B1E1E',
+        badges: ['Lightweight', 'Flexible', 'Migrations'],
+        versions: ['5.x', '4.x'],
+      },
+    ],
+    
+    // PHP specific ORMs
+    php: [
+      {
+        id: 'doctrine',
+        name: 'Doctrine',
+        icon: 'https://icon.icepanel.io/Technology/svg/Doctrine-ORM.svg',
+        description: 'ORM for PHP with data mapping',
+        color: '#F56A6A',
+        badges: ['Data Mapper', 'Symfony', 'Enterprise'],
+        versions: ['3.x', '2.x'],
+      },
+      {
+        id: 'eloquent',
+        name: 'Eloquent ORM',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Laravel.png',
+        description: 'Laravel ORM',
+        color: '#FF2D20',
+        badges: ['Laravel', 'Active Record', 'Elegant'],
+        versions: ['11.x', '10.x', '9.x', '8.x'],
+      },
+    ],
+  };
+
+  /**
+   * Common ORM options available for multiple frameworks
+   */
+  protected readonly commonOrmOptions: TechCardModel[] = [
+    {
+      id: 'prisma',
+      name: 'Prisma',
+      icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Prisma.png',
+      description: 'Next-generation ORM',
+      color: '#5A67D8',
+      badges: ['Type-safe', 'Auto-migration', 'Multi-database'],
+      versions: ['5.x', '4.x', '3.x'],
+    },
+  ];
+
+  /**
    * Framework-specific API types and frameworks
    */
   protected readonly frameworkSpecificApis: { [key: string]: any[] } = {
@@ -101,7 +280,7 @@ export class BackendConfigComponent {
       {
         id: 'express',
         name: 'Express.js',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/ExpressJS.png',
+        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Express.png',
         description: 'Fast, unopinionated web framework',
         badges: ['Middleware', 'Routing', 'Minimal'],
         versions: ['4.18.x', '4.17.x', '4.16.x'],
@@ -109,7 +288,7 @@ export class BackendConfigComponent {
       {
         id: 'nestjs',
         name: 'NestJS',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/NestJS.png',
+        icon: 'https://icon.icepanel.io/Technology/svg/Nest.js.svg',
         description: 'Progressive Node.js framework',
         badges: ['TypeScript', 'Angular-like', 'Enterprise'],
         versions: ['10.x', '9.x', '8.x', '7.x'],
@@ -121,14 +300,6 @@ export class BackendConfigComponent {
         description: 'Quick and low overhead web framework',
         badges: ['Performance', 'Schema-based', 'Plugins'],
         versions: ['4.x', '3.x', '2.x'],
-      },
-      {
-        id: 'koa',
-        name: 'Koa',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/KoaJS.png',
-        description: 'Next generation Node.js framework',
-        badges: ['Async/Await', 'Middleware', 'Express successor'],
-        versions: ['2.14.x', '2.13.x', '2.12.x'],
       },
     ],
 
@@ -178,14 +349,6 @@ export class BackendConfigComponent {
         badges: ['Fast Startup', 'Low Memory', 'Container-First'],
         versions: ['3.2', '3.1', '3.0', '2.16'],
       },
-      {
-        id: 'micronaut',
-        name: 'Micronaut',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Micronaut.png',
-        description: 'Modern JVM-based framework',
-        badges: ['Fast Startup', 'Low Memory', 'Microservices'],
-        versions: ['4.1', '4.0', '3.10', '3.9'],
-      },
     ],
 
     // .NET specific API frameworks
@@ -193,18 +356,10 @@ export class BackendConfigComponent {
       {
         id: 'aspnet',
         name: 'ASP.NET Core',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/ASPNETCore.png',
+        icon: 'https://icon.icepanel.io/Technology/svg/.NET-core.svg',
         description: 'Cross-platform .NET framework',
         badges: ['MVC', 'Razor Pages', 'Blazor'],
         versions: ['8.0', '7.0', '6.0 (LTS)', '5.0'],
-      },
-      {
-        id: 'minimal-api',
-        name: 'Minimal APIs',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/ASPNET.png',
-        description: 'Lightweight HTTP APIs in .NET',
-        badges: ['Minimal', 'Fast', 'Low Ceremony'],
-        versions: ['8.0', '7.0', '6.0'],
       },
     ],
 
@@ -213,7 +368,7 @@ export class BackendConfigComponent {
       {
         id: 'rails',
         name: 'Ruby on Rails',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/RubyOnRails.png',
+        icon: 'https://icon.icepanel.io/Technology/svg/Ruby-on-Rails.svg',
         description: 'Convention over configuration framework',
         badges: ['Convention', 'Full-stack', 'Rapid Development'],
         versions: ['7.1', '7.0', '6.1', '6.0'],
@@ -221,7 +376,7 @@ export class BackendConfigComponent {
       {
         id: 'sinatra',
         name: 'Sinatra',
-        icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Sinatra.png',
+        icon: 'https://www.kindpng.com/picc/m/484-4848248_sinatra-ruby-logo-svg-hd-png-download.png',
         description: 'DSL for quick web applications',
         badges: ['Lightweight', 'Simple', 'Flexible'],
         versions: ['3.1', '3.0', '2.1', '2.0'],
@@ -359,6 +514,54 @@ export class BackendConfigComponent {
         return api.versions;
       }
     }
+    return ['latest'];
+  }
+  
+  /**
+   * Get available ORM options based on selected backend framework
+   */
+  protected get ormOptions(): TechCardModel[] {
+    const selectedFramework = this.backendForm()?.get('framework')?.value;
+    const frameworkSpecificOrms = selectedFramework
+      ? this.frameworkSpecificOrms[selectedFramework] || []
+      : [];
+
+    // Only include common ORMs that make sense for the selected framework
+    // For example, Prisma only makes sense for Node.js
+    let filteredCommonOrms: TechCardModel[] = [];
+    
+    if (selectedFramework === 'nodejs') {
+      filteredCommonOrms = this.commonOrmOptions;
+    }
+    
+    return [...frameworkSpecificOrms, ...filteredCommonOrms];
+  }
+  
+  /**
+   * Get versions for the selected ORM
+   */
+  protected getOrmVersions(): string[] {
+    const selectedOrm = this.backendForm()?.get('orm')?.value;
+    const selectedFramework = this.backendForm()?.get('framework')?.value;
+
+    if (selectedOrm) {
+      // First check if it's in the framework-specific ORMs
+      if (selectedFramework && this.frameworkSpecificOrms[selectedFramework]) {
+        const orm = this.frameworkSpecificOrms[selectedFramework].find(
+          (o) => o.id === selectedOrm
+        );
+        if (orm?.versions && orm.versions.length > 0) {
+          return orm.versions;
+        }
+      }
+
+      // Then check common ORM options
+      const commonOrm = this.commonOrmOptions.find((o) => o.id === selectedOrm);
+      if (commonOrm?.versions && commonOrm.versions.length > 0) {
+        return commonOrm.versions;
+      }
+    }
+
     return ['latest'];
   }
 }

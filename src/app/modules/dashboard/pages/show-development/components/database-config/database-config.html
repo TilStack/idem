@@ -13,11 +13,11 @@
         @for (db of databases; track db.id) {
         <app-tech-card
           [tech]="db"
-          [selected]="databaseForm()!.get('database')?.value === db.id"
-          [selectedVersion]="databaseForm()!.get('databaseVersion')?.value"
-          [showAdvancedOptions]="showAdvancedOptions() && databaseForm()!.get('database')?.value === db.id"
-          (techSelect)="databaseForm()!.get('database')?.setValue(db.id)"
-          (versionSelect)="databaseForm()!.get('databaseVersion')?.setValue($event)"
+          [selected]="databaseForm()!.get('provider')?.value === db.id"
+          [selectedVersion]="databaseForm()!.get('version')?.value"
+          [showAdvancedOptions]="showAdvancedOptions() && databaseForm()!.get('provider')?.value === db.id"
+          (techSelect)="databaseForm()!.get('provider')?.setValue(db.id)"
+          (versionSelect)="databaseForm()!.get('version')?.setValue($event)"
           class="h-full"
         >
           <!-- Custom badge content -->
@@ -38,25 +38,7 @@
 
     <!-- Database version selection is now handled inside each tech card's advanced options -->
 
-    <!-- ORM Selection -->
-    <div class="mt-8">
-      <h3 class="text-xl font-medium text-white mb-4">ORM/ODM Selection</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (orm of ormOptions; track orm.id) {
-        <app-tech-card
-          [tech]="orm"
-          [selected]="databaseForm()!.get('orm')?.value === orm.id"
-          [selectedVersion]="databaseForm()!.get('ormVersion')?.value"
-          [showAdvancedOptions]="showAdvancedOptions() && databaseForm()!.get('orm')?.value === orm.id"
-          (techSelect)="databaseForm()!.get('orm')?.setValue(orm.id)"
-          (versionSelect)="databaseForm()!.get('ormVersion')?.setValue($event)"
-          class="h-full"
-        >
-          <!-- No custom content needed -->
-        </app-tech-card>
-        }
-      </div>
-    </div>
+    <!-- La section ORM a été déplacée vers backend-config -->
 
     <!-- Database Features -->
     <div formGroupName="features" class="mt-8">

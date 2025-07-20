@@ -40,6 +40,23 @@
       </div>
     </div>
 
+    <!-- ORM Selection -->
+    <div class="mt-8">
+      <h3 class="text-xl font-medium text-white mb-4">ORM/ODM Selection</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (orm of ormOptions; track orm.id) {
+        <app-tech-card
+          [tech]="orm"
+          [selected]="backendForm().get('orm')?.value === orm.id"
+          [selectedVersion]="backendForm().get('ormVersion')?.value"
+          [showAdvancedOptions]="true"
+          (techSelect)="backendForm().get('orm')?.setValue($event)"
+          (versionSelect)="backendForm().get('ormVersion')?.setValue($event)"
+        ></app-tech-card>
+        }
+      </div>
+    </div>
+
     <!-- Backend Features -->
     <div formGroupName="features" class="mt-8">
       <h3 class="text-xl font-medium text-white mb-4">Backend Features</h3>

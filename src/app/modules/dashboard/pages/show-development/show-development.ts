@@ -5,10 +5,15 @@ import {
   signal,
   computed,
   OnInit,
-  WritableSignal
+  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { FrontendConfigComponent } from './components/frontend-config/frontend-config';
 import { BackendConfigComponent } from './components/backend-config/backend-config';
 import { DatabaseConfigComponent } from './components/database-config/database-config';
@@ -30,21 +35,26 @@ import { first } from 'rxjs/operators';
   selector: 'app-show-development',
   standalone: true,
   imports: [
-    Loader, 
-    CommonModule, 
+    Loader,
+    CommonModule,
     ReactiveFormsModule,
     FrontendConfigComponent,
     BackendConfigComponent,
     DatabaseConfigComponent,
-    DeploymentConfigComponent
+    DeploymentConfigComponent,
   ],
   templateUrl: './show-development.html',
   styleUrl: './show-development.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShowDevelopmentComponent implements OnInit {
-  protected readonly tabs = ['frontend', 'backend', 'database', 'deployment'] as const;
-  
+  protected readonly tabs = [
+    'frontend',
+    'backend',
+    'database',
+    'deployment',
+  ] as const;
+
   // Injectable services
   protected readonly auth = inject(AuthService);
   protected readonly user$ = this.auth.user$;
@@ -63,12 +73,13 @@ export class ShowDevelopmentComponent implements OnInit {
   >('frontend');
   protected readonly showAdvancedOptions = signal<boolean>(false);
   protected readonly selectedStylingPreferences = signal<string[]>([]);
-  
 
   /**
    * Select a tab in the form
    */
-  protected selectTab(tab: 'frontend' | 'backend' | 'database' | 'deployment'): void {
+  protected selectTab(
+    tab: 'frontend' | 'backend' | 'database' | 'deployment'
+  ): void {
     this.selectedTab.set(tab);
   }
   protected readonly formSubmitted = signal(false);
@@ -86,7 +97,9 @@ export class ShowDevelopmentComponent implements OnInit {
   protected readonly databaseForm: FormGroup;
   protected readonly deploymentForm: FormGroup;
   protected readonly projectConfigForm: FormGroup;
-  protected readonly versionOptions = signal<{[key: string]: {[key: string]: string[]}}>({}); 
+  protected readonly versionOptions = signal<{
+    [key: string]: { [key: string]: string[] };
+  }>({});
 
   /**
    * Redirects to the web generator application with the project ID
@@ -99,7 +112,7 @@ export class ShowDevelopmentComponent implements OnInit {
   constructor() {
     // Initialize all form groups
     this.frontendForm = this.fb.group({
-      framework: ['react', Validators.required],
+      framework: ['angular', Validators.required],
       frameworkVersion: ['latest', Validators.required],
       styling: [['tailwind'], Validators.required],
       features: this.fb.group({
@@ -112,7 +125,7 @@ export class ShowDevelopmentComponent implements OnInit {
     });
 
     this.backendForm = this.fb.group({
-      framework: ['node', Validators.required],
+      framework: ['nodejs', Validators.required],
       frameworkVersion: ['latest', Validators.required],
       apiType: ['rest', Validators.required],
       apiVersion: ['latest', Validators.required],
@@ -124,10 +137,9 @@ export class ShowDevelopmentComponent implements OnInit {
         logging: [true],
       }),
     });
-    
+
     this.databaseForm = this.fb.group({
-      type: ['sql', Validators.required],
-      provider: ['postgresql', Validators.required],
+      provider: ['firebase', Validators.required],
       version: ['latest', Validators.required],
       orm: ['prisma', Validators.required],
       ormVersion: ['latest', Validators.required],
@@ -243,7 +255,7 @@ export class ShowDevelopmentComponent implements OnInit {
    * Toggle advanced options visibility
    */
   protected toggleAdvancedOptions(): void {
-    this.showAdvancedOptions.update(value => !value);
+    this.showAdvancedOptions.update((value) => !value);
   }
 
   /**
@@ -252,24 +264,24 @@ export class ShowDevelopmentComponent implements OnInit {
   protected toggleStylingPreference(style: string): void {
     const currentStyles = [...this.selectedStylingPreferences()];
     const index = currentStyles.indexOf(style);
-    
+
     if (index === -1) {
       currentStyles.push(style);
     } else {
       currentStyles.splice(index, 1);
     }
-    
+
     this.selectedStylingPreferences.set(currentStyles);
     this.frontendForm.get('styling')?.setValue(currentStyles);
   }
-  
+
   /**
    * Update styling preferences from child component
    */
   protected updateStylingPreferences(styles: string[]): void {
     this.selectedStylingPreferences.set(styles);
   }
-  
+
   /**
    * Check if a styling preference is selected
    */
@@ -439,7 +451,7 @@ export class ShowDevelopmentComponent implements OnInit {
         angular: ['17.0.0', '16.2.0', '16.0.0', '15.2.0', 'latest'],
         vue: ['3.3.4', '3.2.0', '3.0.0', '2.7.14', 'latest'],
         svelte: ['4.2.0', '4.0.0', '3.59.2', '3.0.0', 'latest'],
-        astro: ['3.5.0', '3.0.0', '2.10.0', '2.0.0', 'latest']
+        astro: ['3.5.0', '3.0.0', '2.10.0', '2.0.0', 'latest'],
       },
       backend: {
         nodejs: ['20.9.0', '18.18.2', '16.20.2', '14.21.3', 'latest'],
@@ -447,15 +459,15 @@ export class ShowDevelopmentComponent implements OnInit {
         python: ['3.12.0', '3.11.5', '3.10.13', '3.9.18', 'latest'],
         dotnet: ['8.0', '7.0', '6.0', '5.0', 'latest'],
         ruby: ['3.2.2', '3.1.4', '3.0.6', '2.7.8', 'latest'],
-        php: ['8.3', '8.2', '8.1', '8.0', 'latest']
+        php: ['8.3', '8.2', '8.1', '8.0', 'latest'],
       },
       database: {
         postgresql: ['16.0', '15.4', '14.9', '13.12', 'latest'],
         mysql: ['8.1', '8.0', '5.7', '5.6', 'latest'],
         mongodb: ['7.0', '6.0', '5.0', '4.4', 'latest'],
         redis: ['7.2', '7.0', '6.2', '6.0', 'latest'],
-        neo4j: ['5.13', '5.0', '4.4', '4.0', 'latest']
-      }
+        neo4j: ['5.13', '5.0', '4.4', '4.0', 'latest'],
+      },
     });
   }
 
