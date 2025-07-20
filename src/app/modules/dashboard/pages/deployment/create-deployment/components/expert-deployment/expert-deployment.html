@@ -275,7 +275,7 @@
         <label for="branch" class="block text-sm font-medium mb-2">
           Branch
         </label>
-        <p-dropdown
+        <p-select
           id="branch"
           formControlName="branch"
           [options]="gitBranches()"
@@ -287,7 +287,7 @@
           optionLabel=""
           optionValue=""
           appendTo="body"
-        ></p-dropdown>
+        ></p-select>
         <small *ngIf="gitBranches().length === 0 && deploymentConfigForm.get('repoUrl')?.value" class="text-gray-400">
           No branches found or repository not accessible
         </small>

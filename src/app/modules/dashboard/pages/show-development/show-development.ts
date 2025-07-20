@@ -18,7 +18,6 @@ import { FrontendConfigComponent } from './components/frontend-config/frontend-c
 import { BackendConfigComponent } from './components/backend-config/backend-config';
 import { DatabaseConfigComponent } from './components/database-config/database-config';
 import { DeploymentConfigComponent } from './components/deployment-config/deployment-config';
-import { Router } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
 import { initEmptyObject } from '../../../../utils/init-empty-object';
 import { AuthService } from '../../../auth/services/auth.service';

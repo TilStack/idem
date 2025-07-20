@@ -15,7 +15,6 @@ import {
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
 import {
   CloudComponentDetailed,
   ArchitectureComponent,
@@ -29,6 +28,7 @@ import {
 import { DeploymentService } from '../../../../../services/deployment.service';
 import { Router } from '@angular/router';
 import { CookieService } from '../../../../../../../shared/services/cookie.service';
+import { Select } from 'primeng/select';
 
 const ALL_COMPONENTS_LIST: CloudComponentDetailed[] = [
   {
@@ -152,7 +152,7 @@ const ALL_COMPONENTS_LIST: CloudComponentDetailed[] = [
 @Component({
   selector: 'app-expert-deployment',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, DialogModule, InputTextModule, ButtonModule, DropdownModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, DialogModule, InputTextModule, ButtonModule, Select],
   templateUrl: './expert-deployment.html',
   styleUrl: './expert-deployment.css',
 })
