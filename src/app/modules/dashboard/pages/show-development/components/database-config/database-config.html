@@ -15,9 +15,9 @@
           [tech]="db"
           [selected]="databaseForm()!.get('provider')?.value === db.id"
           [selectedVersion]="databaseForm()!.get('version')?.value"
-          [showAdvancedOptions]="showAdvancedOptions() && databaseForm()!.get('provider')?.value === db.id"
           (techSelect)="databaseForm()!.get('provider')?.setValue(db.id)"
           (versionSelect)="databaseForm()!.get('version')?.setValue($event)"
+          [showAdvancedOptions]="true"
           class="h-full"
         >
           <!-- Custom badge content -->
