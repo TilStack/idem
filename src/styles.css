@@ -24,6 +24,10 @@ body {
   background-color: #06080d;
 }
 
+.p-select{
+  z-index: 999;
+}
+
 /* Modern Theme Configuration */
 @theme {
   --color-primary: #1447e6;

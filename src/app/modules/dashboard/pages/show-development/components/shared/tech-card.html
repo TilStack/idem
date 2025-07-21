@@ -1,5 +1,5 @@
 <div
-  class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-6 flex flex-col hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg relative overflow-hidden"
+  class="template-card backdrop-blur-md bg-gray-900/40 rounded-xl border border-gray-800/50 p-6 flex flex-col hover:border-primary/50 hover:-translate-y-1 transition-all cursor-pointer shadow-lg relative"
 >
   <!-- Card Header -->
   <div class="flex items-start justify-between mb-4">
@@ -61,10 +61,8 @@
         [options]="tech()!.versions"
         [(ngModel)]="selectedVersion"
         (onChange)="selectVersion($event.value)"
-        styleClass="w-full bg-gray-900/80 backdrop-blur-sm text-white border-gray-700 rounded-lg z-50 absolute"
         class="w-full"
-      >
-      </p-select>
+      />
     </div>
     }
 

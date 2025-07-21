@@ -329,43 +329,8 @@ export class ShowDevelopmentComponent implements OnInit {
     }
   }
 
-  /**
-   * Initialize the component on load
-   */
-  /**
-   * Initialize framework version options
-   */
-  protected initVersionOptions(): void {
-    // This would typically come from an API, but for now we'll hardcode some common versions
-    this.versionOptions.set({
-      frontend: {
-        react: ['18.2.0', '18.0.0', '17.0.2', '16.14.0', 'latest'],
-        nextjs: ['14.0.0', '13.5.6', '13.0.0', '12.3.4', 'latest'],
-        angular: ['17.0.0', '16.2.0', '16.0.0', '15.2.0', 'latest'],
-        vue: ['3.3.4', '3.2.0', '3.0.0', '2.7.14', 'latest'],
-        svelte: ['4.2.0', '4.0.0', '3.59.2', '3.0.0', 'latest'],
-        astro: ['3.5.0', '3.0.0', '2.10.0', '2.0.0', 'latest'],
-      },
-      backend: {
-        nodejs: ['20.9.0', '18.18.2', '16.20.2', '14.21.3', 'latest'],
-        java: ['21', '17', '11', '8', 'latest'],
-        python: ['3.12.0', '3.11.5', '3.10.13', '3.9.18', 'latest'],
-        dotnet: ['8.0', '7.0', '6.0', '5.0', 'latest'],
-        ruby: ['3.2.2', '3.1.4', '3.0.6', '2.7.8', 'latest'],
-        php: ['8.3', '8.2', '8.1', '8.0', 'latest'],
-      },
-      database: {
-        postgresql: ['16.0', '15.4', '14.9', '13.12', 'latest'],
-        mysql: ['8.1', '8.0', '5.7', '5.6', 'latest'],
-        mongodb: ['7.0', '6.0', '5.0', '4.4', 'latest'],
-        redis: ['7.2', '7.0', '6.2', '6.0', 'latest'],
-        neo4j: ['5.13', '5.0', '4.4', '4.0', 'latest'],
-      },
-    });
-  }
 
   async ngOnInit(): Promise<void> {
-    this.initVersionOptions();
     try {
       this.isLoaded.set(true);
 
