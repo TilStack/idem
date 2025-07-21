@@ -25,12 +25,8 @@ import { SelectElement } from '../../datas';
 export class ProjectDetailsComponent {
   project = input<ProjectModel>();
   readonly groupedProjectTypes = input.required<SelectElement[]>();
-  readonly groupedTeamSizes = input.required<SelectElement[]>();
   readonly groupedScopes = input.required<SelectElement[]>();
-  readonly groupedBudgets = input.required<SelectElement[]>();
   readonly groupedTargets = input.required<SelectElement[]>();
-  readonly groupedConstraints = input.required<any[]>();
-  readonly selectedConstraints = input.required<SelectElement[]>();
 
   projectChange = output<ProjectModel>();
   readonly nextStep = output<void>();

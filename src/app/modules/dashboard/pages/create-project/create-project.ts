@@ -99,16 +99,12 @@ export class CreateProjectComponent implements OnInit {
   protected selectedColor = '';
   protected selectedTypography = '';
 
-  // Form options
-  protected groupedTeamSizes: SelectElement[] =
-    CreateProjectDatas.groupedTeamSizes;
+
   protected groupedProjectTypes: SelectElement[] =
     CreateProjectDatas.groupedProjectTypes;
   protected groupedTargets: SelectElement[] = CreateProjectDatas.groupedTargets;
   protected groupedScopes: SelectElement[] = CreateProjectDatas.groupedScopes;
-  protected groupedBudgets: SelectElement[] = CreateProjectDatas.groupedBudgets;
-  protected groupedConstraints = CreateProjectDatas.groupedConstraints;
-  protected phases: DevelopmentPhase[] = CreateProjectDatas.phases;
+
   protected markdown = '';
 
   constructor() {}

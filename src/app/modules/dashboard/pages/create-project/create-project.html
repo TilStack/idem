@@ -52,7 +52,7 @@
     @if (currentStepIndex() < steps.length - 1) {
     <button
       (click)="goToNextStep()"
-      class="group flex items-center inner-button cta-primary-button px-6 py-3  text-white font-semibold"
+      class="group flex items-center inner-button"
     >
       <span class="text-sm md:text-base">Next</span>
       <svg
@@ -75,7 +75,7 @@
     @if (currentStepIndex() === steps.length - 1) {
     <button
       (click)="finalizeProjectCreation()"
-      class="group flex items-center inner-button cta-primary-button px-6 py-3  text-white font-semibold"
+      class="group flex items-center inner-button cta-primary-button px-6 py-3 text-white font-semibold"
     >
       <span class="text-sm md:text-base">Finish</span>
       <svg
@@ -141,12 +141,8 @@
       [project]="project()"
       (projectChange)="project.set($event)"
       [groupedProjectTypes]="groupedProjectTypes"
-      [groupedTeamSizes]="groupedTeamSizes"
       [groupedScopes]="groupedScopes"
-      [groupedBudgets]="groupedBudgets"
       [groupedTargets]="groupedTargets"
-      [groupedConstraints]="groupedConstraints"
-      [selectedConstraints]="selectedConstraints()"
     ></app-project-details>
   </section>
   } @if (isStepActive(3)) {
