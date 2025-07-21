@@ -2,16 +2,7 @@
  * Model for development configurations that will be sent to the backend
  */
 export interface DevelopmentConfigsModel {
-  // Core stack selections
-  backendStack: string;
-  frontendStack: string;
-  databaseStack: string;
-  additionalStacks: string[];
-
-  // Project constraints
   constraints: string[];
-
-  // Detailed frontend configuration
   frontend: {
     framework: string;
     version?: string;
@@ -20,7 +11,6 @@ export interface DevelopmentConfigsModel {
     features: string[];
   };
 
-  // Detailed backend configuration
   backend: {
     framework: string;
     version?: string;
@@ -30,21 +20,12 @@ export interface DevelopmentConfigsModel {
     features: string[];
   };
 
-  // Database configuration
   database: {
     type: string;
     provider: string;
     features: string[];
   };
 
-  // Deployment preferences
-  deployment: {
-    provider: string;
-    containerized: boolean;
-    cicd?: string;
-  };
-
-  // Project configuration options
   projectConfig: {
     seoEnabled: boolean;
     contactFormEnabled: boolean;

@@ -59,6 +59,7 @@
       <p class="text-sm font-medium text-gray-300 mb-2">Select Version:</p>
       <p-select
         [options]="tech()!.versions"
+        placeholder="Select a version"
         [(ngModel)]="selectedVersion"
         (onChange)="selectVersion($event.value)"
         class="w-full"

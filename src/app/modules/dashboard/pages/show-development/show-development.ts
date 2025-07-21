@@ -3,9 +3,7 @@ import {
   Component,
   inject,
   signal,
-  computed,
   OnInit,
-  WritableSignal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -17,7 +15,6 @@ import {
 import { FrontendConfigComponent } from './components/frontend-config/frontend-config';
 import { BackendConfigComponent } from './components/backend-config/backend-config';
 import { DatabaseConfigComponent } from './components/database-config/database-config';
-import { DeploymentConfigComponent } from './components/deployment-config/deployment-config';
 import { environment } from '../../../../../environments/environment';
 import { initEmptyObject } from '../../../../utils/init-empty-object';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -29,6 +26,7 @@ import { DevelopmentConfigsModel } from '../../models/development.model';
 import { CookieService } from '../../../../shared/services/cookie.service';
 import { User } from '@angular/fire/auth';
 import { first } from 'rxjs/operators';
+import { DevelopmentService } from '../../services/ai-agents/development.service';
 
 @Component({
   selector: 'app-show-development',
@@ -40,24 +38,19 @@ import { first } from 'rxjs/operators';
     FrontendConfigComponent,
     BackendConfigComponent,
     DatabaseConfigComponent,
-    DeploymentConfigComponent,
   ],
   templateUrl: './show-development.html',
   styleUrl: './show-development.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShowDevelopmentComponent implements OnInit {
-  protected readonly tabs = [
-    'frontend',
-    'backend',
-    'database',
-    'deployment',
-  ] as const;
+  protected readonly tabs = ['frontend', 'backend', 'database'] as const;
 
   // Injectable services - suivant le style guide Angular
   protected readonly auth = inject(AuthService);
   protected readonly user$ = this.auth.user$;
   protected readonly projectService = inject(ProjectService);
+  protected readonly developmentService = inject(DevelopmentService);
   protected readonly cookieService = inject(CookieService);
   protected readonly fb = inject(FormBuilder);
 
@@ -70,9 +63,9 @@ export class ShowDevelopmentComponent implements OnInit {
   );
 
   // - UI state
-  protected readonly selectedTab = signal<
-    'frontend' | 'backend' | 'database' | 'deployment'
-  >('frontend');
+  protected readonly selectedTab = signal<'frontend' | 'backend' | 'database'>(
+    'frontend'
+  );
   protected readonly showAdvancedOptions = signal<boolean>(false);
   protected readonly selectedStylingPreferences = signal<string[]>([]);
 
@@ -80,9 +73,7 @@ export class ShowDevelopmentComponent implements OnInit {
    * Select a tab in the form
    * @param tab The tab to select
    */
-  protected selectTab(
-    tab: 'frontend' | 'backend' | 'database' | 'deployment'
-  ): void {
+  protected selectTab(tab: 'frontend' | 'backend' | 'database'): void {
     this.selectedTab.set(tab);
   }
   protected readonly formSubmitted = signal(false);
@@ -98,7 +89,6 @@ export class ShowDevelopmentComponent implements OnInit {
   protected readonly frontendForm: FormGroup;
   protected readonly backendForm: FormGroup;
   protected readonly databaseForm: FormGroup;
-  protected readonly deploymentForm: FormGroup;
   protected readonly projectConfigForm: FormGroup;
   protected readonly versionOptions = signal<{
     [key: string]: { [key: string]: string[] };
@@ -160,25 +150,6 @@ export class ShowDevelopmentComponent implements OnInit {
       }),
     });
 
-    this.deploymentForm = this.fb.group({
-      platform: ['aws', Validators.required],
-      platformVersion: ['Latest', Validators.required],
-      serviceType: ['container', Validators.required],
-      cicd: ['github', Validators.required],
-      cicdVersion: ['Latest'],
-      // Advanced deployment options
-      environment: ['development', Validators.required],
-      scaling: ['horizontal', Validators.required],
-      features: this.fb.group({
-        monitoring: [true],
-        continuousDeployment: [true],
-        ssl: [true],
-        backups: [false],
-        logging: [false],
-        scaling: [false],
-      }),
-    });
-
     this.projectConfigForm = this.fb.group({
       seoEnabled: [true],
       contactFormEnabled: [false],
@@ -199,7 +170,6 @@ export class ShowDevelopmentComponent implements OnInit {
       frontend: this.frontendForm,
       backend: this.backendForm,
       database: this.databaseForm,
-      deployment: this.deploymentForm,
       projectConfig: this.projectConfigForm,
     });
   }
@@ -272,14 +242,6 @@ export class ShowDevelopmentComponent implements OnInit {
     this.formSubmitted.set(true);
     this.errorMessages.set([]);
 
-    // if (this.developmentForm.invalid) {
-    //   this.formHasErrors.set(true);
-    //   this.errorMessages.set([
-    //     'Please complete all required fields in the form',
-    //   ]);
-    //   return;
-    // }
-
     this.isLoaded.set(true);
     const projectId = this.projectId();
 
@@ -308,27 +270,36 @@ export class ShowDevelopmentComponent implements OnInit {
 
       console.log('Saving development configuration:', developmentConfig);
 
-      // // Update the project in the backend
-      // await this.projectService
-      //   .updateProject(projectId, currentProject)
-      //   .toPromise();
-
-      // // Update local state
-      // this.project.set(currentProject);
-
-      // // Show success feedback
-      // console.log('Development configuration saved successfully');
-
-      // // Redirect to web generator
-      // this.redirectToWebGenerator(projectId);
+      // Update the project in the backend
+      this.developmentService
+        .saveDevelopmentConfigs(developmentConfig, projectId)
+        .subscribe({
+          next: (project) => {
+            console.log(
+              'Development configuration saved successfully:',
+              project
+            );
+            this.project.set(project);
+            this.isLoaded.set(false);
+            // Redirect to web generator
+            this.redirectToWebGenerator(projectId);
+          },
+          error: (error) => {
+            console.error('Error saving development configuration:', error);
+            this.errorMessages.set([
+              'Failed to save development configuration',
+            ]);
+            this.isLoaded.set(false);
+          },
+        });
     } catch (error) {
       console.error('Error saving development configuration:', error);
       this.errorMessages.set(['Failed to save development configuration']);
+      this.isLoaded.set(false);
     } finally {
       this.isLoaded.set(false);
     }
   }
-
 
   async ngOnInit(): Promise<void> {
     try {
