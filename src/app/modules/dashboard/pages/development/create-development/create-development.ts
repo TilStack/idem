@@ -27,6 +27,7 @@ import { CookieService } from '../../../../../shared/services/cookie.service';
 import { User } from '@angular/fire/auth';
 import { first } from 'rxjs/operators';
 import { DevelopmentService } from '../../../services/ai-agents/development.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-show-development',
@@ -90,6 +91,7 @@ export class CreateDevelopmentComponent implements OnInit {
   protected readonly backendForm: FormGroup;
   protected readonly databaseForm: FormGroup;
   protected readonly projectConfigForm: FormGroup;
+  protected readonly router = inject(Router);
   protected readonly versionOptions = signal<{
     [key: string]: { [key: string]: string[] };
   }>({});
@@ -98,9 +100,8 @@ export class CreateDevelopmentComponent implements OnInit {
    * Redirects to the web generator application with the project ID
    * @param projectId The ID of the project to generate
    */
-  protected redirectToWebGenerator(projectId: string): void {
-    const generatorUrl = `${this.webgenUrl}/generate/${projectId}`;
-    window.location.href = generatorUrl;
+  protected goToShowDevelopment(): void {
+    this.router.navigate(['/console/development']);
   }
 
   constructor() {
@@ -284,8 +285,7 @@ export class CreateDevelopmentComponent implements OnInit {
             );
             this.project.set(project);
             this.isLoaded.set(false);
-            // Redirect to web generator
-            this.redirectToWebGenerator(projectId);
+            this.goToShowDevelopment();
           },
           error: (error) => {
             console.error('Error saving development configuration:', error);

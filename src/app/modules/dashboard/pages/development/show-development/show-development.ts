@@ -5,7 +5,8 @@ import { DevelopmentService } from '../../../services/ai-agents/development.serv
 import { DevelopmentConfigsModel } from '../../../models/development.model';
 import { CookieService } from '../../../../../shared/services/cookie.service';
 import { catchError, finalize, of, tap } from 'rxjs';
-import { Loader } from "../../../../../components/loader/loader";
+import { Loader } from '../../../../../components/loader/loader';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-show-development',
@@ -26,6 +27,16 @@ export class ShowDevelopment implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly projectId = signal<string>('');
   protected readonly router = inject(Router);
+  protected readonly webgenUrl = environment.services.webgen.url;
+
+  /**
+   * Redirects to the web generator application with the project ID
+   * @param projectId The ID of the project to generate
+   */
+  protected redirectToWebGenerator(projectId: string): void {
+    const generatorUrl = `${this.webgenUrl}/generate/${projectId}`;
+    window.location.href = generatorUrl;
+  }
   ngOnInit(): void {
     const storedProjectId = this.cookieService.get('projectId');
     if (storedProjectId) {
@@ -72,9 +83,11 @@ export class ShowDevelopment implements OnInit {
     window.open(appUrl, '_blank');
   }
 
-  protected getFeaturesList(features: string[] | string | Record<string, boolean | undefined>): string {
+  protected getFeaturesList(
+    features: string[] | string | Record<string, boolean | undefined>
+  ): string {
     if (!features) return 'None';
-    
+
     if (typeof features === 'string') {
       return features;
     } else if (Array.isArray(features)) {
