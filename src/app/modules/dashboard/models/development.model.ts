@@ -5,25 +5,51 @@ export interface DevelopmentConfigsModel {
   constraints: string[];
   frontend: {
     framework: string;
-    version?: string;
-    styling: string;
+    frameworkVersion?: string;
+    styling: string[] | string;
     stateManagement?: string;
-    features: string[];
+    features: {
+      routing?: boolean;
+      componentLibrary?: boolean;
+      testing?: boolean;
+      pwa?: boolean;
+      seo?: boolean;
+      [key: string]: boolean | undefined;
+    } | string[];
   };
 
   backend: {
+    language?: string;
+    languageVersion?: string;
     framework: string;
-    version?: string;
+    frameworkVersion?: string;
     apiType: string;
+    apiVersion?: string;
     orm?: string;
     ormVersion?: string;
-    features: string[];
+    features: {
+      authentication?: boolean;
+      authorization?: boolean;
+      documentation?: boolean;
+      testing?: boolean;
+      logging?: boolean;
+      [key: string]: boolean | undefined;
+    } | string[];
   };
 
   database: {
-    type: string;
+    type?: string;
     provider: string;
-    features: string[];
+    version?: string;
+    orm?: string;
+    ormVersion?: string;
+    features: {
+      migrations?: boolean;
+      seeders?: boolean;
+      caching?: boolean;
+      replication?: boolean;
+      [key: string]: boolean | undefined;
+    } | string[];
   };
 
   projectConfig: {

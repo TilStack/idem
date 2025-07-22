@@ -74,6 +74,24 @@ export class DevelopmentService {
     );
   }
 
+  // Get the development configurations for a specific project
+  getDevelopmentConfigs(
+    projectId: string
+  ): Observable<DevelopmentConfigsModel> {
+    return this.getAuthHeaders().pipe(
+      switchMap((headers) => {
+        return this.http.get<DevelopmentConfigsModel>(
+          `${this.apiUrl}/configs/${projectId}`,
+          { headers }
+        );
+      }),
+      catchError((error) => {
+        console.error('Error in getDevelopmentConfigs:', error);
+        throw error;
+      })
+    );
+  }
+
   // Create a new development item
   createDevelopmentItem(item: DevelopmentItem): Observable<DevelopmentItem> {
     return this.getAuthHeaders().pipe(

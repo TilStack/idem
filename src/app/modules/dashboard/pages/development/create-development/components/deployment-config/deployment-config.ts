@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TechCardModel } from '../shared/tech-card';
 import { ButtonModule } from 'primeng/button';
-import { CreateDeployment } from '../../../deployment/create-deployment/create-deployment';
+import { CreateDeployment } from '../../../../deployment/create-deployment/create-deployment';
 
 @Component({
   selector: 'app-deployment-config',

@@ -62,11 +62,19 @@ export const routes: Routes = [
     data: { layout: 'dashboard' },
   },
   {
-    path: 'console/developement',
+    path: 'console/development/create',
     loadComponent: () =>
       import(
-        './modules/dashboard/pages/show-development/show-development'
-      ).then((m) => m.ShowDevelopmentComponent),
+        './modules/dashboard/pages/development/create-development/create-development'
+      ).then((m) => m.CreateDevelopmentComponent),
+    data: { layout: 'dashboard' },
+  },
+  {
+    path: 'console/development',
+    loadComponent: () =>
+      import(
+        './modules/dashboard/pages/development/show-development/show-development'
+      ).then((m) => m.ShowDevelopment),
     data: { layout: 'dashboard' },
   },
   {
@@ -91,7 +99,7 @@ export const routes: Routes = [
       import(
         './modules/dashboard/pages/deployment/deployment-details/deployment-details'
       ).then((m) => m.DeploymentDetails),
-      
+
     data: { layout: 'dashboard' },
   },
   {

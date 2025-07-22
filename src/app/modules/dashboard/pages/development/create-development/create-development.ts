@@ -15,18 +15,18 @@ import {
 import { FrontendConfigComponent } from './components/frontend-config/frontend-config';
 import { BackendConfigComponent } from './components/backend-config/backend-config';
 import { DatabaseConfigComponent } from './components/database-config/database-config';
-import { environment } from '../../../../../environments/environment';
-import { initEmptyObject } from '../../../../utils/init-empty-object';
-import { AuthService } from '../../../auth/services/auth.service';
-import { AnalysisResultModel } from '../../models/analysisResult.model';
-import { ProjectModel } from '../../models/project.model';
-import { ProjectService } from '../../services/project.service';
-import { Loader } from '../../../../components/loader/loader';
-import { DevelopmentConfigsModel } from '../../models/development.model';
-import { CookieService } from '../../../../shared/services/cookie.service';
+import { environment } from '../../../../../../environments/environment';
+import { initEmptyObject } from '../../../../../utils/init-empty-object';
+import { AuthService } from '../../../../auth/services/auth.service';
+import { AnalysisResultModel } from '../../../models/analysisResult.model';
+import { ProjectModel } from '../../../models/project.model';
+import { ProjectService } from '../../../services/project.service';
+import { Loader } from '../../../../../components/loader/loader';
+import { DevelopmentConfigsModel } from '../../../models/development.model';
+import { CookieService } from '../../../../../shared/services/cookie.service';
 import { User } from '@angular/fire/auth';
 import { first } from 'rxjs/operators';
-import { DevelopmentService } from '../../services/ai-agents/development.service';
+import { DevelopmentService } from '../../../services/ai-agents/development.service';
 
 @Component({
   selector: 'app-show-development',
@@ -39,12 +39,12 @@ import { DevelopmentService } from '../../services/ai-agents/development.service
     BackendConfigComponent,
     DatabaseConfigComponent,
   ],
-  templateUrl: './show-development.html',
-  styleUrl: './show-development.css',
+  templateUrl: './create-development.html',
+  styleUrl: './create-development.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShowDevelopmentComponent implements OnInit {
-  protected readonly tabs = ['frontend', 'backend', 'database'] as const;
+export class CreateDevelopmentComponent implements OnInit {
+  protected readonly tabs = ['frontend', 'backend', 'database'] as const; 
 
   // Injectable services - suivant le style guide Angular
   protected readonly auth = inject(AuthService);
@@ -162,9 +162,6 @@ export class ShowDevelopmentComponent implements OnInit {
     });
 
     this.developmentForm = this.fb.group({
-      backendStack: ['', Validators.required],
-      frontendStack: ['', Validators.required],
-      databaseStack: ['', Validators.required],
       additionalStacks: [[]],
       constraints: [[]],
       frontend: this.frontendForm,

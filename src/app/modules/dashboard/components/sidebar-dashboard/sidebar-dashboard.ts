@@ -33,13 +33,14 @@ import { Router, NavigationEnd } from '@angular/router';
 import { first, switchMap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { CookieService } from '../../../../shared/services/cookie.service';
+import { Loader } from "../../../../components/loader/loader";
 
 @Component({
   selector: 'app-sidebar-dashboard',
   templateUrl: './sidebar-dashboard.html',
   styleUrls: ['./sidebar-dashboard.css'],
   standalone: true,
-  imports: [PanelMenu, Select, CommonModule, FormsModule],
+  imports: [PanelMenu, Select, CommonModule, FormsModule, Loader],
   animations: [
     trigger('slideInOut', [
       transition(':enter', [
@@ -335,8 +336,8 @@ export class SidebarDashboard implements OnInit {
       {
         label: this.isSidebarCollapsed() ? '' : 'Developement',
         icon: 'pi pi-fw pi-code',
-        command: () => this.navigateTo(`console/developement`),
-        styleClass: getStyleClass('console/developement'),
+        command: () => this.navigateTo(`console/development`),
+        styleClass: getStyleClass('console/development'),
       },
       {
         label: this.isSidebarCollapsed() ? '' : 'Tests',
