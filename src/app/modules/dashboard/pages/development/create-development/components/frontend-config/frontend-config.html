@@ -16,7 +16,7 @@
           [selected]="frontendForm()!.get('framework')?.value === framework.id"
           [selectedVersion]="frontendForm()!.get('frameworkVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="frontendForm()!.get('framework')?.setValue($event)"
+          (techSelect)="selectFramework($event, framework.icon)"
           (versionSelect)="frontendForm()!.get('frameworkVersion')?.setValue($event)"
         ></app-tech-card>
         }

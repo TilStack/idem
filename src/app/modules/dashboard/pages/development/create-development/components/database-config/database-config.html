@@ -15,7 +15,7 @@
           [tech]="db"
           [selected]="databaseForm()!.get('provider')?.value === db.id"
           [selectedVersion]="databaseForm()!.get('version')?.value"
-          (techSelect)="databaseForm()!.get('provider')?.setValue(db.id)"
+          (techSelect)="selectDatabaseProvider(db.id, db.icon)"
           (versionSelect)="databaseForm()!.get('version')?.setValue($event)"
           [showAdvancedOptions]="true"
           class="h-full"

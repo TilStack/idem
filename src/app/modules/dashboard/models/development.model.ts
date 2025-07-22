@@ -6,50 +6,63 @@ export interface DevelopmentConfigsModel {
   frontend: {
     framework: string;
     frameworkVersion?: string;
+    frameworkIconUrl?: string;
     styling: string[] | string;
     stateManagement?: string;
-    features: {
-      routing?: boolean;
-      componentLibrary?: boolean;
-      testing?: boolean;
-      pwa?: boolean;
-      seo?: boolean;
-      [key: string]: boolean | undefined;
-    } | string[];
+    features:
+      | {
+          routing?: boolean;
+          componentLibrary?: boolean;
+          testing?: boolean;
+          pwa?: boolean;
+          seo?: boolean;
+          [key: string]: boolean | undefined;
+        }
+      | string[];
   };
 
   backend: {
     language?: string;
     languageVersion?: string;
+    languageIconUrl?: string;
     framework: string;
     frameworkVersion?: string;
+    frameworkIconUrl?: string;
     apiType: string;
     apiVersion?: string;
+    apiIconUrl?: string;
     orm?: string;
     ormVersion?: string;
-    features: {
-      authentication?: boolean;
-      authorization?: boolean;
-      documentation?: boolean;
-      testing?: boolean;
-      logging?: boolean;
-      [key: string]: boolean | undefined;
-    } | string[];
+    ormIconUrl?: string;
+    features:
+      | {
+          authentication?: boolean;
+          authorization?: boolean;
+          documentation?: boolean;
+          testing?: boolean;
+          logging?: boolean;
+          [key: string]: boolean | undefined;
+        }
+      | string[];
   };
 
   database: {
     type?: string;
     provider: string;
     version?: string;
+    providerIconUrl?: string;
     orm?: string;
     ormVersion?: string;
-    features: {
-      migrations?: boolean;
-      seeders?: boolean;
-      caching?: boolean;
-      replication?: boolean;
-      [key: string]: boolean | undefined;
-    } | string[];
+    ormIconUrl?: string;
+    features:
+      | {
+          migrations?: boolean;
+          seeders?: boolean;
+          caching?: boolean;
+          replication?: boolean;
+          [key: string]: boolean | undefined;
+        }
+      | string[];
   };
 
   projectConfig: {

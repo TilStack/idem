@@ -16,6 +16,16 @@ import { TechCardComponent, TechCardModel } from '../shared/tech-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatabaseConfigComponent {
+  /**
+   * Selects a database provider and sets its icon URL in the form
+   * @param providerId The ID of the selected provider
+   * @param iconUrl The icon URL of the selected provider
+   */
+  selectDatabaseProvider(providerId: string, iconUrl: string): void {
+    this.databaseForm()!.get('provider')?.setValue(providerId);
+    this.databaseForm()!.get('providerIconUrl')?.setValue(iconUrl);
+  }
+
   // Input properties
   readonly databaseForm = input<FormGroup>();
   readonly versionOptions = input<{

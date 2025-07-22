@@ -37,8 +37,9 @@ export class BackendConfigComponent implements OnInit {
     );
   }
 
-  onProgrammingLanguageTechSelect(event: string): void {
+  onProgrammingLanguageTechSelect(event: string, iconUrl: string): void {
     this.backendForm()?.get('language')?.setValue(event);
+    this.backendForm()?.get('languageIconUrl')?.setValue(iconUrl);
     this.availableFrameworks.set(
       this.languageFrameworks[this.backendForm()?.get('language')?.value] || []
     );
@@ -51,8 +52,9 @@ export class BackendConfigComponent implements OnInit {
     );
   }
 
-  onFrameworkTechSelect(event: string): void {
+  onFrameworkTechSelect(event: string, iconUrl: string): void {
     this.backendForm()?.get('framework')?.setValue(event);
+    this.backendForm()?.get('frameworkIconUrl')?.setValue(iconUrl);
     this.availableApiTypes.set(
       this.frameworkApiTypes[this.backendForm()?.get('framework')?.value] || []
     );
@@ -62,17 +64,20 @@ export class BackendConfigComponent implements OnInit {
     );
   }
 
-  onApiTypeTechSelect(event: string): void {
+  onApiTypeTechSelect(event: string, iconUrl: string): void {
     this.backendForm()?.get('apiType')?.setValue(event);
+    this.backendForm()?.get('apiIconUrl')?.setValue(iconUrl);
     this.availableOrms.set(
       this.frameworkSpecificOrms[this.backendForm()?.get('framework')?.value] ||
         []
     );
   }
 
-  onOrmTechSelect(event: string): void {
+  onOrmTechSelect(event: string, iconUrl: string): void {
     this.backendForm()?.get('orm')?.setValue(event);
+    this.backendForm()?.get('ormIconUrl')?.setValue(iconUrl);
   }
+
   // Input properties
   readonly backendForm = input.required<FormGroup>();
   readonly versionOptions = input.required<{

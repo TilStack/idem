@@ -254,18 +254,28 @@ export class FrontendConfigComponent {
   /**
    * Toggle a styling preference in multi-select mode
    */
-  protected toggleStylingPreference(style: string): void {
+  protected toggleStylingPreference(styleName: string): void {
     const currentStyles = [...this.selectedStylingPreferences()];
-    const index = currentStyles.indexOf(style);
-
+    const index = currentStyles.indexOf(styleName);
+    
     if (index === -1) {
-      currentStyles.push(style);
+      currentStyles.push(styleName);
     } else {
       currentStyles.splice(index, 1);
     }
-
+    
     this.stylingPreferencesChange.emit(currentStyles);
     this.frontendForm().get('styling')?.setValue(currentStyles);
+  }
+
+  /**
+   * Selects a framework and sets its icon URL in the form
+   * @param frameworkId The ID of the selected framework
+   * @param iconUrl The icon URL of the selected framework
+   */
+  selectFramework(frameworkId: string, iconUrl: string): void {
+    this.frontendForm()!.get('framework')?.setValue(frameworkId);
+    this.frontendForm()!.get('frameworkIconUrl')?.setValue(iconUrl);
   }
 
   /**

@@ -122,12 +122,16 @@ export class CreateDevelopmentComponent implements OnInit {
     this.backendForm = this.fb.group({
       language: ['python', Validators.required],
       languageVersion: ['latest', Validators.required],
+      languageIconUrl: [''],
       framework: ['flask', Validators.required],
       frameworkVersion: ['latest', Validators.required],
+      frameworkIconUrl: [''],
       apiType: ['rest', Validators.required],
       apiVersion: ['latest', Validators.required],
+      apiIconUrl: [''],
       orm: ['sqlalchemy'],
       ormVersion: ['latest'],
+      ormIconUrl: [''],
       features: this.fb.group({
         authentication: [true],
         authorization: [true],
@@ -140,8 +144,10 @@ export class CreateDevelopmentComponent implements OnInit {
     this.databaseForm = this.fb.group({
       provider: ['firebase', Validators.required],
       version: ['latest', Validators.required],
+      providerIconUrl: [''],
       orm: ['prisma', Validators.required],
       ormVersion: ['latest', Validators.required],
+      ormIconUrl: [''],
       features: this.fb.group({
         migrations: [true],
         seeders: [true],

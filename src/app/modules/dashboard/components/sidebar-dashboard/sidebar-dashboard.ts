@@ -33,14 +33,13 @@ import { Router, NavigationEnd } from '@angular/router';
 import { first, switchMap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { CookieService } from '../../../../shared/services/cookie.service';
-import { Loader } from "../../../../components/loader/loader";
 
 @Component({
   selector: 'app-sidebar-dashboard',
   templateUrl: './sidebar-dashboard.html',
   styleUrls: ['./sidebar-dashboard.css'],
   standalone: true,
-  imports: [PanelMenu, Select, CommonModule, FormsModule, Loader],
+  imports: [PanelMenu, Select, CommonModule, FormsModule],
   animations: [
     trigger('slideInOut', [
       transition(':enter', [

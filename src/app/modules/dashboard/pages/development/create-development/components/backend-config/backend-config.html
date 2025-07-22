@@ -26,7 +26,7 @@
           [selected]="backendForm().get('language')?.value === language.id"
           [selectedVersion]="backendForm().get('languageVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="onProgrammingLanguageTechSelect($event)"
+          (techSelect)="onProgrammingLanguageTechSelect($event, language.icon)"
           (versionSelect)="backendForm().get('languageVersion')?.setValue($event)"
         ></app-tech-card>
         }
@@ -51,7 +51,7 @@
           [selected]="backendForm().get('framework')?.value === framework.id"
           [selectedVersion]="backendForm().get('frameworkVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="onFrameworkTechSelect($event)"
+          (techSelect)="onFrameworkTechSelect($event, framework.icon)"
           (versionSelect)="backendForm().get('frameworkVersion')?.setValue($event)"
         ></app-tech-card>
         }
@@ -84,7 +84,7 @@
           [selected]="backendForm().get('apiType')?.value === apiType.id"
           [selectedVersion]="backendForm().get('apiVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="onApiTypeTechSelect($event)"
+          (techSelect)="onApiTypeTechSelect($event, apiType.icon)"
           (versionSelect)="backendForm().get('apiVersion')?.setValue($event)"
         ></app-tech-card>
         }
@@ -117,7 +117,7 @@
           [selected]="backendForm().get('orm')?.value === orm.id"
           [selectedVersion]="backendForm().get('ormVersion')?.value"
           [showAdvancedOptions]="true"
-          (techSelect)="onOrmTechSelect($event)"
+          (techSelect)="onOrmTechSelect($event, orm.icon)"
           (versionSelect)="backendForm().get('ormVersion')?.setValue($event)"
         ></app-tech-card>
         }

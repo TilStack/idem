@@ -87,6 +87,43 @@ export class ShowDevelopment implements OnInit {
   }
 
   /**
+   * Safely gets object keys from a features object
+   */
+  protected getObjectKeys(features: any): string[] {
+    if (features && typeof features === 'object' && !Array.isArray(features)) {
+      return Object.keys(features);
+    }
+    return [];
+  }
+
+  /**
+   * Checks if a specific feature is enabled in a features object
+   */
+  protected isFeatureEnabled(features: any, featureName: string): boolean {
+    if (features && typeof features === 'object' && !Array.isArray(features)) {
+      return !!features[featureName];
+    }
+    return false;
+  }
+
+  /**
+   * Checks if features is an array
+   */
+  protected isFeatureArray(features: any): boolean {
+    return Array.isArray(features);
+  }
+
+  /**
+   * Safely gets features array
+   */
+  protected getFeatureArray(features: any): string[] {
+    if (Array.isArray(features)) {
+      return features as string[];
+    }
+    return [];
+  }
+
+  /**
    * Formats custom options as a pretty-printed string
    */
   protected formatCustomOptions(options: any): string {
