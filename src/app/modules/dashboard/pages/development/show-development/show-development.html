@@ -1,14 +1,4 @@
-<div class="w-full max-w-6xl mx-auto p-6 bg-gradient-glow">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-white text-glow-primary">
-      Development Configuration
-    </h1>
-    <button (click)="openApplication()" class="inner-button flex items-center">
-      <span>Open Application</span>
-      <i class="pi pi-external-link ml-2 text-xl"></i>
-    </button>
-  </div>
-
+<div class="w-full min-h-[80vh] max-w-6xl mx-auto p-6 bg-gradient-glow flex flex-col items-center justify-center">
   <!-- Loading state -->
   @if (loading()) {
   <app-loader />
@@ -25,6 +15,15 @@
 
   <!-- Development configs display -->
   @if (!loading() && developmentConfigs() && !error()) {
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-white text-glow-primary">
+      Development Configuration
+    </h1>
+    <button (click)="openApplication()" class="inner-button flex items-center">
+      <span>Open Application</span>
+      <i class="pi pi-external-link ml-2 text-xl"></i>
+    </button>
+  </div>
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Frontend Section -->
     <div

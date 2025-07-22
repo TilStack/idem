@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { DevelopmentService } from '../../../services/ai-agents/development.service';
 import { DevelopmentConfigsModel } from '../../../models/development.model';
 import { CookieService } from '../../../../../shared/services/cookie.service';
@@ -25,7 +25,7 @@ export class ShowDevelopment implements OnInit {
   protected readonly loading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
   protected readonly projectId = signal<string>('');
-
+  protected readonly router = inject(Router);
   ngOnInit(): void {
     const storedProjectId = this.cookieService.get('projectId');
     if (storedProjectId) {
@@ -43,13 +43,14 @@ export class ShowDevelopment implements OnInit {
     this.developmentService
       .getDevelopmentConfigs(projectId)
       .pipe(
-        tap((configs: DevelopmentConfigsModel) => {
+        tap((configs: DevelopmentConfigsModel | null) => {
           if (configs) {
             this.developmentConfigs.set(configs);
           } else {
             this.error.set(
               'No development configurations found for this project.'
             );
+            this.router.navigate(['/console/development/create']);
           }
         }),
         catchError((err) => {

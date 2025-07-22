@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Auth, authState } from '@angular/fire/auth';
-import { Observable, throwError, from } from 'rxjs';
+import { Observable, throwError, from, of } from 'rxjs';
 import { switchMap, map, take, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { DevelopmentConfigsModel } from '../../models/development.model';
@@ -77,17 +77,21 @@ export class DevelopmentService {
   // Get the development configurations for a specific project
   getDevelopmentConfigs(
     projectId: string
-  ): Observable<DevelopmentConfigsModel> {
+  ): Observable<DevelopmentConfigsModel | null> {
     return this.getAuthHeaders().pipe(
       switchMap((headers) => {
         return this.http.get<DevelopmentConfigsModel>(
           `${this.apiUrl}/configs/${projectId}`,
           { headers }
+        ).pipe(
+          catchError((error: HttpErrorResponse) => {
+            if (error.status === 404) {
+              return of(null);
+            }
+            console.error('Error in getDevelopmentConfigs:', error);
+            throw error;
+          })
         );
-      }),
-      catchError((error) => {
-        console.error('Error in getDevelopmentConfigs:', error);
-        throw error;
       })
     );
   }
