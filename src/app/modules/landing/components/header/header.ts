@@ -5,17 +5,21 @@ import {
   inject,
   OnInit,
   ViewChild,
+  signal,
 } from '@angular/core';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { BadgeModule } from 'primeng/badge';
 import { AvatarModule } from 'primeng/avatar';
 import { InputTextModule } from 'primeng/inputtext';
 import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { first } from 'rxjs/operators';
 @Component({
   selector: 'app-header',
+  standalone: true,
   imports: [
     RouterLinkActive,
     RouterLink,
@@ -39,7 +43,19 @@ import { MenuItem } from 'primeng/api';
   ],
 })
 export class Header implements OnInit {
-  items: MenuItem[] | undefined = [
+  // Services
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  
+  // UI State Signals
+  protected readonly isMenuOpen = signal(false);
+  protected readonly isDropdownOpen = signal(false);
+  
+  // User Data Signal
+  protected readonly user = toSignal(this.auth.user$);
+  
+  // Navigation items
+  protected readonly items: MenuItem[] | undefined = [
     {
       label: 'Home',
       icon: 'pi pi-home',
@@ -70,22 +86,66 @@ export class Header implements OnInit {
       ],
     },
   ];
-  auth = inject(AuthService);
-  ngOnInit(): void {}
-  isMenuOpen = false;
-
-  toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
+  
   @ViewChild('menu') menuRef!: ElementRef;
+  
+  ngOnInit(): void {
+    // Check authentication status when component initializes
+    this.auth.user$.pipe(first()).subscribe(user => {
+      console.log('Header authentication status:', user ? 'Logged in' : 'Not logged in');
+    });
+  }
+  
+  /**
+   * Toggle mobile menu visibility
+   */
+  protected toggleMenu(): void {
+    this.isMenuOpen.update(open => !open);
+  }
+  
+  /**
+   * Toggle user dropdown visibility
+   */
+  protected toggleDropdown(): void {
+    this.isDropdownOpen.update(open => !open);
+  }
+  
+  /**
+   * Navigate to specified path
+   */
+  protected navigateTo(path: string): void {
+    this.isDropdownOpen.set(false);
+    this.isMenuOpen.set(false);
+    this.router.navigate([path]);
+  }
+  
+  /**
+   * Log out the current user
+   */
+  protected logout(): void {
+    this.isDropdownOpen.set(false);
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+  
   @HostListener('document:click', ['$event'])
-  onClickOutside(event: Event) {
+  protected onClickOutside(event: Event): void {
     if (
-      this.isMenuOpen &&
+      this.isMenuOpen() &&
       this.menuRef &&
       !this.menuRef.nativeElement.contains(event.target)
     ) {
-      this.isMenuOpen = false;
+      this.isMenuOpen.set(false);
+    }
+  }
+  
+  @HostListener('document:click', ['$event.target'])
+  protected onClickOutsideDropdown(targetElement: HTMLElement): void {
+    const dropdownButton = targetElement.closest('button.flex.items-center');
+    const dropdownMenu = targetElement.closest('.fixed.right-0.mt-2');
+    
+    if (this.isDropdownOpen() && !dropdownButton && !dropdownMenu) {
+      this.isDropdownOpen.set(false);
     }
   }
 }

@@ -1,4 +1,4 @@
-<nav class="glass-header text-white overflow-hidden fixed w-full z-50 top-0">
+<nav class="glass-header text-white  fixed w-full z-50 top-0">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between h-16">
       <div class="flex-shrink-0 flex items-center relative">
@@ -36,23 +36,80 @@
           About
           <span class="nav-dot"></span>
         </a>
-
         <a
-          routerLink="/profile"
+          routerLink="/documentation"
           routerLinkActive="active"
           class="glass-nav-link hover:text-white transition duration-300 relative py-1 px-2"
         >
           Documentation
           <span class="nav-dot"></span>
         </a>
+        
+        <!-- Dashboard link - only visible when logged in -->
+        @if (user()) {
+          <a
+            routerLink="/console/dashboard"
+            routerLinkActive="active"
+            class="glass-nav-link hover:text-white transition duration-300 relative py-1 px-2"
+          >
+            Dashboard
+            <span class="nav-dot"></span>
+          </a>
+        }
       </div>
       <div class="hidden md:flex items-center">
-        <a
-          routerLink="/login"
-          class="inner-button text-white px-5 py-2 rounded-lg hover:text-white transition"
-        >
-          <span class="relative z-10">Login</span>
-        </a>
+        <!-- Show user profile with dropdown when logged in -->
+        @if (user()) {
+          <div class="relative">
+            <!-- Avatar/Profile Button -->
+            <button (click)="toggleDropdown()" class="flex items-center">
+              <img
+                [src]="user()!.photoURL || '/assets/icons/default-avatar.png'"
+                alt="Avatar"
+                class="w-10 h-10 rounded-full cursor-pointer"
+              />
+            </button>
+
+            <!-- Dropdown Menu -->
+            @if (isDropdownOpen()) {
+              <div
+                class="fixed right-0 mt-2 w-48 bg-gradient-to-r from-gray-900 to-gray-800 border border-gray-200 rounded-lg shadow-lg flex flex-col z-50 mr-[38px] p-2 [&_.child]:cursor-pointer"
+              >
+                <a
+                  routerLink="/profile"
+                  (click)="navigateTo('/profile')"
+                  class="dropdown-item p-3 hover:bg-primary rounded-2xl cursor-pointer"
+                  >Profile</a
+                >
+                <a
+                  routerLink="/console/dashboard"
+                  (click)="navigateTo('/console/dashboard')"
+                  class="dropdown-item p-3 hover:bg-primary rounded-2xl cursor-pointer"
+                  >Dashboard</a
+                >
+                <a
+                  routerLink="/settings"
+                  (click)="navigateTo('/settings')"
+                  class="dropdown-item p-3 hover:bg-primary rounded-2xl cursor-pointer"
+                  >Settings</a
+                >
+                <a
+                  (click)="logout()"
+                  class="dropdown-item border-t p-3 hover:bg-primary cursor-pointer"
+                  >Logout</a
+                >
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Show login button when not logged in -->
+          <a
+            routerLink="/login"
+            class="inner-button text-white px-5 py-2 rounded-lg hover:text-white transition"
+          >
+            <span class="relative z-10">Login</span>
+          </a>
+        }
       </div>
 
       <div class="flex items-center md:hidden">
@@ -79,11 +136,11 @@
     </div>
   </div>
 
-  @if (isMenuOpen) {
+  @if (isMenuOpen()) {
   <div
     class="md:hidden glass-mobile-menu"
     #menu
-    [@slideInOut]="isMenuOpen ? 'open' : 'closed'"
+    [@slideInOut]="isMenuOpen() ? 'open' : 'closed'"
   >
     <div class="px-2 pt-3 pb-4 space-y-2 sm:px-3">
       <a
@@ -96,7 +153,7 @@
         Home
       </a>
       <a
-        routerLink="/project/create"
+        routerLink="/about"
         (click)="toggleMenu()"
         routerLinkActive="active"
         class="glass-mobile-link flex items-center px-4 py-2.5 rounded-lg text-base font-medium text-white hover:text-white transition duration-300"
@@ -105,7 +162,7 @@
         About
       </a>
       <a
-        routerLink="/analysis"
+        routerLink="/documentation"
         (click)="toggleMenu()"
         routerLinkActive="active"
         class="glass-mobile-link flex items-center px-4 py-2.5 rounded-lg text-base font-medium text-white hover:text-white transition duration-300"
@@ -113,23 +170,44 @@
         <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
         Documentation
       </a>
-      <a
-        routerLink="/profile"
-        (click)="toggleMenu()"
-        routerLinkActive="active"
-        class="glass-mobile-link flex items-center px-4 py-2.5 rounded-lg text-base font-medium text-white hover:text-white transition duration-300"
-      >
-        <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
-        Profil
-      </a>
-      <a
-        routerLink="/login"
-        (click)="toggleMenu()"
-        class="inner-button flex items-center justify-center mt-2 px-4 py-2.5 rounded-lg transition duration-300 text-center"
-      >
-        <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
-        Login
-      </a>
+      
+      <!-- Dashboard link - only visible when logged in -->
+      @if (user()) {
+        <a
+          routerLink="/console/dashboard"
+          (click)="toggleMenu()"
+          routerLinkActive="active"
+          class="glass-mobile-link flex items-center px-4 py-2.5 rounded-lg text-base font-medium text-white hover:text-white transition duration-300"
+        >
+          <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
+          Dashboard
+        </a>
+        <a
+          routerLink="/profile"
+          (click)="toggleMenu()"
+          routerLinkActive="active"
+          class="glass-mobile-link flex items-center px-4 py-2.5 rounded-lg text-base font-medium text-white hover:text-white transition duration-300"
+        >
+          <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
+          Profile
+        </a>
+        <a
+          (click)="logout()"
+          class="inner-button flex items-center justify-center mt-2 px-4 py-2.5 rounded-lg transition duration-300 text-center"
+        >
+          <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
+          Logout
+        </a>
+      } @else {
+        <a
+          routerLink="/login"
+          (click)="toggleMenu()"
+          class="inner-button flex items-center justify-center mt-2 px-4 py-2.5 rounded-lg transition duration-300 text-center"
+        >
+          <span class="w-1.5 h-1.5 bg-white rounded-full mr-3 opacity-70"></span>
+          Login
+        </a>
+      }
     </div>
   </div>
   }

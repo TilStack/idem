@@ -15,11 +15,11 @@
 
   <!-- Development configs display -->
   @if (!loading() && developmentConfigs() && !error()) {
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex justify-between items-center mb-6 w-full gap-4">
     <h1 class="text-2xl font-bold text-white text-glow-primary">
       Development Configuration
     </h1>
-    <button (click)="openApplication()" class="inner-button flex items-center">
+    <button (click)="redirectToWebGenerator(projectId())" class="inner-button flex items-center">
       <span>Open Application</span>
       <i class="pi pi-external-link ml-2 text-xl"></i>
     </button>
