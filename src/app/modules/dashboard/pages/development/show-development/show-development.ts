@@ -34,7 +34,7 @@ export class ShowDevelopment implements OnInit {
    * @param projectId The ID of the project to generate
    */
   protected redirectToWebGenerator(projectId: string): void {
-    const generatorUrl = `${this.webgenUrl}/generate/${projectId}`;
+    const generatorUrl = `${this.webgenUrl}?projectId=${projectId}`;
     window.location.href = generatorUrl;
   }
   ngOnInit(): void {

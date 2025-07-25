@@ -70,6 +70,15 @@ export const LANGUAGE_FRAMEWORKS: { [key: string]: TechCardModel[] } = {
       badges: ['TypeScript', 'Decorators', 'Modular'],
       versions: ['10.x', '9.x', '8.x'],
     },
+    {
+      id: 'express',
+      name: 'Express',
+      icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg',
+      color: '#68a063',
+      description: 'Fast, unopinionated, minimalist web framework',
+      badges: ['Node.js', 'typescript', 'Minimalist'],
+      versions: ['4.x', '3.x', '2.x'],
+    },
   ],
   python: [
     {
@@ -126,6 +135,26 @@ export const LANGUAGE_FRAMEWORKS: { [key: string]: TechCardModel[] } = {
 
 export const FRAMEWORK_API_TYPES: { [key: string]: TechCardModel[] } = {
   nodejs: [
+    {
+      id: 'rest',
+      name: 'REST API',
+      icon: 'https://www.opc-router.de/wp-content/uploads/2020/05/REST_socialmedia.jpg',
+      description: 'Standard HTTP-based API architecture',
+      color: '#4CAF50',
+      badges: ['HTTP', 'Resource-based', 'CRUD'],
+      versions: ['OpenAPI 3.1', 'OpenAPI 3.0'],
+    },
+    {
+      id: 'graphql',
+      name: 'GraphQL',
+      icon: 'https://icon.icepanel.io/Technology/png-shadow-512/GraphQL.png',
+      description: 'Query language for your API',
+      color: '#E10098',
+      badges: ['Schema', 'Query/Mutation', 'Single Endpoint'],
+      versions: ['v16.x', 'v15.x'],
+    },
+  ],
+  express: [
     {
       id: 'rest',
       name: 'REST API',
@@ -261,6 +290,26 @@ export const FRAMEWORK_SPECIFIC_ORMS: { [key: string]: TechCardModel[] } = {
       versions: ['0.3.x', '0.2.x'],
     },
   ],
+  express: [
+    {
+      id: 'sequelize',
+      name: 'Sequelize',
+      icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Sequelize.png',
+      description: 'Promise-based Node.js ORM',
+      color: '#000000',
+      badges: ['Node.js', 'JavaScript', 'ORM'],
+      versions: ['6.x', '5.x'],
+    },
+    {
+      id: 'mongoose',
+      name: 'Mongoose',
+      icon: 'https://icon.icepanel.io/Technology/png-shadow-512/Mongoose.png',
+      description: 'Mongoose is a MongoDB object modeling for Node.js',
+      color: '#3A495D',
+      badges: ['Node.js', 'MongoDB', 'ODM'],
+      versions: ['7.x', '6.x'],
+    },
+  ],
   nestjs: [
     {
       id: 'typeorm',
@@ -281,6 +330,7 @@ export const FRAMEWORK_SPECIFIC_ORMS: { [key: string]: TechCardModel[] } = {
       versions: ['5.x', '4.x'],
     },
   ],
+
   django: [
     {
       id: 'django-orm',

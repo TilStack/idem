@@ -13,12 +13,12 @@ export const environment = {
   services: {
     domain: 'https://idem.africa',
     api: {
-      url: 'http://localhost:3000/api',
+      url: 'http://localhost:3001/api',
       version: 'v1',
       llmModel: 'gpt-3.5-turbo',
     },
     webgen: {
-      url: 'http://localhost:5173',
+      url: 'http://localhost:5174',
     },
     diagen: {
       url: 'http://localhost:3001',
