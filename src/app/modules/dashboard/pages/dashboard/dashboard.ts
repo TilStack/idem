@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
   OnInit,
   signal,
@@ -31,8 +30,9 @@ export class DashboardComponent implements OnInit {
   readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
-    const projectId = this.cookieService.get('projectId');
     this.isLoading.set(true);
+    const projectId = this.cookieService.get('projectId');
+    console.log('projectId', projectId);
     if (!projectId) {
       this.error.set(
         'No project selected. Please select a project to view the dashboard.'
@@ -56,21 +56,5 @@ export class DashboardComponent implements OnInit {
         this.isLoading.set(false);
       },
     });
-  }
-
-  // Helper to get a relevant icon based on project type - extend as needed
-  getProjectTypeIcon(type: string | undefined): string {
-    switch (type) {
-      case 'web':
-        return '🌐'; // Globe icon
-      case 'mobile':
-        return '📱'; // Mobile phone icon
-      case 'iot':
-        return '🔗'; // Link icon for IoT
-      case 'desktop':
-        return '💻'; // Laptop icon
-      default:
-        return '❓'; // Question mark for unknown
-    }
   }
 }

@@ -15,7 +15,7 @@ import {
   template: `
     @if (!isLoading && quotaDisplay) {
     <div
-      class="navbar-quota-display flex items-center space-x-2 px-2 py-1 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700"
+      class="navbar-quota-display flex items-center space-x-2 px-2 py-1 glass rounded-2xl"
     >
       <!-- Beta badge (if applicable) -->
       @if (isBeta) {

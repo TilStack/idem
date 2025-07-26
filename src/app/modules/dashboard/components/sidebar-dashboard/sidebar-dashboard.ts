@@ -35,10 +35,15 @@ import { first, switchMap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { CookieService } from '../../../../shared/services/cookie.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BetaBadgeComponent } from "../../../../shared/components/beta-badge/beta-badge";
-import { QuotaDisplayComponent } from "../../../../shared/components/quota-display/quota-display";
+import { BetaBadgeComponent } from '../../../../shared/components/beta-badge/beta-badge';
+import { QuotaDisplayComponent } from '../../../../shared/components/quota-display/quota-display';
 import { QuotaService } from '../../../../shared/services/quota.service';
-import { QuotaInfoResponse, QuotaDisplayData, BetaRestrictions, QuotaStatus } from '../../../../shared/models/quota.model';
+import {
+  QuotaInfoResponse,
+  QuotaDisplayData,
+  BetaRestrictions,
+  QuotaStatus,
+} from '../../../../shared/models/quota.model';
 // import { BetaBadgeComponent } from '../../../../shared/components/beta-badge/beta-badge';
 
 @Component({
@@ -46,7 +51,14 @@ import { QuotaInfoResponse, QuotaDisplayData, BetaRestrictions, QuotaStatus } fr
   templateUrl: './sidebar-dashboard.html',
   styleUrls: ['./sidebar-dashboard.css'],
   standalone: true,
-  imports: [PanelMenu, Select, CommonModule, FormsModule, BetaBadgeComponent, QuotaDisplayComponent],
+  imports: [
+    PanelMenu,
+    Select,
+    CommonModule,
+    FormsModule,
+    BetaBadgeComponent,
+    QuotaDisplayComponent,
+  ],
   animations: [
     trigger('slideInOut', [
       transition(':enter', [
@@ -88,7 +100,7 @@ export class SidebarDashboard implements OnInit {
   private readonly cookieService = inject(CookieService);
   private readonly quotaService = inject(QuotaService);
   private readonly destroyRef = inject(DestroyRef);
-  
+
   // Signals for UI State
   items = signal<MenuItem[]>([]);
   isLoading = signal(true);
@@ -224,16 +236,16 @@ export class SidebarDashboard implements OnInit {
   ngOnInit() {
     this.initializeMenu();
     this.loadProjects();
-   
   }
-  
+
   /**
    * Loads quota information from the QuotaService
    */
   private loadQuotaInfo(): void {
     this.isQuotaLoading.set(true);
-    
-    this.quotaService.getQuotaInfo()
+
+    this.quotaService
+      .getQuotaInfo()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (info: QuotaInfoResponse) => {
@@ -244,29 +256,29 @@ export class SidebarDashboard implements OnInit {
         },
         error: () => {
           this.isQuotaLoading.set(false);
-        }
+        },
       });
   }
-  
+
   /**
    * Processes quota info into display data
    */
   private processQuotaDisplayData(info: QuotaInfoResponse): void {
     if (!info) return;
-    
+
     const dailyPercentage = (info.dailyUsage / info.dailyLimit) * 100;
     const weeklyPercentage = (info.weeklyUsage / info.weeklyLimit) * 100;
-    
+
     const displayData: QuotaDisplayData = {
       dailyPercentage,
       weeklyPercentage,
       dailyStatus: this.getQuotaStatus(dailyPercentage),
       weeklyStatus: this.getQuotaStatus(weeklyPercentage),
-      canUseFeature: info.remainingDaily > 0 && info.remainingWeekly > 0
+      canUseFeature: info.remainingDaily > 0 && info.remainingWeekly > 0,
     };
-    
+
     this.quotaDisplay.set(displayData);
-    
+
     // Set beta restrictions if user is in beta
     if (info.isBeta) {
       this.betaRestrictions.set({
@@ -274,11 +286,11 @@ export class SidebarDashboard implements OnInit {
         maxResolution: '1024x1024',
         maxOutputTokens: 2000,
         restrictedPrompts: [],
-        allowedFeatures: ['basic']
+        allowedFeatures: ['basic'],
       });
     }
   }
-  
+
   /**
    * Determines quota status based on percentage
    */
