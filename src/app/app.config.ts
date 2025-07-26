@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  importProvidersFrom,
   provideZoneChangeDetection,
   REQUEST,
   SecurityContext,
@@ -27,7 +28,13 @@ import { getPerformance, providePerformance } from '@angular/fire/performance';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 
 import { environment } from '../environments/environment';
-import { provideHttpClient } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptors,
+} from '@angular/common/http';
+// import { quotaInterceptor } from './shared/interceptors/quota.interceptor';
+import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { MERMAID_OPTIONS, provideMarkdown, MARKED_OPTIONS } from 'ngx-markdown';
 // Import Prism for syntax highlighting
 import 'prismjs';
@@ -64,19 +71,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideRouter(routes, withComponentInputBinding()),
     provideFirebaseApp(() => {
-      if (isPlatformBrowser(inject(PLATFORM_ID))) {
-        return initializeApp(firebaseConfig);
-      }
-      const request = inject(REQUEST, { optional: true });
-      const authHeader = request?.headers?.get('authorization');
-
-      const authIdToken = authHeader?.startsWith('Bearer ')
-        ? authHeader.split('Bearer ')[1]
-        : undefined;
-      return initializeServerApp(firebaseConfig, {
-        authIdToken,
-        releaseOnDeref: request || undefined,
-      });
+      return initializeApp(firebaseConfig);
     }),
     provideAuth(() => getAuth()),
     provideAnalytics(() => getAnalytics()),
@@ -97,7 +92,10 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     provideAnimations(),
-    provideHttpClient(),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor])
+    ),
     provideMarkdown({
       sanitize: SecurityContext.NONE,
       markedOptions: {

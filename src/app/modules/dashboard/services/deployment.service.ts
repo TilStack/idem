@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { from, Observable, throwError } from 'rxjs';
-import { catchError, map, switchMap, take, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
   DeploymentModel,
@@ -11,7 +11,6 @@ import {
   ExpertDeploymentModel,
   ChatMessage,
 } from '../models/deployment.model';
-import { Auth, authState } from '@angular/fire/auth';
 
 // Interfaces nécessaires après la suppression de deployment.api.model.ts
 interface GitRepositoryValidationRequest {
@@ -31,46 +30,6 @@ interface GitRepositoryValidationResponse {
 export class DeploymentService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.services.api.url}/project`;
-  private auth = inject(Auth);
-
-  private getAuthHeaders(): Observable<HttpHeaders> {
-    return authState(this.auth).pipe(
-      take(1),
-      switchMap((user) => {
-        if (!user) {
-          return throwError(
-            () =>
-              new Error('User not authenticated for ProjectService operation')
-          );
-        }
-        return from(user.getIdToken());
-      }),
-      map((token) => {
-        if (!token) {
-          throw new Error(
-            'Failed to retrieve ID token. User authenticated but token is null.'
-          );
-        }
-        return new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        });
-      }),
-      catchError((error) => {
-        console.error(
-          'Error in getAuthHeaders for ProjectService:',
-          error.message
-        );
-        return throwError(
-          () =>
-            new Error(
-              'Authentication header could not be generated for ProjectService: ' +
-                error.message
-            )
-        );
-      })
-    );
-  }
 
   /**
    * Create a new quick deployment
@@ -124,12 +83,7 @@ export class DeploymentService {
     deployment: Partial<T>
   ): Observable<T> {
     console.log('Creating deployment:', deployment);
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.post<T>(`${this.apiUrl}/deployments/create`, deployment, {
-          headers,
-        })
-      ),
+    return this.http.post<T>(`${this.apiUrl}/deployments/create`, deployment).pipe(
       tap((createdDeployment) =>
         console.log('Created deployment', createdDeployment)
       ),
@@ -145,13 +99,9 @@ export class DeploymentService {
    * @param projectId The ID of the project
    */
   getProjectDeployments(projectId: string): Observable<DeploymentModel[]> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.get<DeploymentModel[]>(
-          `${this.apiUrl}/deployments/${projectId}`,
-          { headers }
-        )
-      ),
+    return this.http.get<DeploymentModel[]>(
+      `${this.apiUrl}/deployments/${projectId}`
+    ).pipe(
       tap((deployments) => console.log('Fetched deployments', deployments)),
       catchError((error) => {
         console.error('Error fetching deployments', error);
@@ -169,18 +119,23 @@ export class DeploymentService {
     projectId: string,
     deploymentId: string
   ): Observable<DeploymentModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.get<DeploymentModel>(
-          `${this.apiUrl}/deployments/${projectId}/${deploymentId}`,
-          { headers }
-        )
-      ),
-      tap((deployment) => console.log('Fetched deployment', deployment)),
-      catchError((error) => {
-        console.error('Error fetching deployment', error);
-        return throwError(() => error);
-      })
+    return this.http
+      .get<DeploymentModel>(
+        `${this.apiUrl}/deployments/${projectId}/${deploymentId}`
+      )
+      .pipe(
+        tap((deployment) => console.log('Fetched deployment', deployment)),
+        catchError((error) => {
+          console.error('Error fetching deployment', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Update an existing deployment configuration
+   * @param projectId The ID of the project
+   * @param deploymentId The ID of the deployment
     );
   }
 
@@ -195,22 +150,20 @@ export class DeploymentService {
     deploymentId: string,
     updates: Partial<DeploymentModel>
   ): Observable<DeploymentModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.patch<DeploymentModel>(
-          `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}`,
-          updates,
-          { headers }
-        )
-      ),
-      tap((updatedDeployment) =>
-        console.log('Updated deployment', updatedDeployment)
-      ),
-      catchError((error) => {
-        console.error('Error updating deployment', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .patch<DeploymentModel>(
+        `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}`,
+        updates
+      )
+      .pipe(
+        tap((updatedDeployment) =>
+          console.log('Updated deployment', updatedDeployment)
+        ),
+        catchError((error) => {
+          console.error('Error updating deployment', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -222,20 +175,18 @@ export class DeploymentService {
     projectId: string,
     deploymentId: string
   ): Observable<DeploymentModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.post<DeploymentModel>(
-          `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/cancel`,
-          {},
-          { headers }
-        )
-      ),
-      tap((deployment) => console.log('Cancelled deployment', deployment)),
-      catchError((error) => {
-        console.error('Error cancelling deployment', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .post<DeploymentModel>(
+        `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/cancel`,
+        {}
+      )
+      .pipe(
+        tap((deployment) => console.log('Cancelled deployment', deployment)),
+        catchError((error) => {
+          console.error('Error cancelling deployment', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -247,20 +198,18 @@ export class DeploymentService {
     projectId: string,
     deploymentId: string
   ): Observable<DeploymentModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.post<DeploymentModel>(
-          `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/redeploy`,
-          {},
-          { headers }
-        )
-      ),
-      tap((deployment) => console.log('Redeployed', deployment)),
-      catchError((error) => {
-        console.error('Error redeploying', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .post<DeploymentModel>(
+        `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/redeploy`,
+        {}
+      )
+      .pipe(
+        tap((deployment) => console.log('Redeployed', deployment)),
+        catchError((error) => {
+          console.error('Error redeploying', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -272,19 +221,18 @@ export class DeploymentService {
     projectId: string,
     deploymentId: string
   ): Observable<string> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.get(
-          `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/logs`,
-          { headers, responseType: 'text' }
-        )
-      ),
-      tap((logs) => console.log('Fetched logs')),
-      catchError((error) => {
-        console.error('Error fetching logs', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .get(
+        `${this.apiUrl}/projects/${projectId}/deployments/${deploymentId}/logs`,
+        { responseType: 'text' }
+      )
+      .pipe(
+        tap((logs) => console.log('Fetched logs')),
+        catchError((error) => {
+          console.error('Error fetching logs', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -301,21 +249,15 @@ export class DeploymentService {
       accessToken,
     };
 
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.post<GitRepositoryValidationResponse>(
-          `${this.apiUrl}/git/validate`,
-          request,
-          { headers }
-        )
-      ),
-      map((response) => response.branches),
-      tap((branches) => console.log('Fetched branches', branches)),
-      catchError((error) => {
-        console.error('Error validating repository', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .post<string[]>(`${this.apiUrl}/git/validate`, request)
+      .pipe(
+        tap((branches) => console.log('Fetched branches', branches)),
+        catchError((error) => {
+          console.error('Error validating repository', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -342,53 +284,45 @@ export class DeploymentService {
     message: ChatMessage,
     projectId: string
   ): Observable<ChatMessage> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http
-          .post<ChatMessage>(
-            `${this.apiUrl}/deployments/chat`,
-            {
-              message,
-              projectId,
-            },
-            { headers }
-          )
-          .pipe(
-            // Process the response to ensure code blocks are properly formatted as markdown
-            map((response) => {
-              // If the response contains code blocks, ensure they're properly formatted
-              if (response.sender === 'ai') {
-                console.log('Processing AI response for markdown formatting');
+    return this.http
+      .post<ChatMessage>(`${this.apiUrl}/deployments/chat`, {
+        message,
+        projectId,
+      })
+      .pipe(
+        // Process the response to ensure code blocks are properly formatted as markdown
+        map((response) => {
+          // If the response contains code blocks, ensure they're properly formatted
+          if (response.sender === 'ai') {
+            console.log('Processing AI response for markdown formatting');
 
-                // Ensure code blocks are properly formatted with language identifiers
-                // This regex finds code blocks that might not have language specifiers
-                response.text = response.text.replace(
-                  /```(\s*)(\w+)?\s*([\s\S]*?)```/g,
-                  (match, space, lang, code) => {
-                    // If language is not specified, try to detect it or default to text
-                    const language = lang || 'text';
-                    return `\`\`\`${language}\n${code}\`\`\``;
-                  }
-                );
-
-                // Ensure inline code is properly formatted
-                response.text = response.text.replace(
-                  /`([^`]+)`/g,
-                  (match, code) => {
-                    return `\`${code}\``;
-                  }
-                );
+            // Ensure code blocks are properly formatted with language identifiers
+            // This regex finds code blocks that might not have language specifiers
+            response.text = response.text.replace(
+              /```(\s*)(\w+)?\s*([\s\S]*?)```/g,
+              (match, space, lang, code) => {
+                // If language is not specified, try to detect it or default to text
+                const language = lang || 'text';
+                return `\`\`\`${language}\n${code}\`\`\``;
               }
-              return response;
-            }),
-            tap((message) => console.log('Fetched message', message)),
-            catchError((error) => {
-              console.error('Error fetching message', error);
-              return throwError(() => error);
-            })
-          )
-      )
-    );
+            );
+
+            // Ensure inline code is properly formatted
+            response.text = response.text.replace(
+              /`([^`]+)`/g,
+              (match, code) => {
+                return `\`${code}\``;
+              }
+            );
+          }
+          return response;
+        }),
+        tap((message) => console.log('Fetched message', message)),
+        catchError((error) => {
+          console.error('Error fetching message', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -400,22 +334,20 @@ export class DeploymentService {
     projectId: string,
     deploymentId: string
   ): Observable<DeploymentModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.post<DeploymentModel>(
-          `${this.apiUrl}/deployments/startPipeline/${deploymentId}`,
-          {},
-          { headers }
-        )
-      ),
-      tap((deployment) =>
-        console.log('Generated pipeline for deployment', deployment)
-      ),
-      catchError((error) => {
-        console.error('Error generating pipeline', error);
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .post<DeploymentModel>(
+        `${this.apiUrl}/deployments/startPipeline/${deploymentId}`,
+        {}
+      )
+      .pipe(
+        tap((deployment) =>
+          console.log('Generated pipeline for deployment', deployment)
+        ),
+        catchError((error) => {
+          console.error('Error generating pipeline', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   /**
@@ -427,24 +359,19 @@ export class DeploymentService {
     projectId: string,
     deploymentId: string
   ): Observable<DeploymentModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) =>
-        this.http.post<DeploymentModel>(
-          `${this.apiUrl}/deployments/generate`,
-          {
-            projectId,
-            deploymentId,
-          },
-          { headers }
-        )
-      ),
-      tap((deployment) =>
-        console.log('Generated Terraform files for deployment', deployment)
-      ),
-      catchError((error) => {
-        console.error('Error generating Terraform files', error);
-        return throwError(() => error);
+    return this.http
+      .post<DeploymentModel>(`${this.apiUrl}/deployments/generate`, {
+        projectId,
+        deploymentId,
       })
-    );
+      .pipe(
+        tap((deployment) =>
+          console.log('Generated Terraform files for deployment', deployment)
+        ),
+        catchError((error) => {
+          console.error('Error generating Terraform files', error);
+          return throwError(() => error);
+        })
+      );
   }
 }

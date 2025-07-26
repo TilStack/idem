@@ -7,7 +7,11 @@ import {
   AfterViewInit,
   Renderer2,
   ApplicationRef,
+  PLATFORM_ID,
+  DestroyRef,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -24,6 +28,8 @@ export class SplashScreenComponent implements OnInit, AfterViewInit {
   protected readonly elementRef = inject(ElementRef);
   protected readonly renderer = inject(Renderer2);
   protected readonly appRef = inject(ApplicationRef);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly loading = signal(true);
 
   // Track loading progress
@@ -34,19 +40,31 @@ export class SplashScreenComponent implements OnInit, AfterViewInit {
     // Set initial loading state
     this.progress.set(0);
 
-    // Listen for resource load events
-    window.addEventListener('load', () => {
-      this.progress.set(100);
-      setTimeout(() => {
-        this.animationComplete.set(true);
+    // Listen for resource load events only in browser context
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('load', () => {
+        this.progress.set(100);
         setTimeout(() => {
-          this.loading.set(false);
-        }, 300);
-      }, 500);
-    });
+          this.animationComplete.set(true);
+          setTimeout(() => {
+            this.loading.set(false);
+          }, 300);
+        }, 500);
+      });
+    } else {
+      // In SSR context, set progress to complete immediately
+      this.progress.set(100);
+      this.animationComplete.set(true);
+      this.loading.set(false);
+    }
   }
 
   ngAfterViewInit(): void {
+    // Skip loading animation in SSR context
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    
     // Use Angular's ApplicationRef to detect when the app is stable
     // This is more Angular-idiomatic than using direct DOM queries
 
@@ -54,7 +72,7 @@ export class SplashScreenComponent implements OnInit, AfterViewInit {
     const totalResources = 20; // Estimate of total resources to load
     let resourcesLoaded = 0;
 
-    // Update progress function using Angular change detection
+    // Update progress function without triggering manual change detection
     const updateProgress = () => {
       resourcesLoaded++;
       const percentage = Math.min(
@@ -62,30 +80,32 @@ export class SplashScreenComponent implements OnInit, AfterViewInit {
         95
       );
       this.progress.set(percentage);
-      this.appRef.tick(); // Trigger change detection
+      // Removed this.appRef.tick() to avoid recursive calls
     };
 
     // Use renderer to listen to page load events
-    const window = this.elementRef.nativeElement.ownerDocument.defaultView;
-    this.renderer.listen('window', 'DOMContentLoaded', () => {
+    const document = this.elementRef.nativeElement.ownerDocument;
+    this.renderer.listen(document, 'DOMContentLoaded', () => {
       updateProgress();
     });
 
     // Register for style loading completion
-    this.appRef.isStable.subscribe((isStable) => {
+    this.appRef.isStable.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((isStable) => {
       if (isStable) {
         // Application is stable, meaning most resources are loaded
         setTimeout(() => {
           this.progress.set(100);
-          this.appRef.tick();
+          // Removed appRef.tick call
 
           setTimeout(() => {
             this.animationComplete.set(true);
-            this.appRef.tick();
+            // Removed appRef.tick call
 
             setTimeout(() => {
               this.loading.set(false);
-              this.appRef.tick();
+              // Removed appRef.tick call
             }, 300);
           }, 500);
         }, 300);
@@ -96,13 +116,24 @@ export class SplashScreenComponent implements OnInit, AfterViewInit {
     });
 
     // Simulate gradual progress while waiting for full stability
-    const progressInterval = setInterval(() => {
-      if (this.progress() < 90) {
-        this.progress.update((value) => Math.min(value + 5, 90));
-      } else {
+    // Only run this in browser context
+    let progressInterval: number | undefined;
+    if (isPlatformBrowser(this.platformId)) {
+      progressInterval = window.setInterval(() => {
+        if (this.progress() < 90) {
+          this.progress.update((value) => Math.min(value + 5, 90));
+        } else {
+          clearInterval(progressInterval);
+        }
+      }, 300);
+    }
+
+    // Clean up interval after a reasonable timeout
+    if (isPlatformBrowser(this.platformId) && progressInterval !== undefined) {
+      setTimeout(() => {
         clearInterval(progressInterval);
-      }
-    }, 300);
+      }, 10000);
+    }
 
     // Complete loading when navigation finishes (fallback)
     this.router.events

@@ -1,8 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Auth, authState } from '@angular/fire/auth';
-import { Observable, throwError, from } from 'rxjs';
-import { switchMap, map, take, catchError, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { BusinessPlanModel } from '../../models/businessPlan.model';
 
@@ -13,45 +12,24 @@ export class BusinessPlanService {
   private apiUrl = `${environment.services.api.url}/project/businessPlans`;
 
   private http = inject(HttpClient);
-  private auth = inject(Auth);
 
   constructor() {}
 
-  private getAuthHeaders(): Observable<HttpHeaders> {
-    return authState(this.auth).pipe(
-      take(1),
-      switchMap((user) => {
-        if (!user) {
-          return throwError(
-            () =>
-              new Error(
-                'User not authenticated for BusinessPlanService operation'
-              )
-          );
-        }
-        return from(user.getIdToken());
-      }),
-      map((token) => {
-        return new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        });
-      })
-    );
-  }
+  /**
+   * Authentication headers are now handled by the centralized auth.interceptor
+   * No need for manual token management in each service
+   */
 
-  // Create a new project businessplan item
+  /**
+   * Create a new project business plan item
+   * @param projectId Project ID to create business plan for
+   * @returns Observable with the created business plan
+   */
   createBusinessplanItem(projectId: string): Observable<BusinessPlanModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.post<BusinessPlanModel>(
-          `${this.apiUrl}/${projectId}`,
-          {},
-          {
-            headers,
-          }
-        );
-      }),
+    return this.http.post<BusinessPlanModel>(
+      `${this.apiUrl}/${projectId}`,
+      {}
+    ).pipe(
       tap((response) =>
         console.log('createBusinessplanItem response:', response)
       ),
@@ -64,14 +42,8 @@ export class BusinessPlanService {
 
   // Get all project businessplan items (optionally by projectId)
   getBusinessplanItems(projectId?: string): Observable<BusinessPlanModel[]> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        let url = this.apiUrl;
-        if (projectId) {
-          url += `?projectId=${projectId}`;
-        }
-        return this.http.get<BusinessPlanModel[]>(url, { headers });
-      }),
+    return this.http.get<BusinessPlanModel[]>(`${this.apiUrl}/${projectId}`)
+      .pipe(
       tap((response) =>
         console.log('getBusinessplanItems response:', response)
       ),
@@ -84,12 +56,7 @@ export class BusinessPlanService {
 
   // Get a specific project businessplan item by ID
   getBusinessplanItemById(id: string): Observable<BusinessPlanModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<BusinessPlanModel>(`${this.apiUrl}/${id}`, {
-          headers,
-        });
-      }),
+    return this.http.get<BusinessPlanModel>(`${this.apiUrl}/${id}`).pipe(
       tap((response) =>
         console.log('getBusinessplanItemById response:', response)
       ),
@@ -100,17 +67,30 @@ export class BusinessPlanService {
     );
   }
 
+  // Get a specific business plan item
+  getBusinessplanItem(
+    projectId: string,
+    businessplanId: string
+  ): Observable<BusinessPlanModel> {
+    return this.http.get<BusinessPlanModel>(
+      `${this.apiUrl}/${projectId}/${businessplanId}`
+    ).pipe(
+      tap((response) =>
+        console.log('getBusinessplanItem response:', response)
+      ),
+      catchError((error) => {
+        console.error(`Error in getBusinessplanItem for ID ${businessplanId}:`, error);
+        throw error;
+      })
+    );
+  }
+
   // Update a specific project businessplan item
   updateBusinessplanItem(
     id: string,
     item: Partial<BusinessPlanModel>
   ): Observable<BusinessPlanModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.put<BusinessPlanModel>(`${this.apiUrl}/${id}`, item, {
-          headers,
-        });
-      }),
+    return this.http.put<BusinessPlanModel>(`${this.apiUrl}/${id}`, item).pipe(
       tap((response) =>
         console.log('updateBusinessplanItem response:', response)
       ),
@@ -122,16 +102,18 @@ export class BusinessPlanService {
   }
 
   // Delete a specific project businessplan item
-  deleteBusinessplanItem(id: string): Observable<void> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers });
-      }),
+  deleteBusinessplanItem(
+    projectId: string,
+    businessplanId: string
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${projectId}/${businessplanId}`
+    ).pipe(
       tap((response) =>
-        console.log(`deleteBusinessplanItem response for ID ${id}:`, response)
+        console.log(`deleteBusinessplanItem response for ID ${businessplanId}:`, response)
       ),
       catchError((error) => {
-        console.error(`Error in deleteBusinessplanItem for ID ${id}:`, error);
+        console.error(`Error in deleteBusinessplanItem for ID ${businessplanId}:`, error);
         throw error;
       })
     );

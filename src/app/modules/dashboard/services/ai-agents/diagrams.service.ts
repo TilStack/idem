@@ -1,8 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Auth, authState } from '@angular/fire/auth';
-import { Observable, throwError, from } from 'rxjs';
-import { switchMap, map, take, catchError, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { DiagramModel } from '../../models/diagram.model';
 
@@ -13,41 +12,24 @@ export class DiagramsService {
   private apiUrl = `${environment.services.api.url}/project/diagrams`;
 
   private http = inject(HttpClient);
-  private auth = inject(Auth);
 
   constructor() {}
 
-  private getAuthHeaders(): Observable<HttpHeaders> {
-    return authState(this.auth).pipe(
-      take(1),
-      switchMap((user) => {
-        if (!user) {
-          return throwError(
-            () =>
-              new Error('User not authenticated for DiagramsService operation')
-          );
-        }
-        return from(user.getIdToken());
-      }),
-      map((token) => {
-        return new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        });
-      })
-    );
-  }
+  /**
+   * Authentication headers are now handled by the centralized auth.interceptor
+   * No need for manual token management in each service
+   */
 
-  // Create a new diagram
+  /**
+   * Create a new diagram
+   * @param projectId Project ID
+   * @returns Observable with the created diagram model
+   */
   createDiagramModel(projectId: string): Observable<DiagramModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.post<DiagramModel>(
-          `${this.apiUrl}/generate/${projectId}`,
-          {},
-          { headers }
-        );
-      }),
+    return this.http.post<DiagramModel>(
+      `${this.apiUrl}/generate/${projectId}`,
+      {}
+    ).pipe(
       tap((response) => console.log('createDiagramModel response:', response)),
       catchError((error) => {
         console.error('Error in createDiagramModel:', error);
@@ -56,15 +38,15 @@ export class DiagramsService {
     );
   }
 
-  // Get all diagrams for a project
+  /**
+   * Get all diagrams for a project
+   * @param projectId Project ID
+   * @returns Observable with array of diagram models
+   */
   getDiagramModels(projectId: string): Observable<DiagramModel[]> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<DiagramModel[]>(
-          `${this.apiUrl}?projectId=${projectId}`,
-          { headers }
-        );
-      }),
+    return this.http.get<DiagramModel[]>(
+      `${this.apiUrl}?projectId=${projectId}`
+    ).pipe(
       tap((response) => console.log('getDiagramModels response:', response)),
       catchError((error) => {
         console.error('Error in getDiagramModels:', error);
@@ -73,15 +55,15 @@ export class DiagramsService {
     );
   }
 
-  // Get a specific diagram by project ID
+  /**
+   * Get a specific diagram by project ID
+   * @param projectId Project ID
+   * @returns Observable with the requested diagram model
+   */
   getDiagramModelById(projectId: string): Observable<DiagramModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<DiagramModel>(
-          `${this.apiUrl}/getAll/${projectId}`,
-          { headers }
-        );
-      }),
+    return this.http.get<DiagramModel>(
+      `${this.apiUrl}/getAll/${projectId}`
+    ).pipe(
       tap((response) => console.log('getDiagramModelById response:', response)),
       catchError((error) => {
         console.error(
@@ -93,17 +75,17 @@ export class DiagramsService {
     );
   }
 
-  // Update a specific diagram
+  /**
+   * Update a specific diagram
+   * @param id Diagram ID to update
+   * @param item Updated diagram data
+   * @returns Observable with the updated diagram model
+   */
   updateDiagramModel(
     id: string,
     item: Partial<DiagramModel>
   ): Observable<DiagramModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.put<DiagramModel>(`${this.apiUrl}/${id}`, item, {
-          headers,
-        });
-      }),
+    return this.http.put<DiagramModel>(`${this.apiUrl}/${id}`, item).pipe(
       tap((response) => console.log('updateDiagramModel response:', response)),
       catchError((error) => {
         console.error(`Error in updateDiagramModel for ID ${id}:`, error);
@@ -112,12 +94,13 @@ export class DiagramsService {
     );
   }
 
-  // Delete a specific diagram
+  /**
+   * Delete a specific diagram
+   * @param id Diagram ID to delete
+   * @returns Observable for the deletion operation
+   */
   deleteDiagramModel(id: string): Observable<void> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers });
-      }),
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap((response) =>
         console.log(`deleteDiagramModel response for ID ${id}:`, response)
       ),

@@ -33,13 +33,16 @@ import { Router, NavigationEnd } from '@angular/router';
 import { first, switchMap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { CookieService } from '../../../../shared/services/cookie.service';
+import { BetaBadgeComponent } from "../../../../shared/components/beta-badge/beta-badge";
+import { QuotaDisplayComponent } from "../../../../shared/components/quota-display/quota-display";
+// import { BetaBadgeComponent } from '../../../../shared/components/beta-badge/beta-badge';
 
 @Component({
   selector: 'app-sidebar-dashboard',
   templateUrl: './sidebar-dashboard.html',
   styleUrls: ['./sidebar-dashboard.css'],
   standalone: true,
-  imports: [PanelMenu, Select, CommonModule, FormsModule],
+  imports: [PanelMenu, Select, CommonModule, FormsModule, BetaBadgeComponent, QuotaDisplayComponent],
   animations: [
     trigger('slideInOut', [
       transition(':enter', [

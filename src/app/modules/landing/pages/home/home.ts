@@ -79,10 +79,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       },
     ];
 
-    this.seoService.updateTitle(title);
-    this.seoService.updateMetaTags(metaTags);
-    this.seoService.updateOgTags(ogTags);
-    this.seoService.setCanonicalUrl('/');
+    // this.seoService.updateTitle(title);
+    // this.seoService.updateMetaTags(metaTags);
+    // this.seoService.updateOgTags(ogTags);
+    // this.seoService.setCanonicalUrl('/');
   }
 
   // Animation methods

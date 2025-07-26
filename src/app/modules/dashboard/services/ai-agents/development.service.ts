@@ -1,8 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Auth, authState } from '@angular/fire/auth';
-import { Observable, throwError, from, of } from 'rxjs';
-import { switchMap, map, take, catchError, tap } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { DevelopmentConfigsModel } from '../../models/development.model';
 import { ProjectModel } from '../../models/project.model';
@@ -22,50 +21,30 @@ export class DevelopmentService {
   private apiUrl = `${environment.services.api.url}/project/developments`;
 
   private http = inject(HttpClient);
-  private auth = inject(Auth);
 
   constructor() {}
 
-  private getAuthHeaders(): Observable<HttpHeaders> {
-    return authState(this.auth).pipe(
-      take(1),
-      switchMap((user) => {
-        if (!user) {
-          return throwError(
-            () =>
-              new Error(
-                'User not authenticated for DevelopmentService operation'
-              )
-          );
-        }
-        return from(user.getIdToken()); // Convert Promise<string> to Observable<string>
-      }),
-      map((token) => {
-        return new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        });
-      })
-    );
-  }
+  /**
+   * Authentication headers are now handled by the centralized auth.interceptor
+   * No need for manual token management in each service
+   */
 
   // Save development configurations
   saveDevelopmentConfigs(
     developmentConfigs: DevelopmentConfigsModel,
     projectId: string
   ): Observable<ProjectModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.post<ProjectModel>(
-          `${this.apiUrl}/configs`,
-          { developmentConfigs, projectId },
-          {
-            headers,
-          }
-        );
-      }),
+    return this.http.post<ProjectModel>(`${this.apiUrl}/configs`, {
+      developmentConfigs,
+      projectId,
+    });
+  }
+
+  // Create a new development item
+  createDevelopmentItem(item: DevelopmentItem): Observable<DevelopmentItem> {
+    return this.http.post<DevelopmentItem>(this.apiUrl, item).pipe(
       tap((response) =>
-        console.log('saveDevelopmentConfigs response:', response)
+        console.log('createDevelopmentItem response:', response)
       ),
       catchError((error) => {
         console.error('Error in saveDevelopmentConfigs:', error);
@@ -78,49 +57,30 @@ export class DevelopmentService {
   getDevelopmentConfigs(
     projectId: string
   ): Observable<DevelopmentConfigsModel | null> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<DevelopmentConfigsModel>(
-          `${this.apiUrl}/configs/${projectId}`,
-          { headers }
-        ).pipe(
-          catchError((error: HttpErrorResponse) => {
-            if (error.status === 404) {
-              return of(null);
-            }
-            console.error('Error in getDevelopmentConfigs:', error);
-            throw error;
-          })
-        );
-      })
-    );
-  }
-
-  // Create a new development item
-  createDevelopmentItem(item: DevelopmentItem): Observable<DevelopmentItem> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.post<DevelopmentItem>(this.apiUrl, item, { headers });
-      }),
-      tap((response) =>
-        console.log('createDevelopmentItem response:', response)
-      ),
-      catchError((error) => {
-        console.error('Error in createDevelopmentItem:', error);
-        throw error;
-      })
-    );
+    return this.http
+      .get<DevelopmentConfigsModel>(`${this.apiUrl}/configs/${projectId}`)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404) {
+            return of(null);
+          }
+          console.error('Error in getDevelopmentConfigs:', error);
+          throw error;
+        })
+      );
   }
 
   // Get all development items
-  getDevelopmentItems(): Observable<DevelopmentItem[]> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<DevelopmentItem[]>(this.apiUrl, { headers });
-      }),
-      tap((response) => console.log('getDevelopmentItems response:', response)),
+  getAllDevelopmentItems(projectId: string): Observable<DevelopmentItem[]> {
+    return this.http.get<DevelopmentItem[]>(`${this.apiUrl}/${projectId}`).pipe(
+      tap((response) =>
+        console.log('getAllDevelopmentItems response:', response)
+      ),
       catchError((error) => {
-        console.error('Error in getDevelopmentItems:', error);
+        console.error(
+          `Error in getAllDevelopmentItems for project ${projectId}:`,
+          error
+        );
         throw error;
       })
     );
@@ -128,12 +88,7 @@ export class DevelopmentService {
 
   // Get a specific development item by ID
   getDevelopmentItemById(id: string): Observable<DevelopmentItem> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<DevelopmentItem>(`${this.apiUrl}/${id}`, {
-          headers,
-        });
-      }),
+    return this.http.get<DevelopmentItem>(`${this.apiUrl}/${id}`).pipe(
       tap((response) =>
         console.log('getDevelopmentItemById response:', response)
       ),
@@ -149,12 +104,7 @@ export class DevelopmentService {
     id: string,
     item: Partial<DevelopmentItem>
   ): Observable<DevelopmentItem> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.put<DevelopmentItem>(`${this.apiUrl}/${id}`, item, {
-          headers,
-        });
-      }),
+    return this.http.put<DevelopmentItem>(`${this.apiUrl}/${id}`, item).pipe(
       tap((response) =>
         console.log('updateDevelopmentItem response:', response)
       ),
@@ -167,10 +117,7 @@ export class DevelopmentService {
 
   // Delete a specific development item
   deleteDevelopmentItem(id: string): Observable<void> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers });
-      }),
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap((response) =>
         console.log(`deleteDevelopmentItem response for ID ${id}:`, response)
       ),

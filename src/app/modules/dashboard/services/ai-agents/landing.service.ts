@@ -13,36 +13,18 @@ export class LandingService {
   private apiUrl = `${environment.services.api.url}/project/landings`; // Adjusted to match your backend routes
 
   private http = inject(HttpClient);
-  private auth = inject(Auth);
 
   constructor() {}
-
-  private getAuthHeaders(): Observable<HttpHeaders> {
-    return authState(this.auth).pipe(
-      take(1),
-      switchMap(user => {
-        if (!user) {
-          return throwError(() => new Error('User not authenticated for LandingService operation'));
-        }
-        return from(user.getIdToken()); // Convert Promise<string> to Observable<string>
-      }),
-      map(token => {
-        return new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        });
-      })
-    );
-  }
+  /**
+   * Authentication headers are now handled by the centralized auth.interceptor
+   * No need for manual token management in each service
+   */
 
   // Create a new landing item
   createLandingModel(item: LandingModel): Observable<LandingModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap(headers => {
-        return this.http.post<LandingModel>(this.apiUrl, item, { headers });
-      }),
-      tap(response => console.log('createLandingModel response:', response)),
-      catchError(error => {
+    return this.http.post<LandingModel>(this.apiUrl, item).pipe(
+      tap((response) => console.log('createLandingModel response:', response)),
+      catchError((error) => {
         console.error('Error in createLandingModel:', error);
         throw error;
       })
@@ -51,12 +33,9 @@ export class LandingService {
 
   // Get all landing items
   getLandingModels(): Observable<LandingModel[]> {
-    return this.getAuthHeaders().pipe(
-      switchMap(headers => {
-        return this.http.get<LandingModel[]>(this.apiUrl, { headers });
-      }),
-      tap(response => console.log('getLandingModels response:', response)),
-      catchError(error => {
+    return this.http.get<LandingModel[]>(this.apiUrl).pipe(
+      tap((response) => console.log('getLandingModels response:', response)),
+      catchError((error) => {
         console.error('Error in getLandingModels:', error);
         throw error;
       })
@@ -65,12 +44,9 @@ export class LandingService {
 
   // Get a specific landing item by ID
   getLandingModelById(id: string): Observable<LandingModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap(headers => {
-        return this.http.get<LandingModel>(`${this.apiUrl}/${id}`, { headers });
-      }),
-      tap(response => console.log('getLandingModelById response:', response)),
-      catchError(error => {
+    return this.http.get<LandingModel>(`${this.apiUrl}/${id}`).pipe(
+      tap((response) => console.log('getLandingModelById response:', response)),
+      catchError((error) => {
         console.error(`Error in getLandingModelById for ID ${id}:`, error);
         throw error;
       })
@@ -78,13 +54,13 @@ export class LandingService {
   }
 
   // Update a specific landing item
-  updateLandingModel(id: string, item: Partial<LandingModel>): Observable<LandingModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap(headers => {
-        return this.http.put<LandingModel>(`${this.apiUrl}/${id}`, item, { headers });
-      }),
-      tap(response => console.log('updateLandingModel response:', response)),
-      catchError(error => {
+  updateLandingModel(
+    id: string,
+    item: Partial<LandingModel>
+  ): Observable<LandingModel> {
+    return this.http.put<LandingModel>(`${this.apiUrl}/${id}`, item).pipe(
+      tap((response) => console.log('updateLandingModel response:', response)),
+      catchError((error) => {
         console.error(`Error in updateLandingModel for ID ${id}:`, error);
         throw error;
       })
@@ -93,12 +69,11 @@ export class LandingService {
 
   // Delete a specific landing item
   deleteLandingModel(id: string): Observable<void> {
-    return this.getAuthHeaders().pipe(
-      switchMap(headers => {
-        return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers });
-      }),
-      tap(response => console.log(`deleteLandingModel response for ID ${id}:`, response)),
-      catchError(error => {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap((response) =>
+        console.log(`deleteLandingModel response for ID ${id}:`, response)
+      ),
+      catchError((error) => {
         console.error(`Error in deleteLandingModel for ID ${id}:`, error);
         throw error;
       })

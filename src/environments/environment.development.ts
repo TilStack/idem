@@ -18,7 +18,7 @@ export const environment = {
       llmModel: 'gpt-3.5-turbo',
     },
     webgen: {
-      url: 'http://localhost:5174',
+      url: 'http://localhost:5173',
     },
     diagen: {
       url: 'http://localhost:3001',

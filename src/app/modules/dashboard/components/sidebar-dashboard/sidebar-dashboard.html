@@ -38,6 +38,12 @@
       </div>
       }
 
+      <!-- Badge Beta et Quotas -->
+      <div class="hidden md:flex items-center space-x-4 mr-4">
+        <app-beta-badge></app-beta-badge>
+        <app-quota-display></app-quota-display>
+      </div>
+
       <!-- Bouton de connexion (visible sur desktop) -->
       <div class="hidden md:flex items-center relative z-50">
         @if (user()) {

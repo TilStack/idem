@@ -12,6 +12,8 @@ import { Observable } from 'rxjs';
 import { PublicLayoutComponent } from './layouts/public-layout/public-layout';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout';
 import { EmptyLayout } from "./layouts/empty-layout/empty-layout";
+import { NotificationContainerComponent } from './shared/components/notification-container/notification-container';
+import { QuotaWarningComponent } from './shared/components/quota-warning/quota-warning';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +24,9 @@ import { EmptyLayout } from "./layouts/empty-layout/empty-layout";
     DashboardLayoutComponent,
     CommonModule,
     EmptyLayout,
-    SplashScreenComponent
+    SplashScreenComponent,
+    NotificationContainerComponent,
+    QuotaWarningComponent
 ],
   templateUrl: './app.html',
   styleUrl: './app.css',

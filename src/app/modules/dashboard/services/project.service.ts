@@ -1,8 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Auth, authState } from '@angular/fire/auth';
-import { Observable, throwError, from } from 'rxjs';
-import { switchMap, map, take, catchError, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { ProjectModel } from '../models/project.model';
 
@@ -13,60 +12,24 @@ export class ProjectService {
   private apiUrl = `${environment.services.api.url}/projects`;
 
   private http = inject(HttpClient);
-  private auth = inject(Auth);
 
   constructor() {}
 
-  private getAuthHeaders(): Observable<HttpHeaders> {
-    return authState(this.auth).pipe(
-      take(1),
-      switchMap((user) => {
-        if (!user) {
-          return throwError(
-            () =>
-              new Error('User not authenticated for ProjectService operation')
-          );
-        }
-        return from(user.getIdToken());
-      }),
-      map((token) => {
-        if (!token) {
-          throw new Error(
-            'Failed to retrieve ID token. User authenticated but token is null.'
-          );
-        }
-        return new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        });
-      }),
-      catchError((error) => {
-        console.error(
-          'Error in getAuthHeaders for ProjectService:',
-          error.message
-        );
-        return throwError(
-          () =>
-            new Error(
-              'Authentication header could not be generated for ProjectService: ' +
-                error.message
-            )
-        );
-      })
-    );
-  }
+  /**
+   * All authentication headers are now handled by the centralized auth.interceptor
+   * No need for manual token management in each service
+   */
 
+  /**
+   * Creates a new project
+   * @param projectData Project data to create
+   * @returns Observable of the created project ID
+   */
   createProject(projectData: ProjectModel): Observable<string> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.post<{ message: string; projectId: string }>(
-          `${this.apiUrl}/create`,
-          projectData,
-          {
-            headers,
-          }
-        );
-      }),
+    return this.http.post<{ message: string; projectId: string }>(        
+      `${this.apiUrl}/create`,
+      projectData
+    ).pipe(
       map((response) => response.projectId),
       tap((projectId) => console.log('createProject response:', projectId)),
       catchError((error) => {
@@ -76,13 +39,12 @@ export class ProjectService {
     );
   }
 
+  /**
+   * Gets all projects for the authenticated user
+   * @returns Observable of project array
+   */
   getProjects(): Observable<ProjectModel[]> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<ProjectModel[]>(`${this.apiUrl}`, {
-          headers,
-        });
-      }),
+    return this.http.get<ProjectModel[]>(`${this.apiUrl}`).pipe(
       tap((response) => console.log('getProjects response:', response)),
       catchError((error) => {
         console.error('Error in getProjects:', error);
@@ -91,13 +53,13 @@ export class ProjectService {
     );
   }
 
+  /**
+   * Gets a project by ID
+   * @param projectId ID of the project to retrieve
+   * @returns Observable of the project or null
+   */
   getProjectById(projectId: string): Observable<ProjectModel | null> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.get<ProjectModel>(`${this.apiUrl}/${projectId}`, {
-          headers,
-        });
-      }),
+    return this.http.get<ProjectModel>(`${this.apiUrl}/${projectId}`).pipe(
       tap((response) =>
         console.log(`getProjectById response for ${projectId}:`, response)
       ),
@@ -108,18 +70,20 @@ export class ProjectService {
     );
   }
 
+  /**
+   * Updates a project
+   * @param projectId ID of the project to update
+   * @param updatedData Partial project data to update
+   * @returns Observable of the updated project
+   */
   updateProject(
     projectId: string,
     updatedData: Partial<ProjectModel>
   ): Observable<ProjectModel> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.put<ProjectModel>(
-          `${this.apiUrl}/update/${projectId}`,
-          updatedData,
-          { headers }
-        );
-      }),
+    return this.http.put<ProjectModel>(
+      `${this.apiUrl}/update/${projectId}`,
+      updatedData
+    ).pipe(
       tap((response) =>
         console.log(`updateProject response for ${projectId}:`, response)
       ),
@@ -130,13 +94,13 @@ export class ProjectService {
     );
   }
 
+  /**
+   * Deletes a project by ID
+   * @param projectId ID of the project to delete
+   * @returns Observable of void (completed operation)
+   */
   deleteProject(projectId: string): Observable<void> {
-    return this.getAuthHeaders().pipe(
-      switchMap((headers) => {
-        return this.http.delete<void>(`${this.apiUrl}/delete/${projectId}`, {
-          headers,
-        });
-      }),
+    return this.http.delete<void>(`${this.apiUrl}/delete/${projectId}`).pipe(
       tap((response) =>
         console.log(`deleteProject response for ${projectId}:`, response)
       ),

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { TokenService } from '../../../shared/services/token.service';
 import {
   Auth,
   GithubAuthProvider,
@@ -21,6 +22,7 @@ export class AuthService {
   private auth = inject(Auth);
   user$: Observable<User | null>;
   private http = inject(HttpClient);
+  private tokenService = inject(TokenService);
   private apiUrl = `${environment.services.api.url}/auth`;
   constructor(private firestore: Firestore) {
     this.user$ = user(this.auth);
@@ -55,20 +57,23 @@ export class AuthService {
   }
 
   private async sendTokenToBackend(): Promise<void> {
-    const token = await this.auth.currentUser?.getIdToken();
+    // Utiliser TokenService pour rafraîchir le token
+    const currentUser = this.auth.currentUser;
+    const token = currentUser ? await this.tokenService.refreshToken(currentUser) : null;
 
     if (!token) {
-      console.error("Impossible d'obtenir le token utilisateur");
+      console.error('Aucun token disponible');
       return;
     }
 
-    await this.http
-      .post(
-        `${this.apiUrl}/sessionLogin`,
-        { idToken: token },
-        { withCredentials: true }
-      )
-      .toPromise();
+    try {
+      // Envoyer le token au backend
+      await this.http
+        .post<void>(`${this.apiUrl}/verify-token`, { token })
+        .toPromise();
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du token au backend:', error);
+    }
   }
 
   async createUserDocument(user: User) {
@@ -98,12 +103,17 @@ export class AuthService {
   logout(): Observable<void> {
     const promise = signOut(this.auth)
       .then(() => {
+        // Effacer le token dans TokenService
+        this.tokenService.clearToken();
         sessionStorage.clear();
         return this.http
-          .post(`${this.apiUrl}/logout`, {}, { withCredentials: true })
+          .post<void>(`${this.apiUrl}/logout`, {})
           .toPromise();
       })
-      .then(() => {});
+      .catch((error) => {
+        console.error('Erreur lors de la déconnexion:', error);
+      });
+
     return from(promise);
   }
 
