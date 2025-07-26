@@ -8,6 +8,7 @@ import {
   OnInit,
   signal,
   computed,
+  DestroyRef,
   effect,
   Output,
   EventEmitter,
@@ -33,8 +34,11 @@ import { Router, NavigationEnd } from '@angular/router';
 import { first, switchMap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
 import { CookieService } from '../../../../shared/services/cookie.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BetaBadgeComponent } from "../../../../shared/components/beta-badge/beta-badge";
 import { QuotaDisplayComponent } from "../../../../shared/components/quota-display/quota-display";
+import { QuotaService } from '../../../../shared/services/quota.service';
+import { QuotaInfoResponse, QuotaDisplayData, BetaRestrictions, QuotaStatus } from '../../../../shared/models/quota.model';
 // import { BetaBadgeComponent } from '../../../../shared/components/beta-badge/beta-badge';
 
 @Component({
@@ -82,13 +86,22 @@ export class SidebarDashboard implements OnInit {
   private readonly projectService = inject(ProjectService);
   private readonly router = inject(Router);
   private readonly cookieService = inject(CookieService);
-
+  private readonly quotaService = inject(QuotaService);
+  private readonly destroyRef = inject(DestroyRef);
+  
   // Signals for UI State
   items = signal<MenuItem[]>([]);
   isLoading = signal(true);
   isMenuOpen = signal(false);
   isDropdownOpen = signal(false);
   protected readonly isSidebarCollapsed = signal(false);
+
+  // Quota Signals (managed locally)
+  protected readonly quotaInfo = signal<QuotaInfoResponse | null>(null);
+  protected readonly quotaDisplay = signal<QuotaDisplayData | null>(null);
+  protected readonly isBeta = signal<boolean>(false);
+  protected readonly betaRestrictions = signal<BetaRestrictions | null>(null);
+  protected readonly isQuotaLoading = signal<boolean>(true);
 
   // Computed values for UI states
   protected readonly sidebarState = computed(() =>
@@ -209,6 +222,120 @@ export class SidebarDashboard implements OnInit {
   }
 
   ngOnInit() {
+    this.initializeMenu();
+    this.loadProjects();
+   
+  }
+  
+  /**
+   * Loads quota information from the QuotaService
+   */
+  private loadQuotaInfo(): void {
+    this.isQuotaLoading.set(true);
+    
+    this.quotaService.getQuotaInfo()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (info: QuotaInfoResponse) => {
+          this.quotaInfo.set(info);
+          this.isBeta.set(info.isBeta || false);
+          this.processQuotaDisplayData(info);
+          this.isQuotaLoading.set(false);
+        },
+        error: () => {
+          this.isQuotaLoading.set(false);
+        }
+      });
+  }
+  
+  /**
+   * Processes quota info into display data
+   */
+  private processQuotaDisplayData(info: QuotaInfoResponse): void {
+    if (!info) return;
+    
+    const dailyPercentage = (info.dailyUsage / info.dailyLimit) * 100;
+    const weeklyPercentage = (info.weeklyUsage / info.weeklyLimit) * 100;
+    
+    const displayData: QuotaDisplayData = {
+      dailyPercentage,
+      weeklyPercentage,
+      dailyStatus: this.getQuotaStatus(dailyPercentage),
+      weeklyStatus: this.getQuotaStatus(weeklyPercentage),
+      canUseFeature: info.remainingDaily > 0 && info.remainingWeekly > 0
+    };
+    
+    this.quotaDisplay.set(displayData);
+    
+    // Set beta restrictions if user is in beta
+    if (info.isBeta) {
+      this.betaRestrictions.set({
+        maxStyles: 3,
+        maxResolution: '1024x1024',
+        maxOutputTokens: 2000,
+        restrictedPrompts: [],
+        allowedFeatures: ['basic']
+      });
+    }
+  }
+  
+  /**
+   * Determines quota status based on percentage
+   */
+  private getQuotaStatus(percentage: number): QuotaStatus {
+    if (percentage >= 100) return QuotaStatus.EXCEEDED;
+    if (percentage >= 80) return QuotaStatus.WARNING;
+    return QuotaStatus.AVAILABLE;
+  }
+
+  /**
+   * Initializes the menu items
+   */
+  private initializeMenu(): void {
+    // Initialize menu items
+    this.items.set([
+      {
+        label: 'Dashboard',
+        icon: 'pi pi-fw pi-home',
+        command: () => this.navigateTo('console/dashboard'),
+      },
+      {
+        label: 'Branding',
+        icon: 'pi pi-fw pi-palette',
+        command: () => this.navigateTo('console/branding'),
+      },
+      {
+        label: 'Planing',
+        icon: 'pi pi-fw pi-calendar',
+        command: () => this.navigateTo('console/planing'),
+      },
+      {
+        label: 'Diagrams',
+        icon: 'pi pi-fw pi-chart-line',
+        command: () => this.navigateTo('console/diagrams'),
+      },
+      {
+        label: 'Developement',
+        icon: 'pi pi-fw pi-code',
+        command: () => this.navigateTo('console/development'),
+      },
+      {
+        label: 'Tests',
+        icon: 'pi pi-fw pi-check-square',
+        command: () => this.navigateTo('console/tests'),
+      },
+      {
+        label: 'Deployment',
+        icon: 'pi pi-fw pi-globe',
+        command: () => this.navigateTo('console/deployments'),
+      },
+    ]);
+  }
+
+  /**
+   * Loads projects from the ProjectService
+   */
+  private loadProjects(): void {
     this.isLoading.set(true);
     this.auth.user$
       .pipe(
@@ -227,7 +354,7 @@ export class SidebarDashboard implements OnInit {
         next: (projects) => {
           this._userProjects.set(projects);
           const initialCookieId = this.cookieService.get('projectId'); // Get ID from cookie
-
+          this.loadQuotaInfo();
           if (projects.length > 0) {
             if (!initialCookieId) {
               // No project ID in cookie on initial load, save to cookie and navigate to the first project

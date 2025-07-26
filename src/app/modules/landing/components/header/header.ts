@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { first } from 'rxjs/operators';
+import { BetaBadgeComponent } from "../../../../shared/components/beta-badge/beta-badge";
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -27,7 +28,8 @@ import { first } from 'rxjs/operators';
     AvatarModule,
     InputTextModule,
     CommonModule,
-  ],
+    BetaBadgeComponent
+],
   templateUrl: './header.html',
   styleUrl: './header.css',
   animations: [

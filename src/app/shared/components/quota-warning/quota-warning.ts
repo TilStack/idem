@@ -1,14 +1,20 @@
 import {
   Component,
   inject,
-  computed,
-  effect,
+  signal,
+  OnInit,
+  DestroyRef,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { QuotaService } from '../../services/quota.service';
 import { NotificationService } from '../../services/notification.service';
-import { QuotaStatus } from '../../models/quota.model';
+import {
+  QuotaStatus,
+  QuotaInfoResponse,
+  QuotaDisplayData,
+} from '../../models/quota.model';
 
 @Component({
   selector: 'app-quota-warning',
@@ -96,24 +102,43 @@ import { QuotaStatus } from '../../models/quota.model';
     }
   `,
 })
-export class QuotaWarningComponent {
+export class QuotaWarningComponent implements OnInit {
   private readonly quotaService = inject(QuotaService);
   private readonly notificationService = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private warningDismissed = false;
 
-  protected readonly shouldShowWarning = computed(() => {
-    if (this.warningDismissed) return null;
+  // Local state management with signals
+  protected readonly quotaInfo = signal<QuotaInfoResponse | null>(null);
+  protected readonly quotaDisplay = signal<QuotaDisplayData | null>(null);
+  protected readonly isLoading = signal<boolean>(true);
+  protected readonly shouldShowWarning = signal<any>(null);
 
-    const quotaInfo = this.quotaService.quotaInfo();
-    const quotaDisplay = this.quotaService.quotaDisplay();
+  /**
+   * Calculates if warning should be shown based on quota data
+   */
+  private calculateWarningState(): void {
+    if (this.warningDismissed) {
+      this.shouldShowWarning.set(null);
+      return;
+    }
 
-    if (!quotaInfo || !quotaDisplay) return null;
+    const quotaInfo = this.quotaInfo();
+    const quotaDisplay = this.quotaDisplay();
+
+    if (!quotaInfo || !quotaDisplay) {
+      this.shouldShowWarning.set(null);
+      return;
+    }
 
     const dailyWarning = quotaDisplay.dailyStatus === QuotaStatus.WARNING;
     const weeklyWarning = quotaDisplay.weeklyStatus === QuotaStatus.WARNING;
 
-    if (!dailyWarning && !weeklyWarning) return null;
+    if (!dailyWarning && !weeklyWarning) {
+      this.shouldShowWarning.set(null);
+      return;
+    }
 
     let title = 'Quota bientôt atteint';
     let message = "Vous approchez de vos limites d'utilisation.";
@@ -126,7 +151,7 @@ export class QuotaWarningComponent {
       message = 'Votre quota hebdomadaire est bientôt atteint.';
     }
 
-    return {
+    this.shouldShowWarning.set({
       title,
       message,
       dailyWarning,
@@ -135,15 +160,68 @@ export class QuotaWarningComponent {
       dailyLimit: quotaInfo.dailyLimit,
       weeklyUsage: quotaInfo.weeklyUsage,
       weeklyLimit: quotaInfo.weeklyLimit,
-    };
-  });
+    });
+  }
 
-  // Effect pour envoyer une notification quand le quota atteint 80%
   ngOnInit(): void {
-    const warning = this.shouldShowWarning();
-    if (warning && !this.warningDismissed) {
-      this.sendWarningNotification(warning);
-    }
+    this.loadQuotaInfo();
+  }
+
+  /**
+   * Loads quota information from the service
+   */
+  private loadQuotaInfo(): void {
+    this.isLoading.set(true);
+
+    this.quotaService
+      .getQuotaInfo()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (info: QuotaInfoResponse) => {
+          this.quotaInfo.set(info);
+          this.processQuotaDisplayData(info);
+          this.isLoading.set(false);
+          this.calculateWarningState();
+
+          // Send notification if warning is active
+          const warning = this.shouldShowWarning();
+          if (warning && !this.warningDismissed) {
+            this.sendWarningNotification(warning);
+          }
+        },
+        error: () => {
+          this.isLoading.set(false);
+        },
+      });
+  }
+
+  /**
+   * Processes quota info into display data
+   */
+  private processQuotaDisplayData(info: QuotaInfoResponse): void {
+    if (!info) return;
+
+    const dailyPercentage = (info.dailyUsage / info.dailyLimit) * 100;
+    const weeklyPercentage = (info.weeklyUsage / info.weeklyLimit) * 100;
+
+    const displayData: QuotaDisplayData = {
+      dailyPercentage,
+      weeklyPercentage,
+      dailyStatus: this.getQuotaStatus(dailyPercentage),
+      weeklyStatus: this.getQuotaStatus(weeklyPercentage),
+      canUseFeature: info.remainingDaily > 0 && info.remainingWeekly > 0,
+    };
+
+    this.quotaDisplay.set(displayData);
+  }
+
+  /**
+   * Determines quota status based on percentage
+   */
+  private getQuotaStatus(percentage: number): QuotaStatus {
+    if (percentage >= 100) return QuotaStatus.EXCEEDED;
+    if (percentage >= 80) return QuotaStatus.WARNING;
+    return QuotaStatus.AVAILABLE;
   }
 
   protected dismissWarning(): void {

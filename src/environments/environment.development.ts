@@ -1,6 +1,6 @@
 export const environment = {
   environment: 'dev',
-  isBeta: false, // Set to true to show normal login page in development
+  isBeta: true, // Set to true to show normal login page in development
   waitlistUrl: 'https://forms.gle/YourDevGoogleFormUrlHere', // Development waitlist form URL
   firebase: {
     apiKey: 'AIzaSyCsUpHmK5-o4hp8_HldvlaLU2gLOUVeHgY',

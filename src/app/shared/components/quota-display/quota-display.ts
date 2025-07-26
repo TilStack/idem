@@ -1,7 +1,6 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { QuotaService } from '../../services/quota.service';
-import { QuotaStatus } from '../../models/quota.model';
+import { QuotaStatus, QuotaDisplayData, QuotaInfoResponse, BetaRestrictions } from '../../models/quota.model';
 
 @Component({
   selector: 'app-quota-display',
@@ -9,12 +8,12 @@ import { QuotaStatus } from '../../models/quota.model';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (quotaDisplay(); as display) {
+        @if (!isLoading && quotaDisplay) {
       <div class="quota-display bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 border border-gray-700">
         <!-- Header avec badge bêta -->
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-sm font-medium text-gray-300">Quotas</h3>
-          @if (isBeta()) {
+          @if (isBeta) {
             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/30">
               <span class="w-1.5 h-1.5 bg-orange-400 rounded-full mr-1"></span>
               BETA
@@ -27,14 +26,14 @@ import { QuotaStatus } from '../../models/quota.model';
           <div class="flex items-center justify-between text-xs mb-1">
             <span class="text-gray-400">Quotidien</span>
             <span [class]="getDailyStatusClass()">
-              {{ quotaInfo()?.remainingDaily || 0 }}/{{ quotaInfo()?.dailyLimit || 0 }}
+              {{ quotaInfo?.remainingDaily || 0 }}/{{ quotaInfo?.dailyLimit || 0 }}
             </span>
           </div>
           <div class="w-full bg-gray-700 rounded-full h-2">
             <div 
               class="h-2 rounded-full transition-all duration-300"
               [class]="getDailyProgressClass()"
-              [style.width.%]="display.dailyPercentage"
+              [style.width.%]="quotaDisplay.dailyPercentage"
             ></div>
           </div>
         </div>
@@ -44,20 +43,20 @@ import { QuotaStatus } from '../../models/quota.model';
           <div class="flex items-center justify-between text-xs mb-1">
             <span class="text-gray-400">Hebdomadaire</span>
             <span [class]="getWeeklyStatusClass()">
-              {{ quotaInfo()?.remainingWeekly || 0 }}/{{ quotaInfo()?.weeklyLimit || 0 }}
+              {{ quotaInfo?.remainingWeekly || 0 }}/{{ quotaInfo?.weeklyLimit || 0 }}
             </span>
           </div>
           <div class="w-full bg-gray-700 rounded-full h-2">
             <div 
               class="h-2 rounded-full transition-all duration-300"
               [class]="getWeeklyProgressClass()"
-              [style.width.%]="display.weeklyPercentage"
+              [style.width.%]="quotaDisplay.weeklyPercentage"
             ></div>
           </div>
         </div>
 
         <!-- Messages d'avertissement -->
-        @if (display.dailyStatus === QuotaStatus.WARNING || display.weeklyStatus === QuotaStatus.WARNING) {
+        @if (quotaDisplay.dailyStatus === QuotaStatus.WARNING || quotaDisplay.weeklyStatus === QuotaStatus.WARNING) {
           <div class="mt-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400">
             <div class="flex items-center">
               <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -68,7 +67,7 @@ import { QuotaStatus } from '../../models/quota.model';
           </div>
         }
 
-        @if (display.dailyStatus === QuotaStatus.EXCEEDED || display.weeklyStatus === QuotaStatus.EXCEEDED) {
+        @if (quotaDisplay.dailyStatus === QuotaStatus.EXCEEDED || quotaDisplay.weeklyStatus === QuotaStatus.EXCEEDED) {
           <div class="mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-400">
             <div class="flex items-center">
               <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -80,18 +79,18 @@ import { QuotaStatus } from '../../models/quota.model';
         }
 
         <!-- Informations bêta -->
-        @if (isBeta() && betaRestrictions(); as restrictions) {
+        @if (isBeta && betaRestrictions) {
           <div class="mt-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-xs text-blue-400">
             <div class="font-medium mb-1">Limitations bêta:</div>
             <ul class="space-y-1 text-xs">
-              <li>• {{ restrictions.maxStyles }} styles maximum</li>
-              <li>• Résolution: {{ restrictions.maxResolution }}</li>
-              <li>• {{ restrictions.maxOutputTokens }} tokens max</li>
+              <li>• {{ betaRestrictions.maxStyles }} styles maximum</li>
+              <li>• Résolution: {{ betaRestrictions.maxResolution }}</li>
+              <li>• {{ betaRestrictions.maxOutputTokens }} tokens max</li>
             </ul>
           </div>
         }
       </div>
-    } @else if (isLoading()) {
+    } @else if (isLoading) {
       <div class="quota-display bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 border border-gray-700">
         <div class="animate-pulse">
           <div class="h-4 bg-gray-700 rounded mb-2"></div>
@@ -103,23 +102,18 @@ import { QuotaStatus } from '../../models/quota.model';
   `
 })
 export class QuotaDisplayComponent {
-  private readonly quotaService = inject(QuotaService);
+  @Input() quotaInfo: QuotaInfoResponse | null = null;
+  @Input() quotaDisplay: QuotaDisplayData | null = null;
+  @Input() isBeta: boolean = false;
+  @Input() betaRestrictions: BetaRestrictions | null = null;
+  @Input() isLoading: boolean = true;
 
-  // Signals exposés
-  protected readonly quotaInfo = this.quotaService.quotaInfo;
-  protected readonly quotaDisplay = this.quotaService.quotaDisplay;
-  protected readonly isBeta = this.quotaService.isBeta;
-  protected readonly betaRestrictions = this.quotaService.betaRestrictions;
-  protected readonly isLoading = this.quotaService.isLoading;
-
-  // Enum exposé pour le template
   protected readonly QuotaStatus = QuotaStatus;
 
   protected getDailyStatusClass(): string {
-    const display = this.quotaDisplay();
-    if (!display) return 'text-gray-400';
+    if (!this.quotaDisplay) return 'text-gray-400';
 
-    switch (display.dailyStatus) {
+    switch (this.quotaDisplay.dailyStatus) {
       case QuotaStatus.EXCEEDED:
         return 'text-red-400 font-medium';
       case QuotaStatus.WARNING:
@@ -130,10 +124,9 @@ export class QuotaDisplayComponent {
   }
 
   protected getWeeklyStatusClass(): string {
-    const display = this.quotaDisplay();
-    if (!display) return 'text-gray-400';
+    if (!this.quotaDisplay) return 'text-gray-400';
 
-    switch (display.weeklyStatus) {
+    switch (this.quotaDisplay.weeklyStatus) {
       case QuotaStatus.EXCEEDED:
         return 'text-red-400 font-medium';
       case QuotaStatus.WARNING:
@@ -144,10 +137,9 @@ export class QuotaDisplayComponent {
   }
 
   protected getDailyProgressClass(): string {
-    const display = this.quotaDisplay();
-    if (!display) return 'bg-gray-600';
+    if (!this.quotaDisplay) return 'bg-gray-600';
 
-    switch (display.dailyStatus) {
+    switch (this.quotaDisplay.dailyStatus) {
       case QuotaStatus.EXCEEDED:
         return 'bg-red-500';
       case QuotaStatus.WARNING:
@@ -158,10 +150,9 @@ export class QuotaDisplayComponent {
   }
 
   protected getWeeklyProgressClass(): string {
-    const display = this.quotaDisplay();
-    if (!display) return 'bg-gray-600';
+    if (!this.quotaDisplay) return 'bg-gray-600';
 
-    switch (display.weeklyStatus) {
+    switch (this.quotaDisplay.weeklyStatus) {
       case QuotaStatus.EXCEEDED:
         return 'bg-red-500';
       case QuotaStatus.WARNING:
