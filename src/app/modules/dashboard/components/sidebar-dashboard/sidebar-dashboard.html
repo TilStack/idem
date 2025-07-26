@@ -1,5 +1,5 @@
 <nav
-  class="bg-bg-dark text-white overflow-hidden shadow-2xl fixed w-full z-50 top-0 shadow-primary/35 "
+  class="bg-bg-dark text-white overflow-hidden shadow-2xl fixed w-full z-50 top-0 shadow-primary/35"
 >
   <div class="max-w-8xl mx-auto px-4">
     <div class="flex justify-between h-16">
@@ -39,21 +39,19 @@
       </div>
       }
 
-      <!-- Badge Beta et Quotas -->
-      <div class="hidden md:flex items-center space-x-4 mr-4">
-        
-        <app-quota-display 
-  [quotaInfo]="quotaInfo() ?? null" 
-  [quotaDisplay]="quotaDisplay() ?? null" 
-  [isBeta]="isBeta()" 
-  [betaRestrictions]="betaRestrictions() ?? null" 
-  [isLoading]="isQuotaLoading()"
-></app-quota-display>
-      </div>
-
       <!-- Bouton de connexion (visible sur desktop) -->
       <div class="hidden md:flex items-center relative z-50">
         @if (user()) {
+        <!-- Badge Beta et Quotas -->
+        <div class="hidden md:flex items-center space-x-4 mr-4">
+          <app-quota-display
+            [quotaInfo]="quotaInfo() ?? null"
+            [quotaDisplay]="quotaDisplay() ?? null"
+            [isBeta]="isBeta()"
+            [betaRestrictions]="betaRestrictions() ?? null"
+            [isLoading]="isQuotaLoading()"
+          ></app-quota-display>
+        </div>
         <div class="relative">
           <!-- Avatar -->
           <button (click)="toggleDropdown()" class="flex items-center">
