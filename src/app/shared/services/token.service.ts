@@ -42,8 +42,6 @@ export class TokenService {
 
       const token = await currentUser.getIdToken(true);
       this.setToken(token);
-      console.log('Token set');
-      console.log('Token', token);
       return token;
     } catch (error) {
       console.error('Error refreshing token:', error);
@@ -56,7 +54,6 @@ export class TokenService {
    */
   public async getToken(): Promise<string | null> {
     const token = await this.auth.currentUser?.getIdToken();
-    console.log('TokenService: getToken', token);
     return token || null;
   }
 
