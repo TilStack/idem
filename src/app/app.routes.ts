@@ -14,6 +14,12 @@ export const routes: Routes = [
     data: { layout: 'public' },
   },
   {
+    path: 'premium-beta',
+    loadComponent: () =>
+      import('./modules/landing/pages/premium-beta-access/premium-beta-access').then((m) => m.PremiumBetaAccess),
+    data: { layout: 'empty' },
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./modules/auth/pages/login/login').then((m) => m.Login),

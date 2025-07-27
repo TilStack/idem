@@ -17,7 +17,8 @@ import { CommonModule } from '@angular/common';
 import { MenuItem } from 'primeng/api';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { first } from 'rxjs/operators';
-import { BetaBadgeComponent } from "../../../../shared/components/beta-badge/beta-badge";
+import { BetaBadgeComponent } from '../../../../shared/components/beta-badge/beta-badge';
+import { ButtonModule } from 'primeng/button';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -28,8 +29,9 @@ import { BetaBadgeComponent } from "../../../../shared/components/beta-badge/bet
     AvatarModule,
     InputTextModule,
     CommonModule,
-    BetaBadgeComponent
-],
+    BetaBadgeComponent,
+    ButtonModule,
+  ],
   templateUrl: './header.html',
   styleUrl: './header.css',
   animations: [
@@ -48,14 +50,14 @@ export class Header implements OnInit {
   // Services
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  
+
   // UI State Signals
   protected readonly isMenuOpen = signal(false);
   protected readonly isDropdownOpen = signal(false);
-  
+
   // User Data Signal
   protected readonly user = toSignal(this.auth.user$);
-  
+
   // Navigation items
   protected readonly items: MenuItem[] | undefined = [
     {
@@ -88,30 +90,33 @@ export class Header implements OnInit {
       ],
     },
   ];
-  
+
   @ViewChild('menu') menuRef!: ElementRef;
-  
+
   ngOnInit(): void {
     // Check authentication status when component initializes
-    this.auth.user$.pipe(first()).subscribe(user => {
-      console.log('Header authentication status:', user ? 'Logged in' : 'Not logged in');
+    this.auth.user$.pipe(first()).subscribe((user) => {
+      console.log(
+        'Header authentication status:',
+        user ? 'Logged in' : 'Not logged in'
+      );
     });
   }
-  
+
   /**
    * Toggle mobile menu visibility
    */
   protected toggleMenu(): void {
-    this.isMenuOpen.update(open => !open);
+    this.isMenuOpen.update((open) => !open);
   }
-  
+
   /**
    * Toggle user dropdown visibility
    */
   protected toggleDropdown(): void {
-    this.isDropdownOpen.update(open => !open);
+    this.isDropdownOpen.update((open) => !open);
   }
-  
+
   /**
    * Navigate to specified path
    */
@@ -120,7 +125,7 @@ export class Header implements OnInit {
     this.isMenuOpen.set(false);
     this.router.navigate([path]);
   }
-  
+
   /**
    * Log out the current user
    */
@@ -129,7 +134,7 @@ export class Header implements OnInit {
     this.auth.logout();
     this.router.navigate(['/login']);
   }
-  
+
   @HostListener('document:click', ['$event'])
   protected onClickOutside(event: Event): void {
     if (
@@ -140,12 +145,12 @@ export class Header implements OnInit {
       this.isMenuOpen.set(false);
     }
   }
-  
+
   @HostListener('document:click', ['$event.target'])
   protected onClickOutsideDropdown(targetElement: HTMLElement): void {
     const dropdownButton = targetElement.closest('button.flex.items-center');
     const dropdownMenu = targetElement.closest('.fixed.right-0.mt-2');
-    
+
     if (this.isDropdownOpen() && !dropdownButton && !dropdownMenu) {
       this.isDropdownOpen.set(false);
     }

@@ -45,6 +45,15 @@
           Documentation
           <span class="nav-dot"></span>
         </a>
+
+        <a
+          routerLink="/premium-beta"
+          routerLinkActive="active"
+          class="glass-nav-link hover:text-white transition duration-300 relative py-1 px-2"
+        >
+          Premium Beta
+          <span class="nav-dot"></span>
+        </a>
         
         <!-- Dashboard link - only visible when logged in -->
         @if (user()) {
@@ -58,7 +67,14 @@
           </a>
         }
       </div>
-      <div class="hidden md:flex items-center">
+      <div class="hidden md:flex items-center gap-6">
+        <!-- GitHub icon with link -->
+        <a href="https://github.com/Idem-IA" target="_blank" rel="noopener noreferrer" 
+           class="text-white hover:text-amber-300 transition-colors duration-300" 
+           aria-label="GitHub Repository">
+          <i class="pi pi-github text-3xl font-black"></i>
+        </a>
+        
         <!-- Show user profile with dropdown when logged in -->
         @if (user()) {
           <div class="relative">
