@@ -61,10 +61,9 @@ export class AuthService {
     }
 
     try {
-      // Envoyer le token au backend
       console.log('User:', user);
       await this.http
-        .post<void>(`${this.apiUrl}/verify-token`, { token, user })
+        .post<void>(`${this.apiUrl}/sessionLogin`, { token, user })
         .toPromise();
     } catch (error) {
       console.error("Erreur lors de l'envoi du token au backend:", error);

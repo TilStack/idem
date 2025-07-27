@@ -50,7 +50,7 @@ export interface BetaRestrictions {
 export enum QuotaStatus {
   AVAILABLE = 'available',
   WARNING = 'warning', // 80% utilisé
-  EXCEEDED = 'exceeded'
+  EXCEEDED = 'exceeded',
 }
 
 export interface QuotaDisplayData {

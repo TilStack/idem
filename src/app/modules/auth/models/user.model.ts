@@ -1,6 +1,8 @@
 export interface QuotaData {
   dailyUsage: number;
   weeklyUsage: number;
+  dailyLimit: number;
+  weeklyLimit: number;
   lastResetDaily: string; // ISO date string
   lastResetWeekly: string; // ISO date string
   quotaUpdatedAt?: Date;
@@ -11,7 +13,6 @@ export interface UserModel {
   email: string;
   displayName?: string;
   photoURL?: string;
-  sessionCookie: string;
   subscription: "free" | "pro" | "enterprise";
   createdAt: Date;
   lastLogin: Date;
