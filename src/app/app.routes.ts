@@ -17,7 +17,7 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./modules/auth/pages/login/login').then((m) => m.Login),
-    data: { layout: 'public' },
+    data: { layout: 'empty' },
   },
 
   // Dashboard layout routes

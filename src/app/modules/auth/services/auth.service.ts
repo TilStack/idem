@@ -11,7 +11,6 @@ import {
   user,
   User,
 } from '@angular/fire/auth';
-import { Firestore, collection, doc, setDoc } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
@@ -24,14 +23,14 @@ export class AuthService {
   private http = inject(HttpClient);
   private tokenService = inject(TokenService);
   private apiUrl = `${environment.services.api.url}/auth`;
-  constructor(private firestore: Firestore) {
+  constructor() {
     this.user$ = user(this.auth);
   }
 
   login(email: string, password: string): Observable<void> {
     const promise = signInWithEmailAndPassword(this.auth, email, password).then(
       async (cred) => {
-        await this.sendTokenToBackend();
+        await this.postLogin(cred.user);
       }
     );
     return from(promise);
@@ -50,16 +49,11 @@ export class AuthService {
   }
 
   private async postLogin(user: User) {
-    if (user) {
-      await this.createUserDocument(user);
-      await this.sendTokenToBackend();
-    }
-  }
-
-  private async sendTokenToBackend(): Promise<void> {
-    // Utiliser TokenService pour rafraîchir le token
+    if (!user) return;
     const currentUser = this.auth.currentUser;
-    const token = currentUser ? await this.tokenService.refreshToken(currentUser) : null;
+    const token = currentUser
+      ? await this.tokenService.refreshToken(currentUser)
+      : null;
 
     if (!token) {
       console.error('Aucun token disponible');
@@ -68,29 +62,15 @@ export class AuthService {
 
     try {
       // Envoyer le token au backend
+      console.log('User:', user);
       await this.http
-        .post<void>(`${this.apiUrl}/verify-token`, { token })
+        .post<void>(`${this.apiUrl}/verify-token`, { token, user })
         .toPromise();
     } catch (error) {
-      console.error('Erreur lors de l\'envoi du token au backend:', error);
+      console.error("Erreur lors de l'envoi du token au backend:", error);
     }
-  }
-
-  async createUserDocument(user: User) {
-    if (!user) return;
-
-    const userRef = doc(collection(this.firestore, 'users'), user.uid);
-    const userData = {
-      uid: user.uid,
-      email: user.email || null,
-      displayName: user.displayName || 'Utilisateur',
-      photoURL: user.photoURL || null,
-      providerId: user.providerData[0]?.providerId || 'unknown',
-      createdAt: new Date(),
-    };
 
     try {
-      await setDoc(userRef, userData, { merge: true });
       console.log('Utilisateur ajouté à Firestore avec succès');
     } catch (error) {
       console.error(
@@ -106,9 +86,7 @@ export class AuthService {
         // Effacer le token dans TokenService
         this.tokenService.clearToken();
         sessionStorage.clear();
-        return this.http
-          .post<void>(`${this.apiUrl}/logout`, {})
-          .toPromise();
+        return this.http.post<void>(`${this.apiUrl}/logout`, {}).toPromise();
       })
       .catch((error) => {
         console.error('Erreur lors de la déconnexion:', error);
