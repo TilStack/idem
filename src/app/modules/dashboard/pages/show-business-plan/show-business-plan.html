@@ -1,0 +1,26 @@
+@if(isBusinessplanLoaded()) {
+<div class="w-full h-screen flex flex-col items-center justify-center">
+  <app-loader />
+</div>
+} @else {
+<div class="p-14 bg-gray-50 rounded-2xl text-gray-900">
+  <div class="w-full flex justify-end p-4">
+    <button class="inner-button" (click)="makePdf()">
+      <i class="pi pi-file-export"></i>
+      Export
+    </button>
+  </div>
+  @if (businessPlan && businessPlan.sections && businessPlan.sections.length > 0) {
+  @for (section of businessPlan.sections; track section) {
+  <div [innerHTML]="section.data | safeHtml"></div>
+  }
+  } @else {
+  <div class="w-full h-screen flex flex-col items-center justify-center">
+    <button class="inner-button" (click)="generateBusinessPlan()">
+      <i class="pi pi-file-export"></i>
+      Generate
+    </button>
+  </div>
+  }
+</div>
+}

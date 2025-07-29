@@ -44,10 +44,10 @@ export const routes: Routes = [
     data: { layout: 'dashboard' },
   },
   {
-    path: 'console/planing',
+    path: 'console/business-plan',
     loadComponent: () =>
-      import('./modules/dashboard/pages/show-planing/show-planing').then(
-        (m) => m.ShowPlaning
+      import('./modules/dashboard/pages/show-business-plan/show-business-plan').then(
+        (m) => m.ShowBusinessPlan
       ),
     data: { layout: 'dashboard' },
   },
@@ -117,12 +117,12 @@ export const routes: Routes = [
     data: { layout: 'empty' },
   },
   {
-    path: 'projects',
+    path: 'console/projects',
     loadComponent: () =>
       import('./modules/dashboard/pages/projects-list/projects-list').then(
         (m) => m.ProjectsList
       ),
-    data: { layout: 'empty' },
+    data: { layout: 'dashboard' },
   },
 
   // Project creation route

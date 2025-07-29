@@ -99,7 +99,6 @@ export class CreateProjectComponent implements OnInit {
   protected selectedColor = '';
   protected selectedTypography = '';
 
-
   protected groupedProjectTypes: SelectElement[] =
     CreateProjectDatas.groupedProjectTypes;
   protected groupedTargets: SelectElement[] = CreateProjectDatas.groupedTargets;

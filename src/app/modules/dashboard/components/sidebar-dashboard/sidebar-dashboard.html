@@ -74,6 +74,12 @@
               >Profil</a
             >
             <a
+              routerLink="/console/projects"
+              (click)="navigateTo('/console/projects')"
+              class="dropdown-item p-3 hover:bg-primary rounded-2xl cursor-pointer"
+              >Projets</a
+            >
+            <a
               routerLink="settings"
               (click)="navigateTo('settings')"
               class="dropdown-item p-3 hover:bg-primary rounded-2xl cursor-pointer"
@@ -160,6 +166,14 @@
         class="block px-3 py-2 rounded-md text-base font-medium text-gray-200 hover:text-primary hover:bg-blue-50 transition duration-300"
       >
         Profil
+      </a>
+      <a
+        routerLink="/console/projects"
+        (click)="toggleMenu()"
+        routerLinkActive="text-primary bg-blue-50"
+        class="block px-3 py-2 rounded-md text-base font-medium text-gray-200 hover:text-primary hover:bg-blue-50 transition duration-300"
+      >
+        Projets
       </a>
       <a
         routerLink="/login"

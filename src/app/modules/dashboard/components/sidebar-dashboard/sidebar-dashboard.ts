@@ -317,9 +317,9 @@ export class SidebarDashboard implements OnInit {
         command: () => this.navigateTo('console/branding'),
       },
       {
-        label: 'Planing',
+        label: 'Business Plan',
         icon: 'pi pi-fw pi-calendar',
-        command: () => this.navigateTo('console/planing'),
+        command: () => this.navigateTo('console/business-plan'),
       },
       {
         label: 'Diagrams',
@@ -463,10 +463,10 @@ export class SidebarDashboard implements OnInit {
         styleClass: getStyleClass('console/branding'),
       },
       {
-        label: this.isSidebarCollapsed() ? '' : 'Planing',
+        label: this.isSidebarCollapsed() ? '' : 'Business Plan',
         icon: 'pi pi-fw pi-calendar',
-        command: () => this.navigateTo(`console/planing`),
-        styleClass: getStyleClass('console/planing'),
+        command: () => this.navigateTo(`console/business-plan`),
+        styleClass: getStyleClass('console/business-plan'),
       },
       {
         label: this.isSidebarCollapsed() ? '' : 'Diagrams',

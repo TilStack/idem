@@ -10,7 +10,7 @@ import { CookieService } from '../../../../shared/services/cookie.service';
 import { ProjectService } from '../../services/project.service';
 import { ProjectModel } from '../../models/project.model';
 import { SafeHtmlPipe } from '../../../../shared/pipes/safe-html.pipe';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Loader } from '../../../../components/loader/loader';
 
 @Component({
@@ -28,7 +28,7 @@ export class DashboardComponent implements OnInit {
   readonly project = signal<ProjectModel | null>(null);
   readonly isLoading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
-
+  protected readonly router = inject(Router);
   ngOnInit(): void {
     this.isLoading.set(true);
     const projectId = this.cookieService.get('projectId');
@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit {
         'No project selected. Please select a project to view the dashboard.'
       );
       this.isLoading.set(false);
+      this.router.navigate(['/console/projects']);
       return;
     }
 

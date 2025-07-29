@@ -41,8 +41,8 @@ export class BusinessPlanService {
   }
 
   // Get all project businessplan items (optionally by projectId)
-  getBusinessplanItems(projectId?: string): Observable<BusinessPlanModel[]> {
-    return this.http.get<BusinessPlanModel[]>(`${this.apiUrl}/${projectId}`)
+  getBusinessplanItems(projectId?: string): Observable<BusinessPlanModel> {
+    return this.http.get<BusinessPlanModel>(`${this.apiUrl}/${projectId}`)
       .pipe(
       tap((response) =>
         console.log('getBusinessplanItems response:', response)
