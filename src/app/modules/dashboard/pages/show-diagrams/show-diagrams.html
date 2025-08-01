@@ -1,10 +1,10 @@
 @if(isDiagramsLoaded() || isGenerating()) {
 <div class="w-full min-h-screen bg-gray-50 p-6 rounded-2xl">
   @if(isGenerating()) {
-  <!-- Real-time Generation Progress -->
+  <!-- Step-based Generation Progress -->
   <div class="max-w-6xl mx-auto space-y-8">
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-      <div class="text-center">
+      <div class="text-center mb-8">
         <div class="mb-6">
           <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
             <svg class="w-8 h-8 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -13,23 +13,86 @@
             </svg>
           </div>
           <h2 class="text-2xl font-bold text-gray-900">Generating Diagrams</h2>
-          <p class="text-gray-600 mt-2">{{ generationStatus() }}</p>
+          <p class="text-gray-600 mt-2">{{ progressPercentage() }}% Complete ({{ completedSteps().length }}/6 steps)</p>
         </div>
         
-        <!-- Progress Bar -->
+        <!-- Overall Progress Bar -->
         <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
           <div 
             class="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
-            [style.width.%]="generationProgress()"
+            [style.width.%]="progressPercentage()"
           ></div>
         </div>
-        <div class="text-sm text-gray-500 mb-6">
-          {{ generationProgress() }}% Complete
+      </div>
+      
+      <!-- Completed Steps -->
+      @if(hasCompletedSteps()) {
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">✅ Completed Steps</h3>
+        <div class="space-y-4">
+          @for (step of completedSteps(); track step.stepName) {
+          <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h4 class="text-md font-medium text-green-800 mb-2 flex items-center">
+                  <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  {{ step.stepName }}
+                </h4>
+                <p class="text-sm text-green-700 mb-3">{{ step.summary }}</p>
+                @if(step.content && step.content !== 'step_started') {
+                <div class="bg-white border border-green-200 rounded p-3">
+                  <markdown [data]="step.content" class="text-sm"></markdown>
+                </div>
+                }
+              </div>
+              <span class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full ml-4">
+                {{ step.timestamp | date:'HH:mm:ss' }}
+              </span>
+            </div>
+          </div>
+          }
         </div>
-        
-        <!-- Cancel Button -->
+      </div>
+      }
+      
+      <!-- Current Step in Progress -->
+      @if(currentStep()) {
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">🔄 Current Step</h3>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h4 class="text-md font-medium text-blue-800 mb-2 flex items-center">
+                <svg class="w-5 h-5 text-blue-600 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ currentStep()!.stepName }}
+              </h4>
+              <p class="text-sm text-blue-700">{{ currentStep()!.summary }}</p>
+              <div class="mt-3 flex items-center">
+                <div class="flex space-x-1">
+                  <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                  <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                  <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                </div>
+                <span class="ml-3 text-sm text-blue-600">Generating...</span>
+              </div>
+            </div>
+            <span class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full ml-4">
+              {{ currentStep()!.timestamp | date:'HH:mm:ss' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      }
+      
+      <!-- Cancel Button -->
+      <div class="text-center">
         <button
-          class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md flex items-center mx-auto"
+          class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md flex items-center mx-auto transition-colors"
           (click)="cancelGeneration()"
         >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,23 +101,53 @@
           Cancel Generation
         </button>
       </div>
+    </div>
+  </div>
+  } @else if(isCompleted() && isDiagramExists()) {
+  <!-- Completed Diagram Display -->
+  <div class="max-w-6xl mx-auto space-y-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900">Diagrams Generated Successfully!</h2>
+        <p class="text-gray-600 mt-2">All {{ completedSteps().length }} steps completed</p>
+      </div>
       
-      <!-- Real-time Diagram Preview -->
-      @if(diagram() && diagram()!.sections && diagram()!.sections.length > 0) {
-      <div class="mt-8 pt-8 border-t border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Preview (Updating in real-time)</h3>
-        <div class="space-y-6">
-          @for (section of formattedDiagram()?.sections; track section.id) {
-          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <h4 class="text-md font-medium text-gray-700 mb-2">{{ section.name }}</h4>
-            <div class="text-sm text-gray-600">
-              <markdown mermaid [data]="section.data" class="mermaid-diagram"></markdown>
-            </div>
-          </div>
-          }
+      <!-- Final Diagram Content -->
+      @if(diagram()?.content) {
+      <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Generated Diagrams</h3>
+        <div class="prose max-w-none">
+          <markdown [data]="diagram()!.content" class="text-sm"></markdown>
         </div>
       </div>
       }
+      
+      <!-- Action Buttons -->
+      <div class="flex justify-center space-x-4 mt-8">
+        <button
+          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
+          (click)="makePdf()"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Download PDF
+        </button>
+        <button
+          class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
+          (click)="generateDiagrams()"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          Generate New
+        </button>
+      </div>
     </div>
   </div>
   } @else {

@@ -34,6 +34,7 @@
     "marked": "^15.0.7",
     "mermaid": "^11.6.0",
     "ngx-markdown": "^20.0.0",
+    "ngx-sse-client": "^20.0.0",
     "openai": "^4.89.0",
     "postcss": "^8.5.3",
     "primeicons": "^7.0.0",

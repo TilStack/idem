@@ -40,38 +40,76 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
   protected readonly projectIdFromCookie = signal<string | null>(null);
   protected readonly currentUser = signal<User | null>(null);
   protected readonly isDiagramsLoaded = signal(true);
-  
-  // Computed signals from service state
-  protected readonly diagram = computed(() => this.diagramsService.diagramState());
-  protected readonly isGenerating = computed(() => this.diagramsService.isGenerating());
-  protected readonly generationProgress = computed(() => this.diagramsService.generationProgress());
-  protected readonly generationStatus = computed(() => this.diagramsService.generationStatus());
-  protected readonly generationError = computed(() => this.diagramsService.generationError());
-  
+
+  // Computed signals from service state - new step-based approach
+  protected readonly generationState = computed(() =>
+    this.diagramsService.generationState()
+  );
+  protected readonly completedSteps = computed(
+    () => this.generationState().steps
+  );
+  protected readonly currentStep = computed(
+    () => this.generationState().currentStep
+  );
+  protected readonly isGenerating = computed(
+    () => this.generationState().isGenerating
+  );
+  protected readonly generationError = computed(
+    () => this.generationState().error
+  );
+  protected readonly isCompleted = computed(
+    () => this.generationState().completed
+  );
+
+  // Legacy computed signals for backward compatibility
+  protected readonly diagram = computed(() =>
+    this.diagramsService.diagramState()
+  );
+  protected readonly generationProgress = computed(() =>
+    this.diagramsService.generationProgress()
+  );
+  protected readonly generationStatus = computed(() =>
+    this.diagramsService.generationStatus()
+  );
+
   // Computed derived state
   protected readonly isDiagramExists = computed(() => {
     const diagramData = this.diagram();
-    return diagramData !== null && diagramData.sections && diagramData.sections.length > 0;
+    return (
+      diagramData !== null &&
+      diagramData.content &&
+      diagramData.content.length > 0
+    );
   });
-  
+
   protected readonly formattedDiagram = computed(() => {
     const diagramData = this.diagram();
-    if (!diagramData || !diagramData.sections) return null;
-    
+    if (!diagramData || !diagramData.content) return null;
+
     return {
       ...diagramData,
-      sections: diagramData.sections.map(section => ({
-        ...section,
-        data: `\`\`\`${section.data}\n\`\`\``
-      }))
+      content: diagramData.content,
     };
   });
-  
+
+  // New computed properties for step-based UI
+  protected readonly hasCompletedSteps = computed(
+    () => this.completedSteps().length > 0
+  );
+  protected readonly totalSteps = computed(
+    () => this.completedSteps().length + (this.currentStep() ? 1 : 0)
+  );
+  protected readonly progressPercentage = computed(() => {
+    const completed = this.completedSteps().length;
+    const total = Math.max(6, completed + (this.currentStep() ? 1 : 0)); // Assume 6 total steps
+    return Math.round((completed / total) * 100);
+  });
+
   protected readonly diagenUrl = environment.services.diagen.url;
 
   constructor() {
     this.projectIdFromCookie.set(this.cookiesService.get('projectId'));
-    
+
     // Effect to automatically update UI when diagram state changes
     effect(() => {
       const diagramData = this.diagram();
@@ -79,15 +117,15 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
       const progress = this.generationProgress();
       const status = this.generationStatus();
       const error = this.generationError();
-      
+
       console.log('Diagram state updated:', {
         diagram: diagramData,
         isGenerating: isGen,
         progress,
         status,
-        error
+        error,
       });
-      
+
       // Update loading state based on generation status
       if (!isGen && (diagramData || error)) {
         this.isDiagramsLoaded.set(false);
@@ -128,8 +166,7 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    // Reset service state when component is destroyed
-    this.diagramsService.resetGenerationState();
+    // Note: Service state will be reset automatically on next generation
   }
 
   /**
@@ -137,7 +174,7 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
    */
   private loadExistingDiagram(): void {
     this.diagramsService
-      .getDiagramModelById(this.projectIdFromCookie()!)
+      .getDiagram(this.projectIdFromCookie()!)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (diagramData) => {
@@ -181,7 +218,7 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
 
     this.isDiagramsLoaded.set(true);
     console.log('Starting diagram generation with SSE...');
-    
+
     this.diagramsService
       .createDiagramModel(this.projectIdFromCookie()!)
       .pipe(takeUntil(this.destroy$))
@@ -205,7 +242,8 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
    * Cancel ongoing diagram generation
    */
   protected cancelGeneration(): void {
-    this.diagramsService.resetGenerationState();
+    // Note: SSE connection will be closed automatically by the service
+    // when the component is destroyed or a new generation starts
     this.isDiagramsLoaded.set(false);
   }
 }
