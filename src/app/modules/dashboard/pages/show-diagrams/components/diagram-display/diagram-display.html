@@ -1,0 +1,111 @@
+<!-- Completed Diagram Display -->
+<div class="max-w-6xl mx-auto space-y-8">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+    <div class="text-center mb-8">
+      <div
+        class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4"
+      >
+        <svg
+          class="w-8 h-8 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          ></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900">
+        Diagrams Available
+      </h2>
+      <p class="text-gray-600 mt-2">
+        Your system design diagrams are ready
+      </p>
+    </div>
+
+    <!-- Final Diagram Content -->
+    @if(diagram().content) {
+    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        Generated Diagrams
+      </h3>
+      <div class="prose max-w-none">
+        <markdown [data]="diagram().content" class="text-sm"></markdown>
+      </div>
+    </div>
+    }
+
+    <!-- Legacy sections support -->
+    @if(diagram().sections && !diagram().content) {
+    <div class="space-y-6">
+      @for (section of diagram().sections; track section.id) {
+      <div
+        class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+      >
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
+          <h3 class="text-lg font-semibold text-gray-900">
+            {{ section.name }}
+          </h3>
+
+        </div>
+        <div class="p-6">
+          @if(section.data) {
+          <div class="prose max-w-none">
+            <markdown [data]="section.data" class="text-sm"></markdown>
+          </div>
+          } @else {
+          <p class="text-gray-500 italic">No content available</p>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center space-x-4 mt-8">
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
+        (click)="makePdf()"
+      >
+        <svg
+          class="w-5 h-5 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
+        </svg>
+        Download PDF
+      </button>
+      <button
+        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
+        (click)="generateNewDiagrams()"
+      >
+        <svg
+          class="w-5 h-5 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          ></path>
+        </svg>
+        Generate New Diagrams
+      </button>
+    </div>
+  </div>
+</div>

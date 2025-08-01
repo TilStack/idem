@@ -1,11 +1,10 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { SseClient } from 'ngx-sse-client';
 import { environment } from '../../../../../environments/environment';
 import { DiagramModel } from '../../models/diagram.model';
-import { DiagramStepEvent, DiagramStep, DiagramGenerationState } from '../../models/diagram-step.model';
+import { DiagramStepEvent } from '../../models/diagram-step.model';
 
 @Injectable({
   providedIn: 'root',
@@ -15,60 +14,10 @@ export class DiagramsService {
   private readonly http = inject(HttpClient);
   private readonly sseClient = inject(SseClient);
 
-  // Reactive state management with signals for step-based generation
-  public readonly generationState = signal<DiagramGenerationState>({
-    steps: [],
-    currentStep: null,
-    isGenerating: false,
-    error: null,
-    completed: false
-  });
-
-  // Legacy signals for backward compatibility
-  public readonly diagramState = signal<DiagramModel | null>(null);
-  public readonly isGenerating = signal<boolean>(false);
-  public readonly generationProgress = signal<number>(0);
-  public readonly generationStatus = signal<string>('');
-  public readonly generationError = signal<string | null>(null);
-
   // SSE connection management
   private sseSubscription: any = null;
 
-  /**
-   * Reset generation state to initial values
-   */
-  private resetGenerationState(): void {
-    this.generationState.set({
-      steps: [],
-      currentStep: null,
-      isGenerating: true,
-      error: null,
-      completed: false
-    });
-    
-    // Update legacy signals for backward compatibility
-    this.isGenerating.set(true);
-    this.generationProgress.set(0);
-    this.generationStatus.set('Initializing diagram generation...');
-    this.generationError.set(null);
-    this.diagramState.set(null);
-  }
 
-  /**
-   * Update generation state with partial updates
-   */
-  private updateGenerationState(updates: Partial<DiagramGenerationState>): void {
-    const currentState = this.generationState();
-    this.generationState.set({ ...currentState, ...updates });
-    
-    // Update legacy signals for backward compatibility
-    if (updates.isGenerating !== undefined) {
-      this.isGenerating.set(updates.isGenerating);
-    }
-    if (updates.error !== undefined) {
-      this.generationError.set(updates.error);
-    }
-  }
 
   /**
    * Close SSE connection
@@ -82,88 +31,29 @@ export class DiagramsService {
   }
 
   /**
-   * Handle SSE message and update state accordingly
-   */
-  private handleSSEMessage(data: DiagramStepEvent): void {
-    const currentState = this.generationState();
-    
-    if (data.type === 'started' || data.data === 'step_started') {
-      // Step started - set as current step
-      const newStep: DiagramStep = {
-        stepName: data.stepName,
-        status: 'in-progress',
-        timestamp: data.timestamp,
-        summary: data.summary
-      };
-      
-      this.updateGenerationState({
-        currentStep: newStep,
-        isGenerating: true
-      });
-      
-      // Update legacy signals
-      this.generationStatus.set(`Generating ${data.stepName}...`);
-      
-    } else if (data.type === 'completed' && data.data !== 'step_started') {
-      // Step completed - move to completed steps
-      const completedStep: DiagramStep = {
-        stepName: data.stepName,
-        status: 'completed',
-        content: data.data,
-        timestamp: data.timestamp,
-        summary: data.summary
-      };
-      
-      const updatedSteps = [...currentState.steps, completedStep];
-      
-      this.updateGenerationState({
-        steps: updatedSteps,
-        currentStep: null
-      });
-      
-      // Update legacy signals
-      this.generationStatus.set(`Completed ${data.stepName}`);
-      this.generationProgress.set((updatedSteps.length / 6) * 100); // Assuming 6 total steps
-    }
-  }
-
-  /**
    * Create a new diagram using Server-Sent Events for real-time updates
-   * Falls back to regular HTTP POST if SSE is not available
    * @param projectId Project ID
-   * @returns Observable with the created diagram model
+   * @returns Observable with SSE events
    */
-  createDiagramModel(projectId: string): Observable<DiagramModel> {
+  createDiagramModel(projectId: string): Observable<DiagramStepEvent> {
     console.log('Starting diagram generation with SSE...');
-    
-    // Reset state
-    this.resetGenerationState();
     
     // Close any existing SSE connection
     this.closeSSEConnection();
 
-    // Try SSE first, fallback to HTTP POST if it fails
-    return this.trySSEConnection(projectId).pipe(
-      catchError((sseError) => {
-        console.warn('SSE connection failed, falling back to HTTP POST:', sseError);
-        this.updateGenerationState({
-          error: 'SSE connection failed, using fallback method'
-        });
-        throw sseError;
-      })
-    );
+    return this.createSSEConnection(projectId);
   }
 
   /**
-   * Attempt to create SSE connection for real-time updates using ngx-sse-client
+   * Create SSE connection for real-time updates using ngx-sse-client
    * @param projectId Project ID
-   * @returns Observable with the created diagram model
+   * @returns Observable with SSE events
    */
-  private trySSEConnection(projectId: string): Observable<DiagramModel> {
+  private createSSEConnection(projectId: string): Observable<DiagramStepEvent> {
     const url = `${this.apiUrl}/generate-stream/${projectId}`;
     console.log('Attempting SSE connection to:', url);
     
-    return new Observable<DiagramModel>((observer) => {
+    return new Observable<DiagramStepEvent>((observer) => {
       // Create SSE connection using ngx-sse-client
       this.sseSubscription = this.sseClient.stream(url, {
         keepAlive: true,
@@ -175,45 +65,22 @@ export class DiagramsService {
             const data: DiagramStepEvent = JSON.parse(messageEvent.data);
             console.log('SSE message received:', data);
             
-            this.handleSSEMessage(data);
+            // Emit the event to the component
+            observer.next(data);
             
-            // Check if all steps are completed
-            const currentState = this.generationState();
-            if (currentState.steps.length >= 6 && !currentState.currentStep) {
-              // All steps completed, create final diagram
-              const finalDiagram: DiagramModel = {
-                id: `diagram_${projectId}_${Date.now()}`,
-                title: 'Generated Diagrams',
-                content: this.combineStepsContent(currentState.steps),
-                createdAt: new Date(),
-                updatedAt: new Date()
-              };
-              
-              this.diagramState.set(finalDiagram);
-              this.updateGenerationState({
-                isGenerating: false,
-                completed: true
-              });
-              
-              observer.next(finalDiagram);
-              observer.complete();
-              this.closeSSEConnection();
-            }
           } catch (error) {
             console.error('Error parsing SSE message:', error);
+            observer.error(error);
           }
         },
         error: (error: any) => {
           console.error('SSE connection error:', error);
-          this.updateGenerationState({
-            error: 'SSE connection error',
-            isGenerating: false
-          });
           observer.error(new Error('SSE endpoint not available'));
           this.closeSSEConnection();
         },
         complete: () => {
           console.log('SSE connection completed');
+          observer.complete();
           this.closeSSEConnection();
         }
       });
@@ -221,17 +88,11 @@ export class DiagramsService {
   }
 
   /**
-   * Combine all step contents into a single diagram content
+   * Cancel ongoing SSE connection
    */
-  private combineStepsContent(steps: DiagramStep[]): string {
-    return steps
-      .filter(step => step.content && step.content !== 'step_started')
-      .map(step => `## ${step.stepName}\n\n${step.content}`)
-      .join('\n\n---\n\n');
+  cancelGeneration(): void {
+    this.closeSSEConnection();
   }
-
-
-
   /**
    * Get all diagrams for a project
    * @param projectId Project ID
