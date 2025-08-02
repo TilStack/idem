@@ -13,7 +13,6 @@ import { ProjectService } from '../../services/project.service';
 import { Loader } from '../../../../components/loader/loader';
 import { initEmptyObject } from '../../../../utils/init-empty-object';
 import CreateProjectDatas, { DevelopmentPhase, SelectElement } from './datas';
-import { VisualIdentityData } from './data';
 
 // Import new components
 import { ProjectDescriptionComponent } from './components/project-description/project-description';
@@ -61,8 +60,8 @@ export class CreateProjectComponent implements OnInit {
     { id: 'description', title: 'Project Description', active: signal(true) },
     { id: 'details', title: 'Project Details', active: signal(false) },
     { id: 'colors', title: 'Color Selection', active: signal(false) },
-    { id: 'logo', title: 'Logo Selection', active: signal(false) },
     { id: 'typography', title: 'Typography', active: signal(false) },
+    { id: 'logo', title: 'Logo Selection', active: signal(false) },
     { id: 'summary', title: 'Summary', active: signal(false) },
   ];
 
@@ -88,10 +87,9 @@ export class CreateProjectComponent implements OnInit {
   protected marketingConsentAccepted = signal<boolean>(false);
 
   // Visual identity selections
-  logos: LogoModel[] = VisualIdentityData.logos;
-  protected colorModels: ColorModel[] = VisualIdentityData.colorPalettes;
-  protected typographyModels: TypographyModel[] =
-    VisualIdentityData.typographyOptions;
+  logos: LogoModel[] = [];
+  protected colorModels: ColorModel[] = [];
+  protected typographyModels: TypographyModel[] = [];
   protected selectedLogo = '';
   protected selectedColor = '';
   protected selectedTypography = '';
@@ -236,8 +234,9 @@ export class CreateProjectComponent implements OnInit {
     const currentStep = this.currentStepIndex();
     const nextIndex = currentStep + 1;
 
-    if (currentStep === 1) {
+    if (nextIndex === 2) {
       // Corresponds to 'Color Selection' step (index 2)
+      // Generate colors and typography first
       this.project.update((project) => ({
         ...project,
         id: this.generateProjectId(),
@@ -248,27 +247,36 @@ export class CreateProjectComponent implements OnInit {
         this.brandingError.set(null); // Clear previous error
 
         this.brandingService
-          .generateLogoColorsAndTypography(this.project())
+          .generateColorsAndTypography(this.project())
           .subscribe({
-            next: (brandIdentity) => {
+            next: (brandingData) => {
               console.log(
-                'Branding elements generated successfully:',
-                brandIdentity
+                'Colors and typography generated successfully:',
+                brandingData
               );
-              this.colorModels = brandIdentity.colors;
-              this.typographyModels = brandIdentity.typography;
-              this.logos = brandIdentity.logos;
+              this.colorModels = brandingData.colors;
+              this.typographyModels = brandingData.typography;
+              console.log('Color models:', this.colorModels);
+              console.log('Typography models:', this.typographyModels);
+              // Update project with generated colors and typography
               this.project.update((project) => ({
                 ...project,
                 analysisResultModel: {
                   ...project.analysisResultModel,
                   branding: {
-                    logo: brandIdentity.logos[0],
-                    generatedLogos: brandIdentity.logos,
-                    colors: brandIdentity.colors[0],
-                    generatedColors: brandIdentity.colors,
-                    typography: brandIdentity.typography[0],
-                    generatedTypography: brandIdentity.typography,
+                    logo: {
+                      id: 'placeholder',
+                      name: 'Placeholder Logo',
+                      svg: '',
+                      concept: 'Logo will be generated after color and typography selection',
+                      colors: [],
+                      fonts: []
+                    }, // Placeholder logo - will be replaced when generated
+                    generatedLogos: [],
+                    colors: this.colorModels[0],
+                    generatedColors: brandingData.colors,
+                    typography: this.typographyModels[0],
+                    generatedTypography: brandingData.typography,
                     sections: [],
                   },
                 },
@@ -277,14 +285,62 @@ export class CreateProjectComponent implements OnInit {
               this.navigateToStep(nextIndex);
             },
             error: (err) => {
-              console.error('Error generating branding elements:', err);
+              console.error('Error generating colors and typography:', err);
               this.brandingError.set(
-                'Failed to generate branding elements. Please check the console for details or try again.'
+                'Failed to generate colors and typography. Please check the console for details or try again.'
               );
               this.isLoaded.set(false);
               // Do not navigate to the next step on error
             },
           });
+      }
+    } else if (nextIndex === 4) {
+      // Corresponds to 'Logo Selection' step (index 4)
+      // Generate logos with selected color and typography
+      const selectedColor = this.colorModels.find((color) => color.id === this.selectedColor) || this.colorModels[0];
+      const selectedTypography = this.typographyModels.find((typography) => typography.id === this.selectedTypography) || this.typographyModels[0];
+      
+      if (selectedColor && selectedTypography) {
+        this.isLoaded.set(true);
+        this.brandingError.set(null); // Clear previous error
+
+        this.brandingService
+          .generateLogo(this.project(), selectedColor, selectedTypography)
+          .subscribe({
+            next: (logoData) => {
+              console.log(
+                'Logos generated successfully:',
+                logoData
+              );
+              this.logos = logoData.logos;
+              
+              // Update project with generated logos
+              this.project.update((project) => ({
+                ...project,
+                analysisResultModel: {
+                  ...project.analysisResultModel,
+                  branding: {
+                    ...project.analysisResultModel?.branding,
+                    logo: logoData.logos[0],
+                    generatedLogos: logoData.logos,
+                  },
+                },
+              }));
+              this.isLoaded.set(false);
+              this.navigateToStep(nextIndex);
+            },
+            error: (err) => {
+              console.error('Error generating logos:', err);
+              this.brandingError.set(
+                'Failed to generate logos. Please check the console for details or try again.'
+              );
+              this.isLoaded.set(false);
+              // Do not navigate to the next step on error
+            },
+          });
+      } else {
+        console.error('Selected color or typography not found');
+        this.brandingError.set('Please select a color and typography before proceeding.');
       }
     } else {
       // For any other step, proceed as usual

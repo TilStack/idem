@@ -17,30 +17,29 @@ export interface SelectElement {
 }
 
 export default class CreateProjectDatas {
-
   static groupedProjectTypes: SelectElement[] = [
-    { name: 'Application Web', code: 'web' },
-    { name: 'Application Mobile', code: 'mobile' },
+    { name: 'Web Application', code: 'web' },
+    { name: 'Mobile Application', code: 'mobile' },
     { name: 'IoT', code: 'iot' },
-    { name: 'Application Desktop', code: 'desktop' },
+    { name: 'Desktop Application', code: 'desktop' },
     { name: 'API/Backend', code: 'api' },
-    { name: 'IA/ML', code: 'ai' },
+    { name: 'AI/ML', code: 'ai' },
     { name: 'Blockchain', code: 'blockchain' },
   ];
 
   static groupedTargets: SelectElement[] = [
-    { name: 'Entreprises', code: 'business' },
-    { name: 'Étudiants', code: 'students' },
-    { name: 'Grand public', code: 'general-public' },
+    { name: 'Companies', code: 'business' },
+    { name: 'Students', code: 'students' },
+    { name: 'General Public', code: 'general-public' },
     { name: 'Administrations', code: 'government' },
-    { name: 'Professionnels de santé', code: 'healthcare' },
+    { name: 'Healthcare Professionals', code: 'healthcare' },
   ];
 
   static groupedScopes: SelectElement[] = [
-    { name: 'Locale', code: 'local' },
-    { name: 'Départementale', code: 'departmental' },
-    { name: 'Régionale', code: 'regional' },
-    { name: 'Nationale', code: 'national' },
-    { name: 'Internationale', code: 'international' },
+    { name: 'Local', code: 'local' },
+    { name: 'Departmental', code: 'departmental' },
+    { name: 'Regional', code: 'regional' },
+    { name: 'National', code: 'national' },
+    { name: 'International', code: 'international' },
   ];
 }

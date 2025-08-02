@@ -12,7 +12,10 @@ import { ProjectModel } from '../../models/project.model';
 import { LogoModel } from '../../models/logo.model';
 import { BrandingStepEvent } from '../../models/branding-step.model';
 import { SSEService } from '../../../../shared/services/sse.service';
-import { SSEStepEvent, SSEConnectionConfig } from '../../../../shared/models/sse-step.model';
+import {
+  SSEStepEvent,
+  SSEConnectionConfig,
+} from '../../../../shared/models/sse-step.model';
 
 @Injectable({
   providedIn: 'root',
@@ -50,12 +53,14 @@ export class BrandingService {
     const config: SSEConnectionConfig = {
       url: `${this.apiUrl}/generate/${projectId}`,
       keepAlive: true,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
     };
 
-    return this.sseService.createConnection(config, 'branding').pipe(
-      map((sseEvent: SSEStepEvent) => this.mapToBrandingStepEvent(sseEvent))
-    );
+    return this.sseService
+      .createConnection(config, 'branding')
+      .pipe(
+        map((sseEvent: SSEStepEvent) => this.mapToBrandingStepEvent(sseEvent))
+      );
   }
 
   /**
@@ -72,8 +77,8 @@ export class BrandingService {
       timestamp: sseEvent.timestamp,
       parsedData: sseEvent.parsedData || {
         status: sseEvent.type,
-        stepName: sseEvent.stepName || ''
-      }
+        stepName: sseEvent.stepName || '',
+      },
     };
   }
 
@@ -84,45 +89,57 @@ export class BrandingService {
     this.sseService.cancelGeneration('branding');
   }
 
-  /**
-   * Cancel ongoing SSE connection (legacy method)
-   */
-  private legacyCancelGeneration(): void {
-    this.closeSSEConnection();
-  }
-
-  // Generate Logo Colors and Typography for a project
-  generateLogoColorsAndTypography(project: ProjectModel): Observable<{
-    logos: LogoModel[];
+  generateColorsAndTypography(project: ProjectModel): Observable<{
     colors: ColorModel[];
     typography: TypographyModel[];
   }> {
-    console.log('Generating logo colors and typography...');
+    console.log('Generating colors and typography...');
     console.log('Project:', project);
     return this.http
       .post<{
-        logos: LogoModel[];
         colors: ColorModel[];
         typography: TypographyModel[];
       }>(`${this.apiUrl}/genColorsAndTypography`, { project })
       .pipe(
         tap((response) =>
-          console.log('generateLogoColorsAndTypography response:', response)
+          console.log('generateColorsAndTypography response:', response)
         ),
         catchError((error) => {
-          console.error('Error in generateLogoColorsAndTypography:', error);
+          console.error('Error in generateColorsAndTypography:', error);
           throw error;
         })
       );
   }
 
-  // Get all branding items for a project (assuming API needs projectId for filtering)
-  // If API doesn't filter by projectId here, this might need adjustment or projectId removed.
+  generateLogo(
+    project: ProjectModel,
+    selectedColor: ColorModel,
+    selectedTypography: TypographyModel
+  ): Observable<{
+    logos: LogoModel[];
+  }> {
+    console.log('Generating logo with selected color and typography...');
+    console.log('Project:', project);
+    console.log('Selected Color:', selectedColor);
+    console.log('Selected Typography:', selectedTypography);
+    return this.http
+      .post<{
+        logos: LogoModel[];
+      }>(`${this.apiUrl}/genLogos`, {
+        project,
+        color: selectedColor,
+        typography: selectedTypography,
+      })
+      .pipe(
+        tap((response) => console.log('generateLogo response:', response)),
+        catchError((error) => {
+          console.error('Error in generateLogo:', error);
+          throw error;
+        })
+      );
+  }
+
   getBrandIdentityModels(projectId: string): Observable<BrandIdentityModel[]> {
-    // Assuming the API endpoint for all items is just this.apiUrl
-    // and filtering by projectId is either done by the backend via token or needs a query param.
-    // For now, let's assume the GET to this.apiUrl returns all accessible items.
-    // If it needs a projectId in the path or query, this URL formation needs to change.
     return this.http
       .get<BrandIdentityModel[]>(`${this.apiUrl}?projectId=${projectId}`)
       .pipe(
@@ -136,7 +153,6 @@ export class BrandingService {
       );
   }
 
-  // Get a specific branding item by ID
   getBrandIdentity(
     projectId: string,
     brandingId: string
@@ -156,14 +172,12 @@ export class BrandingService {
         })
       );
   }
-  // Get a specific branding item by ID
   getBrandIdentityModelById(projectId: string): Observable<BrandIdentityModel> {
     return this.http.get<BrandIdentityModel>(
       `${this.apiUrl}/getAll/${projectId}`
     );
   }
 
-  // Update a specific branding item
   updateBrandIdentity(
     projectId: string,
     brandingId: string,
@@ -188,7 +202,6 @@ export class BrandingService {
       );
   }
 
-  // Delete a specific branding item
   deleteBrandIdentityModel(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap((response) =>
