@@ -10,7 +10,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProjectModel } from '../../../../models/project.model';
 import { SafeHtmlPipe } from '../../../projects-list/safehtml.pipe';
-import { ColorModel, TypographyModel } from '../../../../models/brand-identity.model';
+import {
+  ColorModel,
+  TypographyModel,
+} from '../../../../models/brand-identity.model';
 import { LogoModel } from '../../../../models/logo.model';
 
 @Component({
@@ -38,19 +41,25 @@ export class ProjectSummaryComponent {
   finalizeProject = output<void>();
 
   protected getSelectedLogo(): LogoModel | undefined {
-    return this.logos().find((logo) => logo.id === this.selectedLogo());
+    const logo = this.logos().find((logo) => logo.id === this.selectedLogo());
+    console.log('Selected logo', logo);
+    return logo;
   }
 
   protected getSelectedColor(): ColorModel | undefined {
-    return this.colorPalettes().find(
+    const color = this.colorPalettes().find(
       (color) => color.id === this.selectedColor()
     );
+    console.log('Selected color', color);
+    return color;
   }
 
   protected getSelectedTypography(): TypographyModel | undefined {
-    return this.typographyOptions().find(
+    const typography = this.typographyOptions().find(
       (typo) => typo.id === this.selectedTypography()
     );
+    console.log('Selected typography', typography);
+    return typography;
   }
 
   protected onPrivacyPolicyChange(event: Event): void {

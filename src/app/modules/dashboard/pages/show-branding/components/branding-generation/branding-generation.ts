@@ -13,8 +13,10 @@ import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { BrandingService } from '../../../../services/ai-agents/branding.service';
 import { CookieService } from '../../../../../../shared/services/cookie.service';
-import { BrandingStepEvent, BrandingStep, BrandingGenerationState } from '../../../../models/branding-step.model';
+import { GenerationService } from '../../../../../../shared/services/generation.service';
+import { SSEGenerationState, SSEConnectionConfig } from '../../../../../../shared/models/sse-step.model';
 import { BrandIdentityModel } from '../../../../models/brand-identity.model';
+import { environment } from '../../../../../../../environments/environment';
 
 @Component({
   selector: 'app-branding-generation',
@@ -26,6 +28,7 @@ import { BrandIdentityModel } from '../../../../models/brand-identity.model';
 })
 export class BrandingGenerationComponent implements OnInit, OnDestroy {
   private readonly brandingService = inject(BrandingService);
+  private readonly generationService = inject(GenerationService);
   private readonly cookieService = inject(CookieService);
   private readonly destroy$ = new Subject<void>();
 
@@ -34,29 +37,31 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
 
   // Signals for reactive state management
   protected readonly projectId = signal<string | null>(null);
-  protected readonly generationState = signal<BrandingGenerationState>({
+  protected readonly generationState = signal<SSEGenerationState>({
     steps: [],
     currentStep: null,
     isGenerating: false,
     error: null,
     completed: false,
+    totalSteps: 0,
+    completedSteps: 0
   });
 
-  // Computed properties
+  // Computed properties using the new generation state
   protected readonly isGenerating = computed(() => this.generationState().isGenerating);
   protected readonly generationError = computed(() => this.generationState().error);
   protected readonly currentStep = computed(() => this.generationState().currentStep);
   protected readonly completedSteps = computed(() => 
     this.generationState().steps.filter(step => step.status === 'completed')
   );
-  protected readonly hasCompletedSteps = computed(() => this.completedSteps().length > 0);
-  protected readonly totalSteps = computed(() => this.generationState().steps.length);
-  protected readonly completedCount = computed(() => this.completedSteps().length);
-  protected readonly progressPercentage = computed(() => {
-    const total = this.totalSteps();
-    const completed = this.completedCount();
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
-  });
+  protected readonly hasCompletedSteps = computed(() => 
+    this.generationService.hasCompletedSteps(this.generationState())
+  );
+  protected readonly totalSteps = computed(() => this.generationState().totalSteps);
+  protected readonly completedCount = computed(() => this.generationState().completedSteps);
+  protected readonly progressPercentage = computed(() => 
+    this.generationService.calculateProgress(this.generationState())
+  );
 
   ngOnInit(): void {
     this.projectId.set(this.cookieService.get('projectId'));
@@ -80,13 +85,24 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
     this.resetGenerationState();
     console.log('Starting branding generation with SSE...');
 
-    this.brandingService
-      .createBrandIdentityModel(this.projectId()!)
+    const config: SSEConnectionConfig = {
+      url: `${environment.services.api.url}/project/brandings/generate/${this.projectId()}`,
+      keepAlive: true,
+      reconnectionDelay: 1000
+    };
+
+    this.generationService
+      .startGeneration(config, 'branding', this.destroy$)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (stepEvent: BrandingStepEvent) => {
-          console.log('Branding SSE step event received:', stepEvent);
-          this.handleSSEStepEvent(stepEvent);
+        next: (state: SSEGenerationState) => {
+          console.log('Branding generation state updated:', state);
+          this.generationState.set(state);
+          
+          // Check if generation is completed
+          if (state.completed && state.steps.length > 0) {
+            this.emitBrandingData(state.steps);
+          }
         },
         error: (err) => {
           console.error(
@@ -101,12 +117,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
         },
         complete: () => {
           console.log('Branding generation completed');
-          this.generationState.update(state => ({
-            ...state,
-            isGenerating: false,
-            completed: true,
-          }));
-        },
+        }
       });
   }
 
@@ -120,92 +131,90 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
       isGenerating: true,
       error: null,
       completed: false,
+      totalSteps: 0,
+      completedSteps: 0
     });
-  }
-
-  /**
-   * Handle SSE step events and update UI state
-   */
-  private handleSSEStepEvent(stepEvent: BrandingStepEvent): void {
-    const currentState = this.generationState();
-    
-    if (stepEvent.type === 'started' || stepEvent.data === 'step_started') {
-      // Step started - add or update step as in-progress
-      const newStep: BrandingStep = {
-        stepName: stepEvent.stepName,
-        status: 'in-progress',
-        timestamp: stepEvent.timestamp,
-        summary: stepEvent.summary,
-      };
-
-      const existingStepIndex = currentState.steps.findIndex(
-        step => step.stepName === stepEvent.stepName
-      );
-
-      let updatedSteps: BrandingStep[];
-      if (existingStepIndex >= 0) {
-        updatedSteps = [...currentState.steps];
-        updatedSteps[existingStepIndex] = newStep;
-      } else {
-        updatedSteps = [...currentState.steps, newStep];
-      }
-
-      this.generationState.update(state => ({
-        ...state,
-        steps: updatedSteps,
-        currentStep: newStep,
-      }));
-
-    } else if (stepEvent.type === 'completed') {
-      // Step completed - update step with content
-      const completedStep: BrandingStep = {
-        stepName: stepEvent.stepName,
-        status: 'completed',
-        content: stepEvent.data,
-        timestamp: stepEvent.timestamp,
-        summary: stepEvent.summary,
-      };
-
-      const existingStepIndex = currentState.steps.findIndex(
-        step => step.stepName === stepEvent.stepName
-      );
-
-      let updatedSteps: BrandingStep[];
-      if (existingStepIndex >= 0) {
-        updatedSteps = [...currentState.steps];
-        updatedSteps[existingStepIndex] = completedStep;
-      } else {
-        updatedSteps = [...currentState.steps, completedStep];
-      }
-
-      // Check if this is the final step (assuming 6 steps like diagrams)
-      const completedSteps = updatedSteps.filter(step => step.status === 'completed');
-      const isAllCompleted = completedSteps.length >= 6;
-
-      this.generationState.update(state => ({
-        ...state,
-        steps: updatedSteps,
-        currentStep: isAllCompleted ? null : state.currentStep,
-        isGenerating: !isAllCompleted,
-        completed: isAllCompleted,
-      }));
-
-      // If all steps are completed, emit the final branding data
-      if (isAllCompleted) {
-        
-      }
-    }
   }
 
   /**
    * Cancel ongoing generation
    */
   protected cancelGeneration(): void {
-    this.brandingService.cancelGeneration();
+    this.generationService.cancelGeneration('branding');
     this.generationState.update(state => ({
       ...state,
       isGenerating: false,
       error: 'Generation cancelled',
     }));
+  }
+
+  /**
+   * Emit final branding data when generation is completed
+   */
+  private emitBrandingData(steps: any[]): void {
+    try {
+      // Create branding data from completed steps
+      const brandingData: BrandIdentityModel = {
+        id: this.projectId() || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        logo: {
+          id: '',
+          name: 'Generated Logo',
+          svg: '',
+          concept: this.extractStepContent(steps, 'Logo') || 'Generated brand logo',
+          colors: ['#000000', '#ffffff'],
+          fonts: ['Arial']
+        },
+        generatedLogos: [],
+        colors: {
+          id: '',
+          name: 'Generated Colors',
+          url: '',
+          colors: {
+            primary: '#000000',
+            secondary: '#ffffff',
+            accent: '#007bff',
+            background: '#f8f9fa',
+            text: '#212529'
+          }
+        },
+        generatedColors: [],
+        typography: {
+          id: '',
+          name: 'Generated Typography',
+          url: '',
+          primaryFont: 'Arial',
+          secondaryFont: 'Helvetica'
+        },
+        generatedTypography: [],
+        sections: steps.map((step, index) => ({
+          id: `section-${index}`,
+          name: step.stepName || `Step ${index + 1}`,
+          type: 'branding',
+          data: step.content || step.summary || '',
+          summary: step.summary || '',
+          order: index
+        }))
+      };
+
+      console.log('Emitting branding data:', brandingData);
+      this.brandingGenerated.emit(brandingData);
+    } catch (error) {
+      console.error('Error creating branding data:', error);
+      this.generationState.update(state => ({
+        ...state,
+        error: 'Failed to process branding data',
+        isGenerating: false
+      }));
+    }
+  }
+
+  /**
+   * Extract content from a specific step by name
+   */
+  private extractStepContent(steps: any[], stepName: string): string {
+    const step = steps.find(s => s.stepName?.toLowerCase().includes(stepName.toLowerCase()));
+    return step?.content || step?.summary || '';
   }
 }

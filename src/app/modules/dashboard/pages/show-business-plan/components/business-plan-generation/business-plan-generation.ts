@@ -13,12 +13,10 @@ import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { BusinessPlanService } from '../../../../services/ai-agents/business-plan.service';
 import { CookieService } from '../../../../../../shared/services/cookie.service';
-import {
-  BusinessPlanStepEvent,
-  BusinessPlanStep,
-  BusinessPlanGenerationState,
-} from '../../../../models/business-plan-step.model';
+import { GenerationService } from '../../../../../../shared/services/generation.service';
+import { SSEGenerationState, SSEConnectionConfig } from '../../../../../../shared/models/sse-step.model';
 import { BusinessPlanModel } from '../../../../models/businessPlan.model';
+import { environment } from '../../../../../../../environments/environment';
 
 @Component({
   selector: 'app-business-plan-generation',
@@ -30,6 +28,7 @@ import { BusinessPlanModel } from '../../../../models/businessPlan.model';
 })
 export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
   private readonly businessPlanService = inject(BusinessPlanService);
+  private readonly generationService = inject(GenerationService);
   private readonly cookieService = inject(CookieService);
   private readonly destroy$ = new Subject<void>();
 
@@ -38,41 +37,31 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
 
   // Signals for reactive state management
   protected readonly projectId = signal<string | null>(null);
-  protected readonly generationState = signal<BusinessPlanGenerationState>({
+  protected readonly generationState = signal<SSEGenerationState>({
     steps: [],
     currentStep: null,
     isGenerating: false,
     error: null,
     completed: false,
+    totalSteps: 0,
+    completedSteps: 0
   });
 
-  // Computed properties
-  protected readonly isGenerating = computed(
-    () => this.generationState().isGenerating
+  // Computed properties using the new generation state
+  protected readonly isGenerating = computed(() => this.generationState().isGenerating);
+  protected readonly generationError = computed(() => this.generationState().error);
+  protected readonly currentStep = computed(() => this.generationState().currentStep);
+  protected readonly completedSteps = computed(() => 
+    this.generationState().steps.filter(step => step.status === 'completed')
   );
-  protected readonly generationError = computed(
-    () => this.generationState().error
+  protected readonly hasCompletedSteps = computed(() => 
+    this.generationService.hasCompletedSteps(this.generationState())
   );
-  protected readonly currentStep = computed(
-    () => this.generationState().currentStep
+  protected readonly totalSteps = computed(() => this.generationState().totalSteps);
+  protected readonly completedCount = computed(() => this.generationState().completedSteps);
+  protected readonly progressPercentage = computed(() => 
+    this.generationService.calculateProgress(this.generationState())
   );
-  protected readonly completedSteps = computed(() =>
-    this.generationState().steps.filter((step) => step.status === 'completed')
-  );
-  protected readonly hasCompletedSteps = computed(
-    () => this.completedSteps().length > 0
-  );
-  protected readonly totalSteps = computed(
-    () => this.generationState().steps.length
-  );
-  protected readonly completedCount = computed(
-    () => this.completedSteps().length
-  );
-  protected readonly progressPercentage = computed(() => {
-    const total = this.totalSteps();
-    const completed = this.completedCount();
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
-  });
 
   ngOnInit(): void {
     this.projectId.set(this.cookieService.get('projectId'));
@@ -96,13 +85,24 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
     this.resetGenerationState();
     console.log('Starting business plan generation with SSE...');
 
-    this.businessPlanService
-      .createBusinessplanItem(this.projectId()!)
+    const config: SSEConnectionConfig = {
+      url: `${environment.services.api.url}/project/businessPlans/generate/${this.projectId()}`,
+      keepAlive: true,
+      reconnectionDelay: 1000
+    };
+
+    this.generationService
+      .startGeneration(config, 'business-plan', this.destroy$)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (stepEvent: BusinessPlanStepEvent) => {
-          console.log('Business Plan SSE step event received:', stepEvent);
-          this.handleSSEStepEvent(stepEvent);
+        next: (state: SSEGenerationState) => {
+          console.log('Business plan generation state updated:', state);
+          this.generationState.set(state);
+          
+          // Check if generation is completed
+          if (state.completed && state.steps.length > 0) {
+            this.emitBusinessPlanData(state.steps);
+          }
         },
         error: (err) => {
           console.error(
@@ -117,11 +117,6 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
         },
         complete: () => {
           console.log('Business plan generation completed');
-          this.generationState.update((state) => ({
-            ...state,
-            isGenerating: false,
-            completed: true,
-          }));
         },
       });
   }
@@ -136,88 +131,45 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
       isGenerating: true,
       error: null,
       completed: false,
+      totalSteps: 0,
+      completedSteps: 0
     });
   }
 
   /**
-   * Handle SSE step events and update UI state
+   * Emit business plan data when generation is completed
    */
-  private handleSSEStepEvent(stepEvent: BusinessPlanStepEvent): void {
-    const currentState = this.generationState();
+  private emitBusinessPlanData(steps: any[]): void {
+    const combinedContent = this.combineStepsContent(steps);
+    
+    const businessPlan: BusinessPlanModel = {
+      sections: steps.map(step => ({
+        id: `section-${step.stepName}`,
+        name: step.stepName,
+        type: 'generated',
+        data: step.content || step.summary || '',
+        summary: step.summary || ''
+      }))
+    };
+    
+    this.businessPlanGenerated.emit(businessPlan);
+  }
 
-    if (stepEvent.type === 'started' || stepEvent.data === 'step_started') {
-      // Step started - add or update step as in-progress
-      const newStep: BusinessPlanStep = {
-        stepName: stepEvent.stepName,
-        status: 'in-progress',
-        timestamp: stepEvent.timestamp,
-        summary: stepEvent.summary,
-      };
-
-      const existingStepIndex = currentState.steps.findIndex(
-        (step) => step.stepName === stepEvent.stepName
-      );
-
-      let updatedSteps: BusinessPlanStep[];
-      if (existingStepIndex >= 0) {
-        updatedSteps = [...currentState.steps];
-        updatedSteps[existingStepIndex] = newStep;
-      } else {
-        updatedSteps = [...currentState.steps, newStep];
-      }
-
-      this.generationState.update((state) => ({
-        ...state,
-        steps: updatedSteps,
-        currentStep: newStep,
-      }));
-    } else if (stepEvent.type === 'completed') {
-      // Step completed - update step with content
-      const completedStep: BusinessPlanStep = {
-        stepName: stepEvent.stepName,
-        status: 'completed',
-        content: stepEvent.data,
-        timestamp: stepEvent.timestamp,
-        summary: stepEvent.summary,
-      };
-
-      const existingStepIndex = currentState.steps.findIndex(
-        (step) => step.stepName === stepEvent.stepName
-      );
-
-      let updatedSteps: BusinessPlanStep[];
-      if (existingStepIndex >= 0) {
-        updatedSteps = [...currentState.steps];
-        updatedSteps[existingStepIndex] = completedStep;
-      } else {
-        updatedSteps = [...currentState.steps, completedStep];
-      }
-
-      // Check if this is the final step (assuming 6 steps like diagrams)
-      const completedSteps = updatedSteps.filter(
-        (step) => step.status === 'completed'
-      );
-      const isAllCompleted = completedSteps.length >= 6;
-
-      this.generationState.update((state) => ({
-        ...state,
-        steps: updatedSteps,
-        currentStep: isAllCompleted ? null : state.currentStep,
-        isGenerating: !isAllCompleted,
-        completed: isAllCompleted,
-      }));
-
-      // If all steps are completed, emit the final business plan data
-      if (isAllCompleted) {
-      }
-    }
+  /**
+   * Combine all step contents into a single business plan content
+   */
+  private combineStepsContent(steps: any[]): string {
+    return steps
+      .filter((step) => step.content && step.content !== 'step_started')
+      .map((step) => `## ${step.stepName}\n\n${step.content}`)
+      .join('\n\n---\n\n');
   }
 
   /**
    * Cancel ongoing generation
    */
   protected cancelGeneration(): void {
-    this.businessPlanService.cancelGeneration();
+    this.generationService.cancelGeneration('business-plan');
     this.generationState.update((state) => ({
       ...state,
       isGenerating: false,

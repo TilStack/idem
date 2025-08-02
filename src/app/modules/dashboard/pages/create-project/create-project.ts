@@ -77,10 +77,7 @@ export class CreateProjectComponent implements OnInit {
   // Project model
   protected project = signal<ProjectModel>(initEmptyObject<ProjectModel>());
 
-  // Store selected visual identity items separately
-  protected selectedLogoId = '';
-  protected selectedColorId = '';
-  protected selectedTypographyId = '';
+
   protected selectedTeamSize: SelectElement | undefined;
   protected selectedTarget: SelectElement | undefined;
   protected selectedScope: SelectElement | undefined;
@@ -348,9 +345,10 @@ export class CreateProjectComponent implements OnInit {
               id: selectedLogoObj.id,
               name: selectedLogoObj.name,
               svg: selectedLogoObj.svg,
-              concept: 'Auto-generated logo for ' + project.name,
-              colors: [],
-              fonts: [],
+              concept: selectedLogoObj.concept,
+              variations: selectedLogoObj.variations,
+              colors: selectedLogoObj.colors,
+              fonts: selectedLogoObj.fonts,
             },
             colors: {
               id: selectedColorObj.id,
@@ -365,9 +363,9 @@ export class CreateProjectComponent implements OnInit {
               primaryFont: selectedTypoObj.primaryFont,
               secondaryFont: selectedTypoObj.secondaryFont,
             },
-            generatedLogos: [],
-            generatedColors: [],
-            generatedTypography: [],
+            generatedLogos: this.logos,
+            generatedColors: this.colorModels,
+            generatedTypography: this.typographyModels,
             sections: [],
           },
         },
