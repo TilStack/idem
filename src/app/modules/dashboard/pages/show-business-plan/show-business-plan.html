@@ -6,6 +6,6 @@
   @if (businessPlan && businessPlan.sections && businessPlan.sections.length > 0) {
     <app-business-plan-display [businessPlan]="businessPlan" />
   } @else {
-    <app-business-plan-creation (generateRequested)="generateBusinessPlan()" />
+    <app-business-plan-generation (businessPlanGenerated)="onBusinessPlanGenerated($event)" />
   }
 }

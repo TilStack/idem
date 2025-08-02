@@ -4,9 +4,9 @@
 
 <div 
   [@contentExpand]="isSidebarCollapsed() ? 'collapsed' : 'expanded'"
-  class="transition-all duration-300 mt-[80px] p-8 min-h-screen bg-opacity-95"
+  class="transition-all duration-300 mt-[80px] p-8 min-h-screen bg-opacity-95 relative"
 >
-  <div class="glass-card p-6 rounded-xl shadow-xl shadow-primary/5 z-50 border border-gray-800/30">
+  <div class="glass-card relative p-6 rounded-xl shadow-xl shadow-primary/5  border border-gray-800/30">
     <router-outlet></router-outlet>
   </div>
 </div>

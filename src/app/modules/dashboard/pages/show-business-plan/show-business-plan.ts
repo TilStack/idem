@@ -11,12 +11,12 @@ import { Loader } from '../../../../components/loader/loader';
 import { BusinessPlanService } from '../../services/ai-agents/business-plan.service';
 import { CookieService } from '../../../../shared/services/cookie.service';
 import { BusinessPlanDisplayComponent } from './components/business-plan-display/business-plan-display';
-import { BusinessPlanCreationComponent } from './components/business-plan-creation/business-plan-creation';
+import { BusinessPlanGenerationComponent } from './components/business-plan-generation/business-plan-generation';
 
 @Component({
   selector: 'app-show-business-plan',
   standalone: true,
-  imports: [Loader, BusinessPlanDisplayComponent, BusinessPlanCreationComponent],
+  imports: [Loader, BusinessPlanDisplayComponent, BusinessPlanGenerationComponent],
   templateUrl: './show-business-plan.html',
   styleUrls: ['./show-business-plan.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -95,26 +95,10 @@ export class ShowBusinessPlan {
 
 
 
-  generateBusinessPlan() {
-    this.isBusinessplanLoaded.set(true);
-    console.log('generateBusinessPlan...');
-    this.businessPlanService
-      .createBusinessplanItem(this.projectIdFromCookie()!)
-      .subscribe({
-        next: (businessPlanData) => {
-          this.businessPlan = businessPlanData;
-          this.isBusinessplanExists.set(true);
-          this.isBusinessplanLoaded.set(false);
-        },
-        error: (err) => {
-          console.error(
-            `Error generating business plan for project ID: ${this.projectIdFromCookie()}:`,
-            err
-          );
-          this.businessPlan = null;
-          this.isBusinessplanLoaded.set(false);
-          this.isBusinessplanExists.set(false);
-        },
-      });
+  protected onBusinessPlanGenerated(businessPlanData: any): void {
+    console.log('Business plan generated:', businessPlanData);
+    this.businessPlan = businessPlanData;
+    this.isBusinessplanExists.set(true);
+    this.isBusinessplanLoaded.set(false);
   }
 }

@@ -12,8 +12,6 @@
   padding: 0;
 }
 
-
-
 /* Custom progress bar */
 ::ng-deep .custom-progress-bar .p-progressbar {
   height: 12px;
@@ -75,13 +73,6 @@
   border-top: 1px solid #e5e7eb;
 }
 
-/* Skeleton loaders custom styling */
-::ng-deep .p-skeleton {
-  background: linear-gradient(90deg, #1f2937 25%, #1f2937 50%, #1f2937 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-}
-
 @keyframes loading {
   0% {
     background-position: 200% 0;
@@ -90,8 +81,6 @@
     background-position: -200% 0;
   }
 }
-
-
 
 /* Section spacing */
 .completed-steps-section,

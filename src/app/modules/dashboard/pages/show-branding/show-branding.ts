@@ -13,12 +13,12 @@ import { BrandingService } from '../../services/ai-agents/branding.service';
 import { BrandIdentityModel } from '../../models/brand-identity.model';
 import { CookieService } from '../../../../shared/services/cookie.service';
 import { BrandingDisplayComponent } from './components/branding-display/branding-display';
-import { BrandingCreationComponent } from './components/branding-creation/branding-creation';
+import { BrandingGenerationComponent } from './components/branding-generation/branding-generation';
 
 @Component({
   selector: 'app-show-branding',
   standalone: true,
-  imports: [Loader, BrandingDisplayComponent, BrandingCreationComponent],
+  imports: [Loader, BrandingDisplayComponent, BrandingGenerationComponent],
   templateUrl: './show-branding.html',
   styleUrl: './show-branding.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -94,26 +94,10 @@ export class ShowBrandingComponent {
 
 
 
-  generateBranding() {
-    this.isBrandingLoaded.set(true);
-    console.log('generateBranding...');
-    this.brandingService
-      .createBrandIdentityModel(this.projectIdFromCookie()!)
-      .subscribe({
-        next: (brandModelData) => {
-          this.branding = brandModelData;
-          this.isBrandExists.set(true);
-          this.isBrandingLoaded.set(false);
-        },
-        error: (err) => {
-          console.error(
-            `Error generating branding information for project ID: ${this.projectIdFromCookie()}:`,
-            err
-          );
-          this.branding = null;
-          this.isBrandingLoaded.set(false);
-          this.isBrandExists.set(false);
-        },
-      });
+  protected onBrandingGenerated(brandingData: BrandIdentityModel): void {
+    console.log('Branding generated:', brandingData);
+    this.branding = brandingData;
+    this.isBrandExists.set(true);
+    this.isBrandingLoaded.set(false);
   }
 }

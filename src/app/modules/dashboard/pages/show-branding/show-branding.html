@@ -6,6 +6,6 @@
   @if (branding && branding.sections.length > 0) {
     <app-branding-display [branding]="branding" />
   } @else {
-    <app-branding-creation (generateRequested)="generateBranding()" />
+    <app-branding-generation (brandingGenerated)="onBrandingGenerated($event)" />
   }
 }

@@ -190,19 +190,9 @@ export class DiagramGeneration implements OnInit, OnDestroy {
    * Complete the generation process and create final diagram
    */
   private completeGeneration(steps: DiagramStep[]): void {
-    const finalDiagram: DiagramModel = {
-      id: `diagram_${this.projectId()}_${Date.now()}`,
-      title: 'Generated Diagrams',
-      content: this.combineStepsContent(steps),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.finalDiagram.set(finalDiagram);
     this.isGenerating.set(false);
     this.isCompleted.set(true);
     this.generationProgress.set(100);
-    this.generationStatus.set('All diagrams generated successfully!');
   }
 
   /**

@@ -5,7 +5,6 @@
 >
   <div class="max-w-7xl mx-auto px-6 py-4">
     <div class="flex items-center justify-between">
-      <!-- Left: Status Info -->
       <div class="flex items-center space-x-4">
         <div
           class="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center"
@@ -13,40 +12,43 @@
           <i class="pi pi-cog animate-spin text-xl text-white"></i>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-white">Génération en cours</h3>
-          <p class="text-sm text-gray-400">
-            {{ completedSteps().length }}/6 étapes terminées
+          <h2 class="text-xl font-bold text-white">Generating Business Plan</h2>
+          <p class="text-gray-300 text-sm">
+            Creating your comprehensive business plan...
           </p>
         </div>
       </div>
 
-      <!-- Right: Progress Bar and Percentage -->
-      <div class="flex items-center space-x-4 min-w-0 flex-1 max-w-md ml-8">
-        <div class="flex-1">
-          <p-progressBar
-            [value]="progressPercentage()"
-            [showValue]="false"
-            styleClass="custom-progress-bar"
-          ></p-progressBar>
-        </div>
+      <div class="flex items-center space-x-6">
+        <!-- Progress Stats -->
         <div class="text-right">
-          <span class="text-2xl font-bold text-white"
-            >{{ progressPercentage() }}%</span
-          >
-          <p class="text-xs text-gray-400">Terminé</p>
+          <div class="text-2xl font-bold text-white">
+            {{ completedCount() }}/{{ totalSteps() || 6 }}
+          </div>
+          <div class="text-sm text-gray-300">Steps Completed</div>
         </div>
-      </div>
 
-      <!-- Cancel Button -->
-      <div class="ml-6">
-        <p-button
-          label="Annuler"
-          icon="pi pi-times"
-          severity="danger"
-          size="small"
-          (onClick)="cancelGeneration()"
-          styleClass="cancel-button"
-        ></p-button>
+        <!-- Progress Bar -->
+        <div class="w-32">
+          <div class="flex justify-between text-xs text-gray-300 mb-1">
+            <span>Progress</span>
+            <span>{{ progressPercentage() }}%</span>
+          </div>
+          <div class="w-full bg-gray-700 rounded-full h-2">
+            <div
+              class="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+              [style.width.%]="progressPercentage()"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Cancel Button -->
+        <button
+          (click)="cancelGeneration()"
+          class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors duration-200"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   </div>
@@ -62,30 +64,26 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <div
-              class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"
+              class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center animate-pulse"
             >
-              <i class="pi pi-spin pi-spinner text-white"></i>
+              <i class="pi pi-cog animate-spin text-white"></i>
             </div>
             <div>
-              <h4 class="text-lg font-semibold text-blue-900">
+              <h3 class="text-lg font-semibold text-white">
                 {{ currentStep()!.stepName }}
-              </h4>
-              <p class="text-sm text-blue-700">{{ currentStep()!.summary }}</p>
+              </h3>
+              <p class="text-gray-300 text-sm">In Progress...</p>
             </div>
           </div>
-          <p-tag value="En cours" severity="info" icon="pi pi-clock"></p-tag>
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+          </div>
         </div>
       </div>
-
-      <!-- Skeleton Loaders for Content Being Generated -->
-      <div class="p-6 space-y-4">
-        <p-skeleton height="2rem" class="mb-3"></p-skeleton>
-        <p-skeleton height="4rem" class="mb-3"></p-skeleton>
-        <div class="grid grid-cols-2 gap-4">
-          <p-skeleton height="3rem"></p-skeleton>
-          <p-skeleton height="3rem"></p-skeleton>
-        </div>
-        <p-skeleton height="2rem" width="70%"></p-skeleton>
+      <div class="p-6">
+        <p class="text-gray-300">{{ currentStep()!.summary }}</p>
       </div>
     </div>
     }
@@ -107,26 +105,18 @@
                   <i class="pi pi-check text-white text-sm"></i>
                 </div>
                 <div>
-                  <h4 class="text-lg font-semibold text-green-900">
-                    {{ step.stepName }}
-                  </h4>
-                  <p class="text-sm text-green-700">{{ step.summary }}</p>
+                  <h4 class="font-semibold text-white">{{ step.stepName }}</h4>
+                  <p class="text-gray-400 text-sm">
+                    Completed {{ step.timestamp | date: 'short' }}
+                  </p>
                 </div>
-              </div>
-              <div class="flex items-center space-x-2">
-                <p-tag
-                  [value]="(step.timestamp | date:'HH:mm:ss') || 'N/A'"
-                  severity="success"
-                  icon="pi pi-clock"
-                ></p-tag>
               </div>
             </div>
           </div>
-
-          @if(step.content && step.content !== 'step_started') {
+          @if (step.content) {
           <div class="p-6">
-            <div class="prose max-w-none">
-              <markdown mermaid [data]="step.content"></markdown>
+            <div class="prose prose-invert max-w-none">
+              <div [innerHTML]="step.content"></div>
             </div>
           </div>
           }
@@ -156,20 +146,18 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           ></path>
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">
-        Erreur de génération
-      </h3>
-      <p class="text-gray-600 mb-6">{{ generationError() }}</p>
-      <p-button
-        label="Réessayer"
-        icon="pi pi-refresh"
-        severity="danger"
-        (onClick)="generateDiagrams()"
-      ></p-button>
+      <h3 class="text-xl font-bold text-white mb-2">Generation Failed</h3>
+      <p class="text-gray-400 mb-6">{{ generationError() }}</p>
+      <button
+        (click)="generateBusinessPlan()"
+        class="w-full inner-button"
+      >
+        Try Again
+      </button>
     </div>
   </div>
 </div>
@@ -192,16 +180,16 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           ></path>
         </svg>
       </div>
-      <h3 class="text-2xl font-bold text-white mb-4">No diagrams found</h3>
+      <h3 class="text-2xl font-bold text-white mb-4">No business plan found</h3>
       <p class="text-gray-600 mb-8">
-        Start by generating your first diagrams to visualize your architecture.
+        Start by generating your first business plan to outline your strategy and goals.
       </p>
-      <button (click)="generateDiagrams()" class="w-full inner-button">
-        Generate Diagrams
+      <button (click)="generateBusinessPlan()" class="w-full inner-button">
+        Generate Business Plan
       </button>
     </div>
   </div>

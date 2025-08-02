@@ -20,8 +20,8 @@ export class BusinessPlanDisplayComponent {
 
   protected makePdf(): void {
     if (this.businessPlan()?.sections) {
-      const content = this.businessPlan().sections
-        .map((section: any) => section.data)
+      const content = this.businessPlan()
+        .sections.map((section: any) => section.data)
         .join('\n\n');
       generatePdf(content, true);
     }

@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { SseClient } from 'ngx-sse-client';
 import { environment } from '../../../../../environments/environment';
 import {
   BrandIdentityModel,
@@ -10,14 +11,18 @@ import {
 } from '../../models/brand-identity.model';
 import { ProjectModel } from '../../models/project.model';
 import { LogoModel } from '../../models/logo.model';
+import { BrandingStepEvent } from '../../models/branding-step.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BrandingService {
-  private apiUrl = `${environment.services.api.url}/project/brandings`;
+  private readonly apiUrl = `${environment.services.api.url}/project/brandings`;
+  private readonly http = inject(HttpClient);
+  private readonly sseClient = inject(SseClient);
 
-  private http = inject(HttpClient);
+  // SSE connection management
+  private sseSubscription: any = null;
 
   constructor() {}
 
@@ -26,19 +31,122 @@ export class BrandingService {
    * No need for manual token management in each service
    */
 
-  // Create a new branding item
-  createBrandIdentityModel(projectId: string): Observable<BrandIdentityModel> {
-    return this.http
-      .post<BrandIdentityModel>(`${this.apiUrl}/generate/${projectId}`, {})
-      .pipe(
-        tap((response) =>
-          console.log('createBrandIdentityModel response:', response)
-        ),
-        catchError((error) => {
-          console.error('Error in createBrandIdentityModel:', error);
-          throw error;
+  /**
+   * Close SSE connection
+   */
+  private closeSSEConnection(): void {
+    if (this.sseSubscription) {
+      this.sseSubscription.unsubscribe();
+      this.sseSubscription = null;
+      console.log('Branding SSE connection closed');
+    }
+  }
+
+  /**
+   * Create a new branding item using Server-Sent Events for real-time updates
+   * @param projectId Project ID
+   * @returns Observable with SSE events
+   */
+  createBrandIdentityModel(projectId: string): Observable<BrandingStepEvent> {
+    console.log('Starting branding generation with SSE...');
+
+    // Close any existing SSE connection
+    this.closeSSEConnection();
+
+    return this.createSSEConnection(projectId);
+  }
+
+  /**
+   * Create SSE connection for real-time updates using ngx-sse-client
+   * @param projectId Project ID
+   * @returns Observable with SSE events
+   */
+  private createSSEConnection(
+    projectId: string
+  ): Observable<BrandingStepEvent> {
+    const url = `${this.apiUrl}/generate/${projectId}`;
+    console.log('Attempting branding SSE connection to:', url);
+
+    return new Observable<BrandingStepEvent>((observer) => {
+      // Create SSE connection using ngx-sse-client
+      this.sseSubscription = this.sseClient
+        .stream(url, {
+          keepAlive: true,
+          reconnectionDelay: 1000,
         })
-      );
+        .subscribe({
+          next: (event: Event) => {
+            try {
+              const messageEvent = event as MessageEvent;
+
+              // Validate message data before parsing
+              if (
+                !messageEvent.data ||
+                messageEvent.data === 'undefined' ||
+                messageEvent.data.trim() === ''
+              ) {
+                console.log(
+                  'Received empty or invalid branding SSE message, ignoring:',
+                  messageEvent.data
+                );
+                observer.complete();
+                this.closeSSEConnection();
+                return; // Ignore empty or invalid messages
+              }
+
+              // Additional check for common SSE termination messages
+              if (messageEvent.data['type'] === 'complete') {
+                console.log('Branding SSE stream completed');
+                observer.complete();
+                this.closeSSEConnection();
+                return;
+              }
+
+              const data: BrandingStepEvent = JSON.parse(messageEvent.data);
+              console.log('Branding SSE message received:', data);
+
+              // Validate the parsed data structure
+              if (!data || typeof data !== 'object') {
+                console.log(
+                  'Invalid branding SSE data structure, ignoring:',
+                  data
+                );
+                observer.complete();
+                this.closeSSEConnection();
+                return;
+              }
+
+              // Emit the event to the component
+              observer.next(data);
+            } catch (error) {
+              console.error(
+                'Error parsing branding SSE message:',
+                error,
+                'Raw data:',
+                (event as MessageEvent).data
+              );
+              // Don't propagate parsing errors - just log them and continue
+            }
+          },
+          error: (error: any) => {
+            console.error('Branding SSE connection error:', error);
+            observer.error(new Error('Branding SSE endpoint not available'));
+            this.closeSSEConnection();
+          },
+          complete: () => {
+            console.log('Branding SSE connection completed');
+            observer.complete();
+            this.closeSSEConnection();
+          },
+        });
+    });
+  }
+
+  /**
+   * Cancel ongoing SSE connection
+   */
+  cancelGeneration(): void {
+    this.closeSSEConnection();
   }
 
   // Generate Logo Colors and Typography for a project
