@@ -1,11 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-import { SseClient } from 'ngx-sse-client';
+import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { BusinessPlanModel } from '../../models/businessPlan.model';
 import { BusinessPlanStepEvent } from '../../models/business-plan-step.model';
+import { SSEService } from '../../../../shared/services/sse.service';
+import { SSEStepEvent, SSEConnectionConfig } from '../../../../shared/models/sse-step.model';
 
 @Injectable({
   providedIn: 'root',
@@ -13,10 +14,7 @@ import { BusinessPlanStepEvent } from '../../models/business-plan-step.model';
 export class BusinessPlanService {
   private readonly apiUrl = `${environment.services.api.url}/project/businessPlans`;
   private readonly http = inject(HttpClient);
-  private readonly sseClient = inject(SseClient);
-
-  // SSE connection management
-  private sseSubscription: any = null;
+  private readonly sseService = inject(SSEService);
 
   constructor() {}
 
@@ -28,12 +26,8 @@ export class BusinessPlanService {
   /**
    * Close SSE connection
    */
-  private closeSSEConnection(): void {
-    if (this.sseSubscription) {
-      this.sseSubscription.unsubscribe();
-      this.sseSubscription = null;
-      console.log('Business Plan SSE connection closed');
-    }
+  closeSSEConnection(): void {
+    this.sseService.closeConnection('business-plan');
   }
 
   /**
@@ -47,82 +41,41 @@ export class BusinessPlanService {
     // Close any existing SSE connection
     this.closeSSEConnection();
 
-    return this.createSSEConnection(projectId);
+    const config: SSEConnectionConfig = {
+      url: `${this.apiUrl}/generate/${projectId}`,
+      keepAlive: true,
+      reconnectionDelay: 1000
+    };
+
+    return this.sseService.createConnection(config, 'business-plan').pipe(
+      map((sseEvent: SSEStepEvent) => this.mapToBusinessPlanStepEvent(sseEvent))
+    );
   }
 
   /**
-   * Create SSE connection for real-time updates using ngx-sse-client
-   * @param projectId Project ID
-   * @returns Observable with SSE events
+   * Map generic SSE event to BusinessPlanStepEvent
+   * @param sseEvent Generic SSE event
+   * @returns BusinessPlanStepEvent
    */
-  private createSSEConnection(projectId: string): Observable<BusinessPlanStepEvent> {
-    const url = `${this.apiUrl}/generate/${projectId}`;
-    console.log('Attempting business plan SSE connection to:', url);
-    
-    return new Observable<BusinessPlanStepEvent>((observer) => {
-      // Create SSE connection using ngx-sse-client
-      this.sseSubscription = this.sseClient.stream(url, {
-        keepAlive: true,
-        reconnectionDelay: 1000
-      }).subscribe({
-        next: (event: Event) => {
-          try {
-            const messageEvent = event as MessageEvent;
-            
-            // Validate message data before parsing
-            if (!messageEvent.data || messageEvent.data === 'undefined' || messageEvent.data.trim() === '') {
-              console.log('Received empty or invalid business plan SSE message, ignoring:', messageEvent.data);
-              observer.complete();
-              this.closeSSEConnection();
-              return; // Ignore empty or invalid messages
-            }
-            
-            // Additional check for common SSE termination messages
-            if (messageEvent.data['type'] === 'complete') {
-              console.log('Business Plan SSE stream completed');
-              observer.complete();
-              this.closeSSEConnection();
-              return;
-            }
-            
-            const data: BusinessPlanStepEvent = JSON.parse(messageEvent.data);
-            console.log('Business Plan SSE message received:', data);
-            
-            // Validate the parsed data structure
-            if (!data || typeof data !== 'object') {
-              console.log('Invalid business plan SSE data structure, ignoring:', data);
-              observer.complete();
-              this.closeSSEConnection();
-              return;
-            }
-            
-            // Emit the event to the component
-            observer.next(data);
-            
-          } catch (error) {
-            console.error('Error parsing business plan SSE message:', error, 'Raw data:', (event as MessageEvent).data);
-            // Don't propagate parsing errors - just log them and continue
-          }
-        },
-        error: (error: any) => {
-          console.error('Business Plan SSE connection error:', error);
-          observer.error(new Error('Business Plan SSE endpoint not available'));
-          this.closeSSEConnection();
-        },
-        complete: () => {
-          console.log('Business Plan SSE connection completed');
-          observer.complete();
-          this.closeSSEConnection();
-        }
-      });
-    });
+  private mapToBusinessPlanStepEvent(sseEvent: SSEStepEvent): BusinessPlanStepEvent {
+    return {
+      type: sseEvent.type as 'started' | 'completed',
+      stepName: sseEvent.stepName || '',
+      data: sseEvent.data,
+      summary: sseEvent.summary || '',
+      timestamp: sseEvent.timestamp,
+      parsedData: sseEvent.parsedData || {
+        status: sseEvent.type,
+        stepName: sseEvent.stepName || ''
+      }
+    };
   }
 
   /**
    * Cancel ongoing SSE connection
    */
   cancelGeneration(): void {
-    this.closeSSEConnection();
+    this.sseService.cancelGeneration('business-plan');
   }
 
   // Get all project businessplan items (optionally by projectId)

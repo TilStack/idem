@@ -1,10 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { SseClient } from 'ngx-sse-client';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment';
 import { DiagramModel } from '../../models/diagram.model';
 import { DiagramStepEvent } from '../../models/diagram-step.model';
+import { SSEService } from '../../../../shared/services/sse.service';
+import { SSEStepEvent, SSEConnectionConfig } from '../../../../shared/models/sse-step.model';
 
 @Injectable({
   providedIn: 'root',
@@ -12,22 +14,15 @@ import { DiagramStepEvent } from '../../models/diagram-step.model';
 export class DiagramsService {
   private readonly apiUrl = `${environment.services.api.url}/project/diagrams`;
   private readonly http = inject(HttpClient);
-  private readonly sseClient = inject(SseClient);
-
-  // SSE connection management
-  private sseSubscription: any = null;
+  private readonly sseService = inject(SSEService);
 
 
 
   /**
    * Close SSE connection
    */
-  private closeSSEConnection(): void {
-    if (this.sseSubscription) {
-      this.sseSubscription.unsubscribe();
-      this.sseSubscription = null;
-      console.log('SSE connection closed');
-    }
+  closeSSEConnection(): void {
+    this.sseService.closeConnection('diagram');
   }
 
   /**
@@ -41,83 +36,41 @@ export class DiagramsService {
     // Close any existing SSE connection
     this.closeSSEConnection();
 
-    return this.createSSEConnection(projectId);
+    const config: SSEConnectionConfig = {
+      url: `${this.apiUrl}/generate-stream/${projectId}`,
+      keepAlive: true,
+      reconnectionDelay: 1000
+    };
+
+    return this.sseService.createConnection(config, 'diagram').pipe(
+      map((sseEvent: SSEStepEvent) => this.mapToDigramStepEvent(sseEvent))
+    );
   }
 
   /**
-   * Create SSE connection for real-time updates using ngx-sse-client
-   * @param projectId Project ID
-   * @returns Observable with SSE events
+   * Map generic SSE event to DiagramStepEvent
+   * @param sseEvent Generic SSE event
+   * @returns DiagramStepEvent
    */
-  private createSSEConnection(projectId: string): Observable<DiagramStepEvent> {
-    const url = `${this.apiUrl}/generate-stream/${projectId}`;
-    console.log('Attempting SSE connection to:', url);
-    
-    return new Observable<DiagramStepEvent>((observer) => {
-      // Create SSE connection using ngx-sse-client
-      this.sseSubscription = this.sseClient.stream(url, {
-        keepAlive: true,
-        reconnectionDelay: 1000
-      }).subscribe({
-        next: (event: Event) => {
-          try {
-            const messageEvent = event as MessageEvent;
-            
-            // Validate message data before parsing
-            if (!messageEvent.data || messageEvent.data === 'undefined' || messageEvent.data.trim() === '') {
-              console.log('Received empty or invalid SSE message, ignoring:', messageEvent.data);
-              observer.complete();
-              this.closeSSEConnection();
-              return; // Ignore empty or invalid messages
-            }
-            
-            // Additional check for common SSE termination messages
-            if (messageEvent.data['type'] === 'complete') {
-              console.log('SSE stream completed');
-              observer.complete();
-              this.closeSSEConnection();
-              return;
-            }
-            
-            const data: DiagramStepEvent = JSON.parse(messageEvent.data);
-            console.log('SSE message received:', data);
-            
-            // Validate the parsed data structure
-            if (!data || typeof data !== 'object') {
-              console.log('Invalid SSE data structure, ignoring:', data);
-              observer.complete();
-              this.closeSSEConnection();
-              return;
-            }
-            
-            // Emit the event to the component
-            observer.next(data);
-            
-          } catch (error) {
-            console.error('Error parsing SSE message:', error, 'Raw data:', (event as MessageEvent).data);
-            // Don't propagate parsing errors - just log them and continue
-            // observer.error(error); // Commented out to prevent infinite loops
-          }
-        },
-        error: (error: any) => {
-          console.error('SSE connection error:', error);
-          observer.error(new Error('SSE endpoint not available'));
-          this.closeSSEConnection();
-        },
-        complete: () => {
-          console.log('SSE connection completed');
-          observer.complete();
-          this.closeSSEConnection();
-        }
-      });
-    });
+  private mapToDigramStepEvent(sseEvent: SSEStepEvent): DiagramStepEvent {
+    return {
+      type: sseEvent.type as 'started' | 'completed',
+      stepName: sseEvent.stepName || '',
+      data: sseEvent.data,
+      summary: sseEvent.summary || '',
+      timestamp: sseEvent.timestamp,
+      parsedData: sseEvent.parsedData || {
+        status: sseEvent.type,
+        stepName: sseEvent.stepName || ''
+      }
+    };
   }
 
   /**
    * Cancel ongoing SSE connection
    */
   cancelGeneration(): void {
-    this.closeSSEConnection();
+    this.sseService.cancelGeneration('diagram');
   }
   /**
    * Get all diagrams for a project

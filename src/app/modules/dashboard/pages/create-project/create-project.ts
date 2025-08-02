@@ -263,7 +263,18 @@ export class CreateProjectComponent implements OnInit {
               this.logos = brandIdentity.logos;
               this.project.update((project) => ({
                 ...project,
-                brandIdentity,
+                analysisResultModel: {
+                  ...project.analysisResultModel,
+                  branding: {
+                    logo: brandIdentity.logos[0],
+                    generatedLogos: brandIdentity.logos,
+                    colors: brandIdentity.colors[0],
+                    generatedColors: brandIdentity.colors,
+                    typography: brandIdentity.typography[0],
+                    generatedTypography: brandIdentity.typography,
+                    sections: [],
+                  },
+                },
               }));
               this.isLoaded.set(false);
               this.navigateToStep(nextIndex);
