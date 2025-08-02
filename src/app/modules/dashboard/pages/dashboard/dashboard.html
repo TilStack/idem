@@ -130,10 +130,7 @@
               <span class="font-semibold text-sm text-gray-400"
                 >Selected Logo:</span
               >
-              <div
-                class="mt-1 p-2 border border-slate-600 rounded-md inline-block bg-slate-700 max-w-[100px] max-h-[100px] overflow-hidden"
-                [innerHTML]="currentProject.analysisResultModel.branding.logo.svg | safeHtml"
-              ></div>
+              <object data="{{ currentProject.analysisResultModel.branding.logo.svg }}" type="image/svg+xml"></object>
               <!-- Note: Removed safeHtml pipe. Add sanitization if SVG source is not trusted. -->
             </div>
             }

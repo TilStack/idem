@@ -9,14 +9,13 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { CookieService } from '../../../../shared/services/cookie.service';
 import { ProjectService } from '../../services/project.service';
 import { ProjectModel } from '../../models/project.model';
-import { SafeHtmlPipe } from '../../../../shared/pipes/safe-html.pipe';
 import { Router, RouterLink } from '@angular/router';
 import { Loader } from '../../../../components/loader/loader';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, SafeHtmlPipe, Loader],
+  imports: [CommonModule, RouterLink, DatePipe, Loader],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

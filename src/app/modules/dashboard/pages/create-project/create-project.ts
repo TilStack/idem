@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { ProjectModel } from '../../models/project.model';
 import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
-import { Loader } from '../../../../components/loader/loader';
+
 import { initEmptyObject } from '../../../../utils/init-empty-object';
 import CreateProjectDatas, { DevelopmentPhase, SelectElement } from './datas';
 
@@ -25,13 +25,14 @@ import { LogoModel } from '../../models/logo.model';
 import { ColorModel, TypographyModel } from '../../models/brand-identity.model';
 import { BrandingService } from '../../services/ai-agents/branding.service';
 import { CookieService } from '../../../../shared/services/cookie.service';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-create-project',
   standalone: true,
   imports: [
     CommonModule,
-    Loader,
+    SkeletonModule,
     ProjectDescriptionComponent,
     ProjectDetailsComponent,
     LogoSelectionComponent,
@@ -372,6 +373,51 @@ export class CreateProjectComponent implements OnInit {
    */
   protected handleMarketingConsentChange(accepted: boolean): void {
     this.marketingConsentAccepted.set(accepted);
+  }
+
+  /**
+   * Get loading title based on current step
+   */
+  protected getLoadingTitle(): string {
+    const currentStep = this.currentStepIndex();
+    switch (currentStep) {
+      case 1: // Moving to step 2 (colors)
+        return 'Generating Colors and Typography';
+      case 3: // Moving to step 4 (logos)
+        return 'Generating Logos';
+      default:
+        return 'Processing...';
+    }
+  }
+
+  /**
+   * Get loading message based on current step
+   */
+  protected getLoadingMessage(): string {
+    const currentStep = this.currentStepIndex();
+    switch (currentStep) {
+      case 1: // Moving to step 2 (colors)
+        return 'Creating personalized color palettes and typography options for your project.';
+      case 3: // Moving to step 4 (logos)
+        return 'This operation may take several minutes.';
+      default:
+        return 'Please wait while we process your request.';
+    }
+  }
+
+  /**
+   * Get loading sub-message based on current step
+   */
+  protected getLoadingSubMessage(): string {
+    const currentStep = this.currentStepIndex();
+    switch (currentStep) {
+      case 1: // Moving to step 2 (colors)
+        return 'Analyzing your project requirements...';
+      case 3: // Moving to step 4 (logos)
+        return 'Processing your design preferences...';
+      default:
+        return 'Working on your request...';
+    }
   }
 
   // Method to create project with selected visual identity
