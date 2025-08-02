@@ -1,10 +1,8 @@
 @if(isGenerating()) {
-<!-- Modern Generation Progress with PrimeNG -->
 <div
   #scrollContainer
   class="max-w-7xl mx-auto space-y-6 max-h-screen overflow-y-auto"
 >
-  <!-- Header Card with Gradient -->
   <p-card class="generation-header-card">
     <div class="text-center py-8">
       <div class="mb-6">
@@ -22,7 +20,6 @@
         </p>
       </div>
 
-      <!-- Modern Progress Bar -->
       <div class="px-8">
         <p-progressBar
           [value]="progressPercentage()"
@@ -33,7 +30,6 @@
     </div>
   </p-card>
 
-  <!-- Completed Steps with Modern Cards -->
   @if(hasCompletedSteps()) {
   <div class="completed-steps-section">
     <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
@@ -77,7 +73,6 @@
   </div>
   }
 
-  <!-- Current Step in Progress with Skeleton Loaders -->
   @if(currentStep()) {
   <div class="current-step-section">
     <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
@@ -241,7 +236,7 @@
   </div>
 </div>
 } @else {
-<!-- Initial State -->
+  <!-- Initial State -->
 <div class="max-w-6xl mx-auto">
   <div class="text-center py-20">
     <div class="mb-4">
@@ -266,7 +261,7 @@
       Click the button below to start generating your system design diagrams.
     </p>
     <button
-      class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+      class="inner-button text-white px-6 py-2 rounded-md transition-colors"
       (click)="generateDiagrams()"
     >
       Generate Diagrams

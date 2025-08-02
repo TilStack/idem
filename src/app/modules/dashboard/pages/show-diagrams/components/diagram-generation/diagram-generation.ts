@@ -77,13 +77,13 @@ export class DiagramGeneration implements OnInit, OnDestroy {
 
   protected progressPercentage(): number {
     const completed = this.completedSteps().length;
-    const total = Math.max(6, completed + (this.currentStep() ? 1 : 0)); // Assume 6 total steps
+    const total = Math.max(2, completed + (this.currentStep() ? 1 : 0)); // Assume 6 total steps
     return Math.round((completed / total) * 100);
   }
 
   ngOnInit(): void {
     // Auto-start generation when component loads
-    this.generateDiagrams();
+    
   }
 
   ngOnDestroy(): void {
@@ -175,13 +175,13 @@ export class DiagramGeneration implements OnInit, OnDestroy {
       this.currentStep.set(null);
 
       this.generationStatus.set(`Completed ${stepEvent.stepName}`);
-      this.generationProgress.set((updatedSteps.length / 6) * 100); // Assuming 6 total steps
+      this.generationProgress.set((updatedSteps.length / 2) * 100); // Assuming 6 total steps
 
       // Auto-scroll to bottom after step completion
       setTimeout(() => this.scrollToBottom(), 100);
 
       // Check if all steps are completed
-      if (updatedSteps.length >= 6) {
+      if (updatedSteps.length >= 2) {
         this.completeGeneration(updatedSteps);
       }
     }

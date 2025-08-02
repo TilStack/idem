@@ -70,9 +70,10 @@ export class DiagramsService {
             }
             
             // Additional check for common SSE termination messages
-            if (messageEvent.data === '[DONE]' || messageEvent.data === 'data: [DONE]') {
+            if (messageEvent.data['type'] === 'complete') {
               console.log('SSE stream completed');
               observer.complete();
+              this.closeSSEConnection();
               return;
             }
             
@@ -82,6 +83,8 @@ export class DiagramsService {
             // Validate the parsed data structure
             if (!data || typeof data !== 'object') {
               console.log('Invalid SSE data structure, ignoring:', data);
+              observer.complete();
+              this.closeSSEConnection();
               return;
             }
             
