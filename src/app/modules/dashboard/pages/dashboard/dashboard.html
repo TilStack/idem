@@ -130,7 +130,7 @@
               <span class="font-semibold text-sm text-gray-400"
                 >Selected Logo:</span
               >
-              <object data="{{ currentProject.analysisResultModel.branding.logo.svg }}" type="image/svg+xml"></object>
+              <img src="{{ currentProject.analysisResultModel.branding.logo.svg }}" type="image/svg+xml">
               <!-- Note: Removed safeHtml pipe. Add sanitization if SVG source is not trusted. -->
             </div>
             }
