@@ -66,6 +66,8 @@ export class DiagramsService {
             // Validate message data before parsing
             if (!messageEvent.data || messageEvent.data === 'undefined' || messageEvent.data.trim() === '') {
               console.log('Received empty or invalid SSE message, ignoring:', messageEvent.data);
+              observer.complete();
+              this.closeSSEConnection();
               return; // Ignore empty or invalid messages
             }
             
