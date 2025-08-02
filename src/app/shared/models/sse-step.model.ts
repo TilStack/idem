@@ -2,17 +2,21 @@
  * Generic SSE Step Event interface that can be used for all AI generation features
  */
 export interface SSEStepEvent {
-  type: 'started' | 'completed' | 'steps_list';
+  type: 'started' | 'completed' | 'error' | 'steps_list' | 'progress' | 'completion';
   stepName?: string;
-  data: string;
+  data?: any;
   summary?: string;
-  timestamp: string;
-  parsedData?: {
-    status: string;
-    stepName: string;
-  };
-  // New property to handle list of steps from backend
+  timestamp?: string;
   steps?: SSEStep[];
+  parsedData?: {
+    status?: string;
+    stepName?: string;
+    stepsInProgress?: string[];
+    completedSteps?: string[];
+    message?: string;
+    totalSteps?: number;
+    projectId?: string;
+  };
 }
 
 /**
@@ -20,7 +24,7 @@ export interface SSEStepEvent {
  */
 export interface SSEStep {
   stepName: string;
-  status: 'in-progress' | 'completed' | 'pending';
+  status: 'progress' | 'completed' | 'pending';
   content?: string;
   timestamp: string;
   summary?: string;
@@ -38,6 +42,8 @@ export interface SSEGenerationState {
   completed: boolean;
   totalSteps: number;
   completedSteps: number;
+  stepsInProgress: string[];
+  completedStepNames: string[];
 }
 
 /**
@@ -49,6 +55,11 @@ export interface SSEConnectionConfig {
   reconnectionDelay?: number;
   maxRetries?: number;
 }
+
+/**
+ * SSE Event types
+ */
+export type SSEEventType = 'progress' | 'completed' | 'completion' | 'steps_list' | 'started' | 'error';
 
 /**
  * SSE Service Event Types

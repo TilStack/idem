@@ -6,7 +6,10 @@ import { environment } from '../../../../../environments/environment';
 import { DiagramModel } from '../../models/diagram.model';
 import { DiagramStepEvent } from '../../models/diagram-step.model';
 import { SSEService } from '../../../../shared/services/sse.service';
-import { SSEStepEvent, SSEConnectionConfig } from '../../../../shared/models/sse-step.model';
+import {
+  SSEStepEvent,
+  SSEConnectionConfig,
+} from '../../../../shared/models/sse-step.model';
 
 @Injectable({
   providedIn: 'root',
@@ -15,8 +18,6 @@ export class DiagramsService {
   private readonly apiUrl = `${environment.services.api.url}/project/diagrams`;
   private readonly http = inject(HttpClient);
   private readonly sseService = inject(SSEService);
-
-
 
   /**
    * Close SSE connection
@@ -32,19 +33,21 @@ export class DiagramsService {
    */
   createDiagramModel(projectId: string): Observable<DiagramStepEvent> {
     console.log('Starting diagram generation with SSE...');
-    
+
     // Close any existing SSE connection
     this.closeSSEConnection();
 
     const config: SSEConnectionConfig = {
       url: `${this.apiUrl}/generate-stream/${projectId}`,
       keepAlive: true,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
     };
 
-    return this.sseService.createConnection(config, 'diagram').pipe(
-      map((sseEvent: SSEStepEvent) => this.mapToDigramStepEvent(sseEvent))
-    );
+    return this.sseService
+      .createConnection(config, 'diagram')
+      .pipe(
+        map((sseEvent: SSEStepEvent) => this.mapToDigramStepEvent(sseEvent))
+      );
   }
 
   /**
@@ -58,11 +61,13 @@ export class DiagramsService {
       stepName: sseEvent.stepName || '',
       data: sseEvent.data,
       summary: sseEvent.summary || '',
-      timestamp: sseEvent.timestamp,
+      timestamp: sseEvent.timestamp!,
       parsedData: sseEvent.parsedData || {
         status: sseEvent.type,
-        stepName: sseEvent.stepName || ''
-      }
+        stepName: sseEvent.stepName || '',
+        stepsInProgress: sseEvent.parsedData!.stepsInProgress || [],
+        completedSteps: sseEvent.parsedData!.completedSteps || [],
+      },
     };
   }
 
@@ -96,8 +101,14 @@ export class DiagramsService {
    * @param updates Partial diagram updates
    * @returns Observable with the updated diagram model
    */
-  updateDiagram(diagramId: string, updates: Partial<DiagramModel>): Observable<DiagramModel> {
-    return this.http.put<DiagramModel>(`${this.apiUrl}/diagram/${diagramId}`, updates);
+  updateDiagram(
+    diagramId: string,
+    updates: Partial<DiagramModel>
+  ): Observable<DiagramModel> {
+    return this.http.put<DiagramModel>(
+      `${this.apiUrl}/diagram/${diagramId}`,
+      updates
+    );
   }
 
   /**

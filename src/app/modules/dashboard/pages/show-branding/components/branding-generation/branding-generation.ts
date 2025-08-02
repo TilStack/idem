@@ -44,7 +44,9 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
     error: null,
     completed: false,
     totalSteps: 0,
-    completedSteps: 0
+    completedSteps: 0,
+    stepsInProgress: [],
+    completedStepNames: []
   });
 
   // Computed properties using the new generation state
@@ -132,7 +134,9 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
       error: null,
       completed: false,
       totalSteps: 0,
-      completedSteps: 0
+      completedSteps: 0,
+      stepsInProgress: [],
+      completedStepNames: []
     });
   }
 

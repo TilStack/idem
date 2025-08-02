@@ -2,12 +2,12 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { SseClient } from 'ngx-sse-client';
-import { 
-  SSEStepEvent, 
-  SSEStep, 
-  SSEGenerationState, 
+import {
+  SSEStepEvent,
+  SSEStep,
+  SSEGenerationState,
   SSEConnectionConfig,
-  SSEServiceEventType 
+  SSEServiceEventType,
 } from '../models/sse-step.model';
 
 @Injectable({
@@ -15,7 +15,7 @@ import {
 })
 export class SSEService {
   private readonly sseClient = inject(SseClient);
-  
+
   // Track active connections by service type
   private activeConnections = new Map<SSEServiceEventType, any>();
   private destroySubjects = new Map<SSEServiceEventType, Subject<void>>();
@@ -33,7 +33,7 @@ export class SSEService {
     serviceType: SSEServiceEventType
   ): Observable<SSEStepEvent> {
     console.log(`Starting ${serviceType} SSE connection to:`, config.url);
-    
+
     // Close any existing connection for this service type
     this.closeConnection(serviceType);
 
@@ -43,68 +43,81 @@ export class SSEService {
 
     return new Observable<SSEStepEvent>((observer) => {
       // Create SSE connection using ngx-sse-client
-      const subscription = this.sseClient.stream(config.url, {
-        keepAlive: config.keepAlive ?? true,
-        reconnectionDelay: config.reconnectionDelay ?? 1000
-      }).pipe(
-        takeUntil(destroySubject),
-        catchError((error) => {
-          console.error(`${serviceType} SSE connection error:`, error);
-          this.closeConnection(serviceType);
-          return throwError(() => error);
+      const subscription = this.sseClient
+        .stream(config.url, {
+          keepAlive: config.keepAlive ?? true,
+          reconnectionDelay: config.reconnectionDelay ?? 1000,
         })
-      ).subscribe({
-        next: (event: Event) => {
-          try {
-            const messageEvent = event as MessageEvent;
-            
-            // Validate message data before parsing
-            if (!this.isValidMessage(messageEvent.data)) {
-              console.log(`Received empty or invalid ${serviceType} SSE message, ignoring:`, messageEvent.data);
-              observer.complete();
-              this.closeConnection(serviceType);
-              return;
+        .pipe(
+          takeUntil(destroySubject),
+          catchError((error) => {
+            console.error(`${serviceType} SSE connection error:`, error);
+            this.closeConnection(serviceType);
+            return throwError(() => error);
+          })
+        )
+        .subscribe({
+          next: (event: Event) => {
+            try {
+              const messageEvent = event as MessageEvent;
+
+              // Validate message data before parsing
+              if (!this.isValidMessage(messageEvent.data)) {
+                console.log(
+                  `Received empty or invalid ${serviceType} SSE message, ignoring:`,
+                  messageEvent.data
+                );
+                observer.complete();
+                this.closeConnection(serviceType);
+                return;
+              }
+
+              // Handle completion message
+              if (this.isCompletionMessage(messageEvent.data)) {
+                console.log(`${serviceType} SSE stream completed`);
+                observer.complete();
+                this.closeConnection(serviceType);
+                return;
+              }
+
+              const data: SSEStepEvent = JSON.parse(messageEvent.data);
+              console.log(`${serviceType} SSE message received:`, data);
+
+              // Validate the parsed data structure
+              if (!this.isValidSSEEvent(data)) {
+                console.log(
+                  `Invalid ${serviceType} SSE data structure, ignoring:`,
+                  data
+                );
+                return;
+              }
+
+              // Process the event based on type
+              const processedEvent = this.processSSEEvent(data, serviceType);
+
+              // Emit the event to the component
+              observer.next(processedEvent);
+            } catch (error) {
+              console.error(
+                `Error parsing ${serviceType} SSE message:`,
+                error,
+                'Raw data:',
+                (event as MessageEvent).data
+              );
+              // Don't propagate parsing errors - just log them and continue
             }
-            
-            // Handle completion message
-            if (this.isCompletionMessage(messageEvent.data)) {
-              console.log(`${serviceType} SSE stream completed`);
-              observer.complete();
-              this.closeConnection(serviceType);
-              return;
-            }
-            
-            const data: SSEStepEvent = JSON.parse(messageEvent.data);
-            console.log(`${serviceType} SSE message received:`, data);
-            
-            // Validate the parsed data structure
-            if (!this.isValidSSEEvent(data)) {
-              console.log(`Invalid ${serviceType} SSE data structure, ignoring:`, data);
-              return;
-            }
-            
-            // Process the event based on type
-            const processedEvent = this.processSSEEvent(data, serviceType);
-            
-            // Emit the event to the component
-            observer.next(processedEvent);
-            
-          } catch (error) {
-            console.error(`Error parsing ${serviceType} SSE message:`, error, 'Raw data:', (event as MessageEvent).data);
-            // Don't propagate parsing errors - just log them and continue
-          }
-        },
-        error: (error) => {
-          console.error(`${serviceType} SSE subscription error:`, error);
-          this.closeConnection(serviceType);
-          observer.error(error);
-        },
-        complete: () => {
-          console.log(`${serviceType} SSE subscription completed`);
-          this.closeConnection(serviceType);
-          observer.complete();
-        }
-      });
+          },
+          error: (error) => {
+            console.error(`${serviceType} SSE subscription error:`, error);
+            this.closeConnection(serviceType);
+            observer.error(error);
+          },
+          complete: () => {
+            console.log(`${serviceType} SSE subscription completed`);
+            this.closeConnection(serviceType);
+            observer.complete();
+          },
+        });
 
       // Store the subscription
       this.activeConnections.set(serviceType, subscription);
@@ -150,7 +163,7 @@ export class SSEService {
   cancelGeneration(serviceType: SSEServiceEventType, cancelUrl?: string): void {
     console.log(`Cancelling ${serviceType} generation...`);
     this.closeConnection(serviceType);
-    
+
     // If cancel URL is provided, make a request to cancel on the backend
     if (cancelUrl) {
       // This would typically be handled by the specific service
@@ -162,10 +175,12 @@ export class SSEService {
    * Validate if message data is valid
    */
   private isValidMessage(data: any): boolean {
-    return data && 
-           data !== 'undefined' && 
-           typeof data === 'string' && 
-           data.trim() !== '';
+    return (
+      data &&
+      data !== 'undefined' &&
+      typeof data === 'string' &&
+      data.trim() !== ''
+    );
   }
 
   /**
@@ -184,27 +199,25 @@ export class SSEService {
    * Validate SSE event structure
    */
   private isValidSSEEvent(data: any): boolean {
-    return data && 
-           typeof data === 'object' && 
-           (data.type === 'started' || data.type === 'completed' || data.type === 'steps_list') &&
-           typeof data.timestamp === 'string';
+    return (
+      data &&
+      typeof data === 'object' &&
+      (data.type === 'progress' ||
+        data.type === 'completed' ||
+        data.type === 'completion') &&
+      typeof data.timestamp === 'string'
+    );
   }
 
   /**
    * Process SSE event and handle different types
    */
-  private processSSEEvent(data: SSEStepEvent, serviceType: SSEServiceEventType): SSEStepEvent {
-    // Handle new backend format that sends list of steps
-    if (data.type === 'steps_list' && data.steps) {
-      console.log(`${serviceType} received steps list:`, data.steps);
-      return {
-        ...data,
-        type: 'steps_list'
-      };
-    }
-
+  private processSSEEvent(
+    data: SSEStepEvent,
+    serviceType: SSEServiceEventType
+  ): SSEStepEvent {
     // Handle individual step events (backward compatibility)
-    if (data.type === 'started' || data.type === 'completed') {
+    if (data.type === 'progress' || data.type === 'completed' || data.type === 'completion') {
       return data;
     }
 
@@ -222,7 +235,9 @@ export class SSEService {
       error: null,
       completed: false,
       totalSteps: 0,
-      completedSteps: 0
+      completedSteps: 0,
+      stepsInProgress: [],
+      completedStepNames: [],
     };
   }
 
@@ -230,34 +245,24 @@ export class SSEService {
    * Update generation state based on SSE event
    */
   updateGenerationState(
-    currentState: SSEGenerationState, 
+    currentState: SSEGenerationState,
     event: SSEStepEvent
   ): SSEGenerationState {
     const newState = { ...currentState };
 
     switch (event.type) {
-      case 'steps_list':
-        // Handle new backend format with list of steps
-        if (event.steps) {
-          newState.steps = event.steps;
-          newState.totalSteps = event.steps.length;
-          newState.completedSteps = event.steps.filter(step => step.status === 'completed').length;
-          newState.currentStep = event.steps.find(step => step.status === 'in-progress') || null;
-          newState.isGenerating = newState.completedSteps < newState.totalSteps;
-          newState.completed = newState.completedSteps === newState.totalSteps;
-        }
-        break;
-
-      case 'started':
+      case 'progress':
         // Handle individual step started (backward compatibility)
         if (event.stepName) {
-          const existingStepIndex = newState.steps.findIndex(step => step.stepName === event.stepName);
+          const existingStepIndex = newState.steps.findIndex(
+            (step) => step.stepName === event.stepName
+          );
           const newStep: SSEStep = {
             stepName: event.stepName,
-            status: 'in-progress',
-            timestamp: event.timestamp,
+            status: 'progress',
+            timestamp: event.timestamp || new Date().toISOString(),
             summary: event.summary || '',
-            content: event.data
+            content: event.data,
           };
 
           if (existingStepIndex >= 0) {
@@ -274,13 +279,15 @@ export class SSEService {
       case 'completed':
         // Handle individual step completed (backward compatibility)
         if (event.stepName) {
-          const existingStepIndex = newState.steps.findIndex(step => step.stepName === event.stepName);
+          const existingStepIndex = newState.steps.findIndex(
+            (step) => step.stepName === event.stepName
+          );
           const completedStep: SSEStep = {
             stepName: event.stepName,
             status: 'completed',
-            timestamp: event.timestamp,
+            timestamp: event.timestamp || new Date().toISOString(),
             summary: event.summary || '',
-            content: event.data
+            content: event.data,
           };
 
           if (existingStepIndex >= 0) {
@@ -289,9 +296,12 @@ export class SSEService {
             newState.steps.push(completedStep);
           }
 
-          newState.completedSteps = newState.steps.filter(step => step.status === 'completed').length;
-          newState.currentStep = newState.steps.find(step => step.status === 'in-progress') || null;
-          
+          newState.completedSteps = newState.steps.filter(
+            (step) => step.status === 'completed'
+          ).length;
+          newState.currentStep =
+            newState.steps.find((step) => step.status === 'progress') || null;
+
           // Check if all steps are completed
           if (newState.currentStep === null && newState.steps.length > 0) {
             newState.isGenerating = false;

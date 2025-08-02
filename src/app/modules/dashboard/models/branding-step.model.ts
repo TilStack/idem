@@ -12,7 +12,7 @@ export interface BrandingStepEvent {
 
 export interface BrandingStep {
   stepName: string;
-  status: 'in-progress' | 'completed';
+  status: 'progress' | 'completed';
   content?: string;
   timestamp: string;
   summary: string;

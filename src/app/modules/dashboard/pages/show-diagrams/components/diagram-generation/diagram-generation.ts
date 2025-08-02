@@ -65,6 +65,8 @@ export class DiagramGeneration implements OnInit, OnDestroy {
     completed: false,
     totalSteps: 0,
     completedSteps: 0,
+    stepsInProgress: [],
+    completedStepNames: [],
   });
 
   protected readonly finalDiagram = signal<DiagramModel | null>(null);
@@ -173,6 +175,8 @@ export class DiagramGeneration implements OnInit, OnDestroy {
       completed: false,
       totalSteps: 0,
       completedSteps: 0,
+      stepsInProgress: [],
+      completedStepNames: [],
     });
     this.finalDiagram.set(null);
   }
@@ -181,26 +185,6 @@ export class DiagramGeneration implements OnInit, OnDestroy {
    * Complete the generation process and create final diagram
    */
   private completeGeneration(steps: any[]): void {
-    const combinedContent = this.combineStepsContent(steps);
-
-    const finalDiagram: DiagramModel = {
-      id: `diagram-${Date.now()}`,
-      title: 'Generated Diagram',
-      content: combinedContent,
-      sections: steps.map((step) => ({
-        id: `section-${step.stepName}`,
-        name: step.stepName,
-        type: 'generated',
-        data: step.content || step.summary || '',
-        summary: step.summary || '',
-      })),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.finalDiagram.set(finalDiagram);
-
-    // Auto-scroll to bottom after completion
     setTimeout(() => this.scrollToBottom(), 100);
   }
 

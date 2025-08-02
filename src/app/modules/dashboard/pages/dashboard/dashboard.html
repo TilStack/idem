@@ -131,7 +131,6 @@
                 >Selected Logo:</span
               >
               <img src="{{ currentProject.analysisResultModel.branding.logo.svg }}" type="image/svg+xml">
-              <!-- Note: Removed safeHtml pipe. Add sanitization if SVG source is not trusted. -->
             </div>
             }
             <a
@@ -142,7 +141,6 @@
             </a>
             @if (currentProject.analysisResultModel &&
             currentProject.analysisResultModel.design) {
-            <!-- Assuming design might be a link or object -->
             <a
               [routerLink]="['/console/diagrams', currentProject.id]"
               class="text-teal-600 hover:text-teal-800 hover:underline text-sm font-medium ml-4"

@@ -5,14 +5,16 @@ export interface DiagramStepEvent {
   summary: string;
   timestamp: string;
   parsedData: {
-    status: string;
-    stepName: string;
+    status?: string;
+    stepName?: string;
+    stepsInProgress?: string[];
+    completedSteps?: string[];
   };
 }
 
 export interface DiagramStep {
   stepName: string;
-  status: 'in-progress' | 'completed';
+  status: 'progress' | 'completed';
   content?: string;
   timestamp: string;
   summary: string;

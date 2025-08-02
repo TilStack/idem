@@ -72,12 +72,12 @@ export class BrandingService {
     return {
       type: sseEvent.type as 'started' | 'completed',
       stepName: sseEvent.stepName || '',
-      data: sseEvent.data,
+      data: sseEvent.data || '',
       summary: sseEvent.summary || '',
-      timestamp: sseEvent.timestamp,
-      parsedData: sseEvent.parsedData || {
-        status: sseEvent.type,
-        stepName: sseEvent.stepName || '',
+      timestamp: sseEvent.timestamp || new Date().toISOString(),
+      parsedData: {
+        status: sseEvent.parsedData?.status || sseEvent.type,
+        stepName: sseEvent.parsedData?.stepName || sseEvent.stepName || '',
       },
     };
   }
