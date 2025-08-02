@@ -1,132 +1,129 @@
 @if(isGenerating()) {
-<!-- Step-based Generation Progress -->
-<div class="max-w-6xl mx-auto space-y-8">
-  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-    <div class="text-center mb-8">
+<!-- Modern Generation Progress with PrimeNG -->
+<div
+  #scrollContainer
+  class="max-w-7xl mx-auto space-y-6 max-h-screen overflow-y-auto"
+>
+  <!-- Header Card with Gradient -->
+  <p-card class="generation-header-card">
+    <div class="text-center py-8">
       <div class="mb-6">
-        <div
-          class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4"
-        >
-          <svg
-            class="w-8 h-8 text-blue-600 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            ></circle>
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
+        <div class="generation-icon-container">
+          <i class="pi pi-cog animate-spin text-4xl text-primary"></i>
         </div>
-        <h2 class="text-2xl font-bold text-gray-900">Generating Diagrams</h2>
-        <p class="text-gray-600 mt-2">
-          {{ progressPercentage() }}% Complete ({{ completedSteps().length
-          }}/6 steps)
+        <h2
+          class="text-3xl font-bold bg-primary bg-clip-text text-transparent mb-2"
+        >
+          Génération de Diagrammes en Cours
+        </h2>
+        <p class="text-gray-600 text-lg">
+          {{ progressPercentage() }}% Terminé ({{ completedSteps().length }}/6
+          étapes)
         </p>
       </div>
 
-      <!-- Overall Progress Bar -->
-      <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
-        <div
-          class="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
-          [style.width.%]="progressPercentage()"
-        ></div>
+      <!-- Modern Progress Bar -->
+      <div class="px-8">
+        <p-progressBar
+          [value]="progressPercentage()"
+          [showValue]="false"
+          styleClass="custom-progress-bar"
+        ></p-progressBar>
       </div>
     </div>
+  </p-card>
 
-    <!-- Completed Steps -->
-    @if(hasCompletedSteps()) {
-    <div class="mb-8">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">
-        ✅ Completed Steps
-      </h3>
-      <div class="space-y-4">
-        @for (step of completedSteps(); track step.stepName) {
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <h4
-                class="text-md font-medium text-green-800 mb-2 flex items-center"
-              >
-                <svg
-                  class="w-5 h-5 text-green-600 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                  ></path>
-                </svg>
-                {{ step.stepName }}
-              </h4>
-              <p class="text-sm text-green-700 mb-3">{{ step.summary }}</p>
-              @if(step.content && step.content !== 'step_started') {
-              <div class="bg-white border border-green-200 rounded p-3">
-                <markdown [data]="step.content" class="text-sm"></markdown>
+  <!-- Completed Steps with Modern Cards -->
+  @if(hasCompletedSteps()) {
+  <div class="completed-steps-section">
+    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+      <i class="pi pi-check-circle text-green-500 mr-3"></i>
+      Étapes Terminées
+    </h3>
+    <div class="grid gap-4">
+      @for (step of completedSteps(); track step.stepName) {
+      <p-card class="step-completed-card">
+        <ng-template pTemplate="header">
+          <div class="flex items-center justify-between p-4">
+            <div class="flex items-center">
+              <i class="pi pi-check text-green-600 text-xl mr-3"></i>
+              <div>
+                <h4 class="font-semibold text-green-800">
+                  {{ step.stepName }}
+                </h4>
+                <p class="text-sm text-green-600">{{ step.summary }}</p>
               </div>
-              }
             </div>
-            <span
-              class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full ml-4"
-            >
-              {{ step.timestamp | date:'HH:mm:ss' }}
-            </span>
+            <p-tag
+              [value]="(step.timestamp | date:'HH:mm:ss') || 'N/A'"
+              severity="success"
+              icon="pi pi-clock"
+            ></p-tag>
           </div>
+        </ng-template>
+
+        @if(step.content && step.content !== 'step_started') {
+        <div class="step-content">
+          <markdown
+            mermaid
+            [data]="step.content"
+            class="prose max-w-none"
+          ></markdown>
         </div>
         }
-      </div>
+      </p-card>
+      }
     </div>
-    }
+  </div>
+  }
 
-    <!-- Current Step in Progress -->
-    @if(currentStep()) {
-    <div class="mb-8">
-      <h3 class="text-lg font-semibold text-gray-800 mb-4">
-        🔄 Current Step
-      </h3>
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div class="flex items-center justify-between">
+  <!-- Current Step in Progress with Skeleton Loaders -->
+  @if(currentStep()) {
+  <div class="current-step-section">
+    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+      <i class="pi pi-spin pi-cog text-blue-500 mr-3"></i>
+      Génération en Cours...
+    </h3>
+
+    <p-card class="step-current-card">
+      <ng-template pTemplate="header">
+        <div class="flex items-center justify-between p-4">
           <div class="flex items-center">
-            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+            <i class="pi pi-spin pi-spinner text-primary text-xl mr-3"></i>
             <div>
-              <h4 class="text-md font-medium text-blue-800">
+              <h4 class="font-semibold text-blue-800">
                 {{ currentStep()!.stepName }}
               </h4>
-              <p class="text-sm text-blue-700">{{ currentStep()!.summary }}</p>
+              <p class="text-sm text-primary">{{ currentStep()!.summary }}</p>
             </div>
           </div>
-          <span
-            class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full"
-          >
-            In Progress
-          </span>
+          <p-tag value="En cours" severity="info" icon="pi pi-clock"></p-tag>
         </div>
-      </div>
-    </div>
-    }
+      </ng-template>
 
-    <!-- Cancel Button -->
-    <div class="text-center">
-      <button
-        class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition-colors"
-        (click)="cancelGeneration()"
-      >
-        Cancel Generation
-      </button>
-    </div>
+      <!-- Skeleton Loaders for Content Being Generated -->
+      <div class="p-4 space-y-4">
+        <p-skeleton height="2rem" class="mb-3"></p-skeleton>
+        <p-skeleton height="4rem" class="mb-3"></p-skeleton>
+        <div class="grid grid-cols-2 gap-4">
+          <p-skeleton height="3rem"></p-skeleton>
+          <p-skeleton height="3rem"></p-skeleton>
+        </div>
+        <p-skeleton height="2rem" width="70%"></p-skeleton>
+      </div>
+    </p-card>
+  </div>
+  }
+
+  <!-- Cancel Button -->
+  <div class="text-center mt-8">
+    <p-button
+      label="Annuler la Génération"
+      icon="pi pi-times"
+      severity="danger"
+      (onClick)="cancelGeneration()"
+      styleClass="cancel-button"
+    ></p-button>
   </div>
 </div>
 } @else if(isCompleted() && finalDiagram()) {
@@ -174,7 +171,7 @@
     <!-- Action Buttons -->
     <div class="flex justify-center space-x-4 mt-8">
       <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
+        class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
         (click)="downloadPdf()"
       >
         <svg
@@ -233,12 +230,10 @@
         ></path>
       </svg>
     </div>
-    <h3 class="text-lg font-medium text-gray-900 mb-2">
-      Generation Failed
-    </h3>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Generation Failed</h3>
     <p class="text-gray-600 mb-6">{{ generationError() }}</p>
     <button
-      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+      class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
       (click)="generateDiagrams()"
     >
       Try Again
@@ -271,7 +266,7 @@
       Click the button below to start generating your system design diagrams.
     </p>
     <button
-      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+      class="bg-primary hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
       (click)="generateDiagrams()"
     >
       Generate Diagrams

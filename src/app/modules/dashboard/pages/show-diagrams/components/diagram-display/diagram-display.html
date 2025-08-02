@@ -19,12 +19,8 @@
           ></path>
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-gray-900">
-        Diagrams Available
-      </h2>
-      <p class="text-gray-600 mt-2">
-        Your system design diagrams are ready
-      </p>
+      <h2 class="text-2xl font-bold text-gray-900">Diagrams Available</h2>
+      <p class="text-gray-600 mt-2">Your system design diagrams are ready</p>
     </div>
 
     <!-- Final Diagram Content -->
@@ -34,7 +30,11 @@
         Generated Diagrams
       </h3>
       <div class="prose max-w-none">
-        <markdown [data]="diagram().content" class="text-sm"></markdown>
+        <markdown
+          mermaid
+          [data]="diagram().content"
+          class="mermaid-diagram"
+        ></markdown>
       </div>
     </div>
     }
@@ -50,12 +50,15 @@
           <h3 class="text-lg font-semibold text-gray-900">
             {{ section.name }}
           </h3>
-
         </div>
         <div class="p-6">
           @if(section.data) {
           <div class="prose max-w-none">
-            <markdown [data]="section.data" class="text-sm"></markdown>
+            <markdown
+              mermaid
+              [data]="section.data"
+              class="mermaid-diagram"
+            ></markdown>
           </div>
           } @else {
           <p class="text-gray-500 italic">No content available</p>
@@ -69,7 +72,7 @@
     <!-- Action Buttons -->
     <div class="flex justify-center space-x-4 mt-8">
       <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
+        class="inner-button text-white px-6 py-2 rounded-md flex items-center transition-colors"
         (click)="makePdf()"
       >
         <svg
@@ -86,25 +89,6 @@
           ></path>
         </svg>
         Download PDF
-      </button>
-      <button
-        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md flex items-center transition-colors"
-        (click)="generateNewDiagrams()"
-      >
-        <svg
-          class="w-5 h-5 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-          ></path>
-        </svg>
-        Generate New Diagrams
       </button>
     </div>
   </div>

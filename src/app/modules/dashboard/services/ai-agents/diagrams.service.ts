@@ -62,15 +62,36 @@ export class DiagramsService {
         next: (event: Event) => {
           try {
             const messageEvent = event as MessageEvent;
+            
+            // Validate message data before parsing
+            if (!messageEvent.data || messageEvent.data === 'undefined' || messageEvent.data.trim() === '') {
+              console.log('Received empty or invalid SSE message, ignoring:', messageEvent.data);
+              return; // Ignore empty or invalid messages
+            }
+            
+            // Additional check for common SSE termination messages
+            if (messageEvent.data === '[DONE]' || messageEvent.data === 'data: [DONE]') {
+              console.log('SSE stream completed');
+              observer.complete();
+              return;
+            }
+            
             const data: DiagramStepEvent = JSON.parse(messageEvent.data);
             console.log('SSE message received:', data);
+            
+            // Validate the parsed data structure
+            if (!data || typeof data !== 'object') {
+              console.log('Invalid SSE data structure, ignoring:', data);
+              return;
+            }
             
             // Emit the event to the component
             observer.next(data);
             
           } catch (error) {
-            console.error('Error parsing SSE message:', error);
-            observer.error(error);
+            console.error('Error parsing SSE message:', error, 'Raw data:', (event as MessageEvent).data);
+            // Don't propagate parsing errors - just log them and continue
+            // observer.error(error); // Commented out to prevent infinite loops
           }
         },
         error: (error: any) => {

@@ -22,7 +22,7 @@ import { environment } from '../../../../../../../environments/environment';
 export class DiagramDisplay {
   // Input signal for the diagram data
   readonly diagram = input.required<DiagramModel>();
-  
+
   // Environment URL for external services
   protected readonly diagenUrl = environment.services.diagen.url;
 

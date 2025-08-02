@@ -90,9 +90,16 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (diagramData) => {
-          console.log("Diagram data loaded:", diagramData);
-          
+          console.log('Diagram data loaded:', diagramData);
+
           if (diagramData && (diagramData.content || diagramData.sections)) {
+            // Format section data with code blocks if sections exist
+            if (diagramData.sections) {
+              diagramData.sections.forEach((section) => {
+                section.data = `\`\`\`${section.data}\n\`\`\``;
+              });
+            }
+
             // Existing diagram found - show display component
             this.existingDiagram.set(diagramData);
             this.showDisplayComponent.set(true);
@@ -102,7 +109,7 @@ export class ShowDiagramsComponent implements OnInit, OnDestroy {
             this.showDisplayComponent.set(false);
             this.showGenerationComponent.set(true);
           }
-          
+
           this.isLoading.set(false);
         },
         error: (err) => {

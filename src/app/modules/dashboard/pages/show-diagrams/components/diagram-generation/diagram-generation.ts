@@ -6,21 +6,39 @@ import {
   input,
   OnInit,
   OnDestroy,
+  ElementRef,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MarkdownModule } from 'ngx-markdown';
+import { SkeletonModule } from 'primeng/skeleton';
+import { CardModule } from 'primeng/card';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { DiagramsService } from '../../../../services/ai-agents/diagrams.service';
 import { DiagramModel } from '../../../../models/diagram.model';
-import { DiagramStep, DiagramStepEvent } from '../../../../models/diagram-step.model';
+import {
+  DiagramStep,
+  DiagramStepEvent,
+} from '../../../../models/diagram-step.model';
 import { generatePdf } from '../../../../../../utils/pdf-generator';
 import { environment } from '../../../../../../../environments/environment';
 
 @Component({
   selector: 'app-diagram-generation',
   standalone: true,
-  imports: [CommonModule, MarkdownModule],
+  imports: [
+    CommonModule, 
+    MarkdownModule, 
+    SkeletonModule, 
+    CardModule, 
+    ProgressBarModule, 
+    ButtonModule, 
+    TagModule
+  ],
   templateUrl: './diagram-generation.html',
   styleUrls: ['./diagram-generation.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +46,9 @@ import { environment } from '../../../../../../../environments/environment';
 export class DiagramGeneration implements OnInit, OnDestroy {
   private readonly diagramsService = inject(DiagramsService);
   private readonly destroy$ = new Subject<void>();
+
+  // ViewChild for scroll container
+  @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
 
   // Input for project ID
   readonly projectId = input.required<string>();
@@ -101,7 +122,7 @@ export class DiagramGeneration implements OnInit, OnDestroy {
         },
         complete: () => {
           console.log('Diagram generation completed');
-        }
+        },
       });
   }
 
@@ -129,29 +150,36 @@ export class DiagramGeneration implements OnInit, OnDestroy {
         stepName: stepEvent.stepName,
         status: 'in-progress',
         timestamp: stepEvent.timestamp,
-        summary: stepEvent.summary
+        summary: stepEvent.summary,
       };
-      
+
       this.currentStep.set(newStep);
       this.generationStatus.set(`Generating ${stepEvent.stepName}...`);
-      
-    } else if (stepEvent.type === 'completed' && stepEvent.data !== 'step_started') {
+    } else if (
+      stepEvent.type === 'completed' &&
+      stepEvent.data !== 'step_started'
+    ) {
       // Step completed - move to completed steps
       const completedStep: DiagramStep = {
         stepName: stepEvent.stepName,
         status: 'completed',
-        content: stepEvent.data,
+        content: `\`\`\`${stepEvent.data}\n\`\`\``,
         timestamp: stepEvent.timestamp,
-        summary: stepEvent.summary
+        summary: stepEvent.summary,
       };
-      
+
+      console.log('Completed step:', completedStep.content);
+
       const updatedSteps = [...this.completedSteps(), completedStep];
       this.completedSteps.set(updatedSteps);
       this.currentStep.set(null);
-      
+
       this.generationStatus.set(`Completed ${stepEvent.stepName}`);
       this.generationProgress.set((updatedSteps.length / 6) * 100); // Assuming 6 total steps
-      
+
+      // Auto-scroll to bottom after step completion
+      setTimeout(() => this.scrollToBottom(), 100);
+
       // Check if all steps are completed
       if (updatedSteps.length >= 6) {
         this.completeGeneration(updatedSteps);
@@ -168,9 +196,9 @@ export class DiagramGeneration implements OnInit, OnDestroy {
       title: 'Generated Diagrams',
       content: this.combineStepsContent(steps),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
-    
+
     this.finalDiagram.set(finalDiagram);
     this.isGenerating.set(false);
     this.isCompleted.set(true);
@@ -183,8 +211,8 @@ export class DiagramGeneration implements OnInit, OnDestroy {
    */
   private combineStepsContent(steps: DiagramStep[]): string {
     return steps
-      .filter(step => step.content && step.content !== 'step_started')
-      .map(step => `## ${step.stepName}\n\n${step.content}`)
+      .filter((step) => step.content && step.content !== 'step_started')
+      .map((step) => `## ${step.stepName}\n\n${step.content}`)
       .join('\n\n---\n\n');
   }
 
@@ -204,5 +232,17 @@ export class DiagramGeneration implements OnInit, OnDestroy {
   protected cancelGeneration(): void {
     this.diagramsService.cancelGeneration();
     this.isGenerating.set(false);
+  }
+
+  /**
+   * Auto-scroll to bottom of the container
+   */
+  private scrollToBottom(): void {
+    if (this.scrollContainer?.nativeElement) {
+      this.scrollContainer.nativeElement.scrollTo({
+        top: this.scrollContainer.nativeElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }
 }
