@@ -1,25 +1,11 @@
-@if(isBrandingLoaded()){
-<div class="w-full h-screen flex flex-col items-center justify-center">
-  <app-loader />
-</div>
-}@else {
-<div class="p-14 bg-gray-50 rounded-2xl text-gray-900">
-  <div class="w-full flex justify-end p-4">
-    <button class="inner-button" (click)="makePdf()">
-      <i class="pi pi-file-export"></i>
-      Export
-    </button>
-  </div>
-  @if (branding && branding.sections.length > 0) {
-  @for (brand of branding.sections; track brand.id) {
-  <div [innerHTML]="brand.data | safeHtml"></div>
-  } }@else {
+@if(isBrandingLoaded()) {
   <div class="w-full h-screen flex flex-col items-center justify-center">
-    <button class="inner-button" (click)="generateBranding()">
-      <i class="pi pi-file-export"></i>
-      Generate
-    </button>
+    <app-loader />
   </div>
+} @else {
+  @if (branding && branding.sections.length > 0) {
+    <app-branding-display [branding]="branding" />
+  } @else {
+    <app-branding-creation (generateRequested)="generateBranding()" />
   }
-</div>
 }

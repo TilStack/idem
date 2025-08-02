@@ -16,11 +16,12 @@ import { User } from '@angular/fire/auth';
 import { DiagramModel } from '../../models/diagram.model';
 import { DiagramDisplay } from './components/diagram-display/diagram-display';
 import { DiagramGeneration } from './components/diagram-generation/diagram-generation';
+import { Loader } from "../../../../components/loader/loader";
 
 @Component({
   selector: 'app-show-diagrams',
   standalone: true,
-  imports: [CommonModule, DiagramDisplay, DiagramGeneration],
+  imports: [CommonModule, DiagramDisplay, DiagramGeneration, Loader],
   templateUrl: './show-diagrams.html',
   styleUrls: ['./show-diagrams.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

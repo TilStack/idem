@@ -9,15 +9,16 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { first } from 'rxjs';
 import { Loader } from '../../../../components/loader/loader';
-import { generatePdf } from '../../../../utils/pdf-generator';
 import { BrandingService } from '../../services/ai-agents/branding.service';
 import { BrandIdentityModel } from '../../models/brand-identity.model';
 import { CookieService } from '../../../../shared/services/cookie.service';
-import { SafeHtmlPipe } from '../projects-list/safehtml.pipe';
+import { BrandingDisplayComponent } from './components/branding-display/branding-display';
+import { BrandingCreationComponent } from './components/branding-creation/branding-creation';
 
 @Component({
   selector: 'app-show-branding',
-  imports: [Loader, SafeHtmlPipe],
+  standalone: true,
+  imports: [Loader, BrandingDisplayComponent, BrandingCreationComponent],
   templateUrl: './show-branding.html',
   styleUrl: './show-branding.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,11 +92,7 @@ export class ShowBrandingComponent {
     }
   }
 
-  makePdf() {
-    if (this.branding) {
-      generatePdf(this.branding.sections.map((item) => item.data).join('\n'));
-    }
-  }
+
 
   generateBranding() {
     this.isBrandingLoaded.set(true);

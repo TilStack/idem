@@ -8,14 +8,15 @@ import { User } from '@angular/fire/auth';
 import { AuthService } from '../../../auth/services/auth.service';
 import { first } from 'rxjs';
 import { Loader } from '../../../../components/loader/loader';
-import { generatePdf } from '../../../../utils/pdf-generator';
 import { BusinessPlanService } from '../../services/ai-agents/business-plan.service';
 import { CookieService } from '../../../../shared/services/cookie.service';
-import { SafeHtmlPipe } from '../projects-list/safehtml.pipe';
+import { BusinessPlanDisplayComponent } from './components/business-plan-display/business-plan-display';
+import { BusinessPlanCreationComponent } from './components/business-plan-creation/business-plan-creation';
 
 @Component({
   selector: 'app-show-business-plan',
-  imports: [Loader, SafeHtmlPipe],
+  standalone: true,
+  imports: [Loader, BusinessPlanDisplayComponent, BusinessPlanCreationComponent],
   templateUrl: './show-business-plan.html',
   styleUrls: ['./show-business-plan.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -92,14 +93,7 @@ export class ShowBusinessPlan {
     }
   }
 
-  makePdf() {
-    if (this.businessPlan && this.businessPlan.sections) {
-      const allBusinessPlanContent = this.businessPlan.sections
-        .map((section: any) => section.data)
-        .join('\n\n');
-      generatePdf(allBusinessPlanContent, true);
-    }
-  }
+
 
   generateBusinessPlan() {
     this.isBusinessplanLoaded.set(true);

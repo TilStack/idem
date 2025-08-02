@@ -31,13 +31,13 @@ import { environment } from '../../../../../../../environments/environment';
   selector: 'app-diagram-generation',
   standalone: true,
   imports: [
-    CommonModule, 
-    MarkdownModule, 
-    SkeletonModule, 
-    CardModule, 
-    ProgressBarModule, 
-    ButtonModule, 
-    TagModule
+    CommonModule,
+    MarkdownModule,
+    SkeletonModule,
+    CardModule,
+    ProgressBarModule,
+    ButtonModule,
+    TagModule,
   ],
   templateUrl: './diagram-generation.html',
   styleUrls: ['./diagram-generation.css'],
@@ -83,7 +83,6 @@ export class DiagramGeneration implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Auto-start generation when component loads
-    
   }
 
   ngOnDestroy(): void {
@@ -241,7 +240,7 @@ export class DiagramGeneration implements OnInit, OnDestroy {
     if (this.scrollContainer?.nativeElement) {
       this.scrollContainer.nativeElement.scrollTo({
         top: this.scrollContainer.nativeElement.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }
