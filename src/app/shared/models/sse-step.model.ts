@@ -2,12 +2,23 @@
  * Generic SSE Step Event interface that can be used for all AI generation features
  */
 export interface SSEStepEvent {
-  type: 'started' | 'completed' | 'error' | 'steps_list' | 'progress' | 'completion';
+  type: 'started' | 'completed' | 'error' | 'steps_list' | 'progress' | 'completion' | 'complete';
   stepName?: string;
   data?: any;
   summary?: string;
   timestamp?: string;
   steps?: SSEStep[];
+  diagram?: {
+    sections: {
+      name: string;
+      type: string;
+      data: string;
+      summary: string;
+    }[];
+    id: string;
+    createdAt: any;
+    updatedAt: any;
+  };
   parsedData?: {
     status?: string;
     stepName?: string;
@@ -44,6 +55,7 @@ export interface SSEGenerationState {
   completedSteps: number;
   stepsInProgress: string[];
   completedStepNames: string[];
+  finalData?: any; // Store complete diagram/final payload data
 }
 
 /**

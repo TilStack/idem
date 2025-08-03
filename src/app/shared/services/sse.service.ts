@@ -204,8 +204,9 @@ export class SSEService {
       typeof data === 'object' &&
       (data.type === 'progress' ||
         data.type === 'completed' ||
-        data.type === 'completion') &&
-      typeof data.timestamp === 'string'
+        data.type === 'completion' ||
+        data.type === 'complete') &&
+      (typeof data.timestamp === 'string' || data.type === 'complete')
     );
   }
 
@@ -217,7 +218,7 @@ export class SSEService {
     serviceType: SSEServiceEventType
   ): SSEStepEvent {
     // Handle individual step events (backward compatibility)
-    if (data.type === 'progress' || data.type === 'completed' || data.type === 'completion') {
+    if (data.type === 'progress' || data.type === 'completed' || data.type === 'completion' || data.type === 'complete') {
       return data;
     }
 

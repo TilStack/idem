@@ -65,38 +65,42 @@
 <!-- Main Content with Top Padding -->
 <div class="pt-32 min-h-screen">
   <div class="max-w-7xl mx-auto px-6 space-y-8">
-    <!-- Current Step Section -->
-    @if(currentStep()) {
-    <div class="glass-card rounded-xl shadow-lg border border-gray-800/30">
-      <div class="bg-gradient-to-r px-6 py-4 border-b">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div
-              class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"
-            >
-              <i class="pi pi-spin pi-spinner text-white"></i>
+    <!-- Steps In Progress Section - Multiple Loaders -->
+    @if(generationState().stepsInProgress.length > 0) {
+    <div class="space-y-4">
+      @for (stepName of generationState().stepsInProgress; track stepName) {
+      <div class="glass-card rounded-xl shadow-lg border border-gray-800/30">
+        <div class="bg-gradient-to-r px-6 py-4 border-b">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"
+              >
+                <i class="pi pi-spin pi-spinner text-white"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold text-blue-900">
+                  {{ stepName }}
+                </h4>
+                <p class="text-sm text-blue-700">Génération en cours...</p>
+              </div>
             </div>
-            <div>
-              <h4 class="text-lg font-semibold text-blue-900">
-                {{ currentStep()!.stepName }}
-              </h4>
-              <p class="text-sm text-blue-700">{{ currentStep()!.summary }}</p>
-            </div>
+            <p-tag value="En cours" severity="info" icon="pi pi-clock"></p-tag>
           </div>
-          <p-tag value="En cours" severity="info" icon="pi pi-clock"></p-tag>
         </div>
-      </div>
 
-      <!-- Skeleton Loaders for Content Being Generated -->
-      <div class="p-6 space-y-4">
-        <p-skeleton height="2rem" class="mb-3"></p-skeleton>
-        <p-skeleton height="4rem" class="mb-3"></p-skeleton>
-        <div class="grid grid-cols-2 gap-4">
-          <p-skeleton height="3rem"></p-skeleton>
-          <p-skeleton height="3rem"></p-skeleton>
+        <!-- Skeleton Loaders for Content Being Generated -->
+        <div class="p-6 space-y-4">
+          <p-skeleton height="2rem" class="mb-3"></p-skeleton>
+          <p-skeleton height="4rem" class="mb-3"></p-skeleton>
+          <div class="grid grid-cols-2 gap-4">
+            <p-skeleton height="3rem"></p-skeleton>
+            <p-skeleton height="3rem"></p-skeleton>
+          </div>
+          <p-skeleton height="2rem" width="70%"></p-skeleton>
         </div>
-        <p-skeleton height="2rem" width="70%"></p-skeleton>
       </div>
+      }
     </div>
     }
 

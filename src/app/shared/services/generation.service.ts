@@ -76,13 +76,14 @@ export class GenerationService {
     return {
       steps: [],
       currentStep: null,
-      isGenerating: true,
+      isGenerating: false,
       error: null,
       completed: false,
       totalSteps: 0,
       completedSteps: 0,
       stepsInProgress: [],
       completedStepNames: [],
+      finalData: undefined,
     };
   }
 
@@ -195,6 +196,44 @@ export class GenerationService {
         }
         break;
 
+      case 'complete':
+        // Handle final complete event with full diagram payload
+        if (event.diagram) {
+          console.log(
+            'Received complete event with diagram payload:',
+            event.diagram
+          );
+          
+          // Mark all generation as completed
+          newState.isGenerating = false;
+          newState.completed = true;
+          newState.currentStep = null;
+          newState.stepsInProgress = [];
+          
+          // Extract completed steps from diagram sections
+          const diagramSections = event.diagram.sections.filter(
+            section => section.type === 'text/markdown' && section.name !== 'progress' && section.name !== 'completion'
+          );
+          
+          newState.completedStepNames = diagramSections.map(section => section.name);
+          newState.completedSteps = diagramSections.length;
+          newState.totalSteps = diagramSections.length;
+          
+          // Build steps array from diagram sections
+          newState.steps = diagramSections.map((section) => ({
+            stepName: section.name,
+            status: 'completed' as const,
+            timestamp: new Date().toISOString(),
+            summary: section.summary,
+            content: section.data,
+          }));
+          
+          // Store the complete diagram data for final processing
+          newState.finalData = event.diagram;
+          newState.error = null;
+        }
+        break;
+
       case 'steps_list':
         // Handle new backend format with list of steps
         if (event.steps) {
@@ -291,9 +330,11 @@ export class GenerationService {
           );
 
           // Check if all steps are completed
-          if (newState.currentStep === null && newState.steps.length > 0) {
+          if (newState.stepsInProgress.length === 0 && newState.completedStepNames.length > 0) {
             newState.isGenerating = false;
             newState.completed = true;
+            newState.currentStep = null;
+            console.log('All steps completed, stopping generation');
           }
         }
         break;
