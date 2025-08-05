@@ -46,11 +46,27 @@ export const routes: Routes = [
     data: { layout: 'dashboard' },
   },
   {
+    path: 'console/branding/generate',
+    loadComponent: () =>
+      import(
+        './modules/dashboard/pages/show-branding/branding-generation/branding-generation-page'
+      ).then((m) => m.BrandingGenerationPage),
+    data: { layout: 'dashboard' },
+  },
+  {
     path: 'console/business-plan',
     loadComponent: () =>
       import(
         './modules/dashboard/pages/show-business-plan/show-business-plan'
       ).then((m) => m.ShowBusinessPlan),
+    data: { layout: 'dashboard' },
+  },
+  {
+    path: 'console/business-plan/generate',
+    loadComponent: () =>
+      import(
+        './modules/dashboard/pages/show-business-plan/business-plan-generation/business-plan-generation-page'
+      ).then((m) => m.BusinessPlanGenerationPage),
     data: { layout: 'dashboard' },
   },
   {

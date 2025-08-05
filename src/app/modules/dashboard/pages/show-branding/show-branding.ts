@@ -2,102 +2,87 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
+  OnInit,
   signal,
 } from '@angular/core';
-import { User } from '@angular/fire/auth';
-import { ActivatedRoute } from '@angular/router';
-import { AuthService } from '../../../auth/services/auth.service';
-import { first } from 'rxjs';
-import { Loader } from '../../../../components/loader/loader';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { CookieService } from '../../../../shared/services/cookie.service';
 import { BrandingService } from '../../services/ai-agents/branding.service';
 import { BrandIdentityModel } from '../../models/brand-identity.model';
-import { CookieService } from '../../../../shared/services/cookie.service';
 import { BrandingDisplayComponent } from './components/branding-display/branding-display';
-import { BrandingGenerationComponent } from './components/branding-generation/branding-generation';
+import { Loader } from '../../../../components/loader/loader';
 
 @Component({
   selector: 'app-show-branding',
   standalone: true,
-  imports: [Loader, BrandingDisplayComponent, BrandingGenerationComponent],
+  imports: [CommonModule, BrandingDisplayComponent, Loader],
   templateUrl: './show-branding.html',
   styleUrl: './show-branding.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShowBrandingComponent {
-  route = inject(ActivatedRoute);
-  brandingService = inject(BrandingService);
-  isBrandingLoaded = signal(true);
-  currentUser?: User | null;
-  auth = inject(AuthService);
-  user$ = this.auth.user$;
-  branding: BrandIdentityModel | null = null;
-  isBrandExists = signal(false);
-  cookiesService = inject(CookieService);
-  protected readonly globalCss = signal<string>('');
-  constructor() {
-    this.projectIdFromCookie.set(this.cookiesService.get('projectId'));
-  }
+export class ShowBrandingComponent implements OnInit {
+  // Injected services
+  private readonly brandingService = inject(BrandingService);
+  private readonly cookieService = inject(CookieService);
+  private readonly router = inject(Router);
+
+  // Signals for state management
+  protected readonly isLoading = signal<boolean>(true);
+  protected readonly existingBranding = signal<BrandIdentityModel | null>(null);
   protected readonly projectIdFromCookie = signal<string | null>(null);
-  ngOnInit() {
-    try {
-      this.isBrandingLoaded.set(true);
+  ngOnInit(): void {
+    // Get project ID from cookies
+    const projectId = this.cookieService.get('projectId');
+    this.projectIdFromCookie.set(projectId);
 
-      this.auth.user$.pipe(first()).subscribe((user) => {
-        if (user) {
-          this.currentUser = user;
-        } else {
-          console.log('Utilisateur non connecté');
-          return;
-        }
-      });
-
-      if (this.projectIdFromCookie() == null) {
-        console.log('ID du projet introuvable');
-        return;
-      } else {
-        this.brandingService
-          .getBrandIdentityModelById(this.projectIdFromCookie()!)
-          .subscribe({
-            next: (brandModelData) => {
-              if (
-                brandModelData.sections &&
-                brandModelData.sections.length > 0
-              ) {
-                this.branding = brandModelData;
-
-
-                
-                this.isBrandingLoaded.set(false);
-              } else {
-                this.isBrandExists.set(false);
-                this.isBrandingLoaded.set(false);
-              }
-            },
-            error: (err) => {
-              console.error(
-                `Error fetching branding information for project ID: ${this.projectIdFromCookie()}:`,
-                err
-              );
-              this.branding = null;
-              this.isBrandingLoaded.set(false);
-              this.isBrandExists.set(false);
-            },
-          });
-      }
-    } catch (error) {
-      console.error(
-        'Erreur lors du chargement du projet ou de l’utilisateur',
-        error
-      );
+    if (projectId) {
+      this.loadExistingBranding(projectId);
+    } else {
+      this.isLoading.set(false);
     }
   }
 
+  /**
+   * Load existing branding for the project
+   */
+  private loadExistingBranding(projectId: string): void {
+    this.brandingService.getBrandIdentityModelById(projectId).subscribe({
+      next: (branding: BrandIdentityModel) => {
+        if (branding && branding.sections && branding.sections.length > 0) {
+          // Existing branding found - show it
+          this.existingBranding.set(branding);
+        } else {
+          // No existing branding - show generate button (no redirect)
+          console.log('No existing branding found, showing generate button');
+          this.existingBranding.set(null);
+        }
 
+        this.isLoading.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error loading branding:', err);
+        // Error loading - show generate button (no redirect)
+        console.log('Error loading branding, showing generate button');
+        this.existingBranding.set(null);
+        this.isLoading.set(false);
+      },
+    });
+  }
 
-  protected onBrandingGenerated(brandingData: BrandIdentityModel): void {
-    console.log('Branding generated:', brandingData);
-    this.branding = brandingData;
-    this.isBrandExists.set(true);
-    this.isBrandingLoaded.set(false);
+  /**
+   * Navigate to branding generation page
+   */
+  protected generateBranding(): void {
+    console.log('Navigating to branding generation page');
+    this.router.navigate(['/console/branding/generate']);
+  }
+
+  /**
+   * Navigate to projects page
+   */
+  protected goToProjects(): void {
+    console.log('Navigating to projects page');
+    this.router.navigate(['/console/projects']);
   }
 }
