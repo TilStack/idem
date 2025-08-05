@@ -4,12 +4,21 @@ export interface ProjectModel {
   id?: string;
   name: string;
   description: string;
-  type: 'web' | 'mobile' | 'iot' | 'desktop';
+  type: {
+    code: string;
+    name: string;
+  };
   constraints: string[];
   teamSize: string;
-  scope: string;
+  scope: {
+    code: string;
+    name: string;
+  };
   budgetIntervals?: string;
-  targets: string;
+  targets: {
+    code: string;
+    name: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   userId: string;

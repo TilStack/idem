@@ -16,7 +16,10 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { BrandingService } from '../../../../services/ai-agents/branding.service';
 import { CookieService } from '../../../../../../shared/services/cookie.service';
 import { GenerationService } from '../../../../../../shared/services/generation.service';
-import { SSEGenerationState, SSEConnectionConfig } from '../../../../../../shared/models/sse-step.model';
+import {
+  SSEGenerationState,
+  SSEConnectionConfig,
+} from '../../../../../../shared/models/sse-step.model';
 import { BrandIdentityModel } from '../../../../models/brand-identity.model';
 import { environment } from '../../../../../../../environments/environment';
 
@@ -47,26 +50,35 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
     totalSteps: 0,
     completed: false,
     error: null,
-    isGenerating: false
+    isGenerating: false,
   });
 
   // Computed properties using the new generation state
-  protected readonly isGenerating = computed(() => this.generationState().isGenerating);
-  protected readonly generationError = computed(() => this.generationState().error);
-  protected readonly completedSteps = computed(() => 
-    this.generationState().steps.filter(step => step.status === 'completed')
+  protected readonly isGenerating = computed(
+    () => this.generationState().isGenerating
   );
-  protected readonly hasCompletedSteps = computed(() => 
+  protected readonly generationError = computed(
+    () => this.generationState().error
+  );
+  protected readonly completedSteps = computed(() =>
+    this.generationState().steps.filter((step) => step.status === 'completed')
+  );
+  protected readonly hasCompletedSteps = computed(() =>
     this.generationService.hasCompletedSteps(this.generationState())
   );
-  protected readonly totalSteps = computed(() => this.generationState().totalSteps);
-  protected readonly completedCount = computed(() => this.generationState().completedSteps);
-  protected readonly progressPercentage = computed(() => 
+  protected readonly totalSteps = computed(
+    () => this.generationState().totalSteps
+  );
+  protected readonly completedCount = computed(
+    () => this.generationState().completedSteps
+  );
+  protected readonly progressPercentage = computed(() =>
     this.generationService.calculateProgress(this.generationState())
   );
 
   ngOnInit(): void {
     this.projectId.set(this.cookieService.get('projectId'));
+    this.generateBranding();
   }
 
   ngOnDestroy(): void {
@@ -88,7 +100,9 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
     console.log('Starting branding generation with SSE...');
 
     // Create SSE connection for branding generation
-    const sseConnection = this.brandingService.createBrandIdentityModel(this.projectId()!);
+    const sseConnection = this.brandingService.createBrandIdentityModel(
+      this.projectId()!
+    );
 
     this.generationService
       .startGeneration('branding', sseConnection)
@@ -97,7 +111,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
         next: (state: SSEGenerationState) => {
           console.log('Branding generation state updated:', state);
           this.generationState.set(state);
-          
+
           // Check if generation is completed
           if (state.completed && state.steps.length > 0) {
             this.handleGenerationComplete(state);
@@ -108,7 +122,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
             `Error generating branding for project ID: ${this.projectId()}:`,
             err
           );
-          this.generationState.update(state => ({
+          this.generationState.update((state) => ({
             ...state,
             error: 'Failed to generate branding',
             isGenerating: false,
@@ -116,7 +130,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
         },
         complete: () => {
           console.log('Branding generation completed');
-        }
+        },
       });
   }
 
@@ -131,7 +145,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
       totalSteps: 0,
       completed: false,
       error: null,
-      isGenerating: true
+      isGenerating: true,
     });
   }
 
@@ -140,7 +154,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
    */
   protected cancelGeneration(): void {
     this.generationService.cancelGeneration('branding');
-    this.generationState.update(state => ({
+    this.generationState.update((state) => ({
       ...state,
       isGenerating: false,
       error: 'Generation cancelled',
@@ -169,9 +183,10 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
           id: '',
           name: 'Generated Logo',
           svg: '',
-          concept: this.extractStepContent(steps, 'Logo') || 'Generated brand logo',
+          concept:
+            this.extractStepContent(steps, 'Logo') || 'Generated brand logo',
           colors: ['#000000', '#ffffff'],
-          fonts: ['Arial']
+          fonts: ['Arial'],
         },
         generatedLogos: [],
         colors: {
@@ -183,8 +198,8 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
             secondary: '#ffffff',
             accent: '#007bff',
             background: '#f8f9fa',
-            text: '#212529'
-          }
+            text: '#212529',
+          },
         },
         generatedColors: [],
         typography: {
@@ -192,7 +207,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
           name: 'Generated Typography',
           url: '',
           primaryFont: 'Arial',
-          secondaryFont: 'Helvetica'
+          secondaryFont: 'Helvetica',
         },
         generatedTypography: [],
         sections: steps.map((step, index) => ({
@@ -201,18 +216,18 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
           type: 'branding',
           data: step.content || step.summary || '',
           summary: step.summary || '',
-          order: index
-        }))
+          order: index,
+        })),
       };
 
       console.log('Emitting branding data:', brandingData);
       this.brandingGenerated.emit(brandingData);
     } catch (error) {
       console.error('Error creating branding data:', error);
-      this.generationState.update(state => ({
+      this.generationState.update((state) => ({
         ...state,
         error: 'Failed to process branding data',
-        isGenerating: false
+        isGenerating: false,
       }));
     }
   }
@@ -221,7 +236,9 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
    * Extract content from a specific step by name
    */
   private extractStepContent(steps: any[], stepName: string): string {
-    const step = steps.find(s => s.stepName?.toLowerCase().includes(stepName.toLowerCase()));
+    const step = steps.find((s) =>
+      s.stepName?.toLowerCase().includes(stepName.toLowerCase())
+    );
     return step?.content || step?.summary || '';
   }
 }

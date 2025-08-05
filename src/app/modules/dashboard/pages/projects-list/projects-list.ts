@@ -43,20 +43,21 @@ export class ProjectsList implements OnInit {
     try {
       this.user$.pipe(first()).subscribe((user) => {
         if (user) {
+          this.isLoading.set(true);
           this.userProjects$ = this.projectService.getProjects();
           this.userProjects$.subscribe((projects) => {
-            console.log('projects', projects);
             this.recentProjects.set(
               projects
                 .slice()
                 .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
                 .slice(0, 3)
             );
+            this.isLoading.set(false);
           });
         } else {
           console.log('User not found');
+          this.isLoading.set(false);
         }
-        this.isLoading.set(false);
       });
     } catch (error) {
       console.error('Error fetching projects:', error);

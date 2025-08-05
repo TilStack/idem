@@ -138,10 +138,20 @@ export class SidebarDashboard implements OnInit {
 
   // Computed signal for dropdown project list
   dropDownProjects = computed(() => {
-    return this._userProjects().map((p) => ({
+    // Add "View All Projects" as the first option
+    const allProjectsOption = {
+      name: 'View All Projects',
+      code: 'all-projects'
+    };
+    
+    // Get the regular project options
+    const projectOptions = this._userProjects().map((p) => ({
       name: p.name,
       code: p.id!,
     }));
+    
+    // Return the special option at the top followed by the regular projects
+    return [allProjectsOption, ...projectOptions];
   });
 
   @ViewChild('menu') menuRef!: ElementRef;
@@ -415,7 +425,14 @@ export class SidebarDashboard implements OnInit {
   onProjectChange(event: SelectChangeEvent) {
     const projectId = event.value?.code;
     if (projectId) {
-      // Save selected project to cookie
+      // Check if "View All Projects" option was selected
+      if (projectId === 'all-projects') {
+        // Navigate to projects list view
+        this.router.navigate(['/console/projects']);
+        return;
+      }
+      
+      // Regular project selection - save to cookie
       this.cookieService.set('projectId', projectId);
       this.projectIdFromCookie.set(projectId);
 

@@ -59,14 +59,13 @@ export class App implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
-    // Écouter les changements de route pour remettre le scroll en haut
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
-        // Utiliser setTimeout pour s'assurer que le DOM est mis à jour
+        
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'auto' });
         }, 0);

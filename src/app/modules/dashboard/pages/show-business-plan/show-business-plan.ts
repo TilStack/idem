@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CookieService } from '../../../../shared/services/cookie.service';
 import { BusinessPlanService } from '../../services/ai-agents/business-plan.service';
+import { BusinessPlanModel } from '../../models/businessPlan.model';
 import { BusinessPlanDisplayComponent } from './components/business-plan-display/business-plan-display';
 import { Loader } from '../../../../components/loader/loader';
 
@@ -28,7 +29,7 @@ export class ShowBusinessPlan implements OnInit {
 
   // Signals for state management
   protected readonly isLoading = signal<boolean>(true);
-  protected readonly existingBusinessPlan = signal<any | null>(null);
+  protected readonly existingBusinessPlan = signal<BusinessPlanModel | null>(null);
   protected readonly projectIdFromCookie = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -48,7 +49,7 @@ export class ShowBusinessPlan implements OnInit {
    */
   private loadExistingBusinessPlan(projectId: string): void {
     this.businessPlanService.getBusinessplanItems(projectId).subscribe({
-      next: (businessPlan: any) => {
+      next: (businessPlan: BusinessPlanModel) => {
         if (businessPlan && businessPlan.sections && businessPlan.sections.length > 0) {
           // Existing business plan found - show it
           this.existingBusinessPlan.set(businessPlan);
