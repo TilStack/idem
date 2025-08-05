@@ -2,136 +2,102 @@ import {
   ChangeDetectionStrategy,
   Component,
   inject,
-  signal,
   OnInit,
-  OnDestroy,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntil, first } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { DiagramsService } from '../../services/ai-agents/diagrams.service';
-import { AuthService } from '../../../auth/services/auth.service';
+import { Router } from '@angular/router';
 import { CookieService } from '../../../../shared/services/cookie.service';
-import { User } from '@angular/fire/auth';
+import { DiagramsService } from '../../services/ai-agents/diagrams.service';
 import { DiagramModel } from '../../models/diagram.model';
 import { DiagramDisplay } from './components/diagram-display/diagram-display';
-import { DiagramGeneration } from './components/diagram-generation/diagram-generation';
-import { Loader } from "../../../../components/loader/loader";
+import { Loader } from '../../../../components/loader/loader';
 
 @Component({
   selector: 'app-show-diagrams',
   standalone: true,
-  imports: [CommonModule, DiagramDisplay, DiagramGeneration, Loader],
+  imports: [CommonModule, DiagramDisplay, Loader],
   templateUrl: './show-diagrams.html',
   styleUrls: ['./show-diagrams.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShowDiagramsComponent implements OnInit, OnDestroy {
+export class ShowDiagramsComponent implements OnInit {
   // Injected services
   private readonly diagramsService = inject(DiagramsService);
-  private readonly auth = inject(AuthService);
-  private readonly cookiesService = inject(CookieService);
-  private readonly destroy$ = new Subject<void>();
+  private readonly cookieService = inject(CookieService);
+  private readonly router = inject(Router);
 
-  // Component state signals
-  protected readonly projectIdFromCookie = signal<string | null>(null);
-  protected readonly currentUser = signal<User | null>(null);
+  // Signals for state management
   protected readonly isLoading = signal<boolean>(true);
   protected readonly existingDiagram = signal<DiagramModel | null>(null);
+  protected readonly projectIdFromCookie = signal<string | null>(null);
+
+  // Temporary compatibility properties (will be removed after cache clears)
   protected readonly showDisplayComponent = signal<boolean>(false);
   protected readonly showGenerationComponent = signal<boolean>(false);
-  protected readonly isDiagramsLoaded = signal<boolean>(false);
-
-  constructor() {
-    this.projectIdFromCookie.set(this.cookiesService.get('projectId'));
-  }
 
   ngOnInit(): void {
-    try {
-      this.isDiagramsLoaded.set(true);
+    // Get project ID from cookies
+    const projectId = this.cookieService.get('projectId');
+    this.projectIdFromCookie.set(projectId);
 
-      // Subscribe to user authentication
-      this.auth.user$
-        .pipe(first(), takeUntil(this.destroy$))
-        .subscribe((user: User | null) => {
-          if (user) {
-            this.currentUser.set(user);
-          } else {
-            console.log('User not logged in');
-            return;
-          }
-        });
-
-      // Load existing diagram if project ID exists
-      if (this.projectIdFromCookie()) {
-        this.loadExistingDiagram();
-      } else {
-        // No project ID, show generation component
-        this.showGenerationComponent.set(true);
-        this.isLoading.set(false);
-      }
-    } catch (error) {
-      console.error('Error while loading project or user', error);
+    if (projectId) {
+      this.loadExistingDiagram(projectId);
+    } else {
       this.isLoading.set(false);
     }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   /**
    * Load existing diagram for the project
    */
-  private loadExistingDiagram(): void {
-    this.isDiagramsLoaded.set(true); // Set loading state while fetching
-    this.diagramsService
-      .getDiagram(this.projectIdFromCookie()!)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (diagramData) => {
-          console.log('Diagram data loaded:', diagramData);
+  private loadExistingDiagram(projectId: string): void {
+    this.diagramsService.getDiagram(projectId).subscribe({
+      next: (diagram: DiagramModel) => {
+        if (diagram) {
+          // Get the first diagram
+          const diagramData = diagram;
 
-          if (diagramData && (diagramData.content || diagramData.sections)) {
-            // Format section data with code blocks if sections exist
-            if (diagramData.sections) {
-              diagramData.sections.forEach((section) => {
-                section.data = `\`\`\`${section.data}\n\`\`\``;
-              });
-            }
-
-            // Existing diagram found - show display component
-            this.existingDiagram.set(diagramData);
-            this.showDisplayComponent.set(true);
-            this.showGenerationComponent.set(false);
-          } else {
-            // No existing diagram - show generation component
-            this.showDisplayComponent.set(false);
-            this.showGenerationComponent.set(true);
+          // Process sections to ensure proper markdown formatting
+          if (diagramData.sections) {
+            diagramData.sections.forEach((section: any) => {
+              section.data = `\`\`\`${section.data}\n\`\`\``;
+            });
           }
 
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          console.error('Error loading diagram:', err);
-          // Error loading - show generation component
-          this.showDisplayComponent.set(false);
-          this.showGenerationComponent.set(true);
-          this.isLoading.set(false);
-        },
-      });
+          // Existing diagram found - show it
+          this.existingDiagram.set(diagramData);
+        } else {
+          // No existing diagram - show generate button (no redirect)
+          console.log('No existing diagram found, showing generate button');
+          this.existingDiagram.set(null);
+        }
+
+        this.isLoading.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error loading diagram:', err);
+        // Error loading - show generate button (no redirect)
+        console.log('Error loading diagram, showing generate button');
+        this.existingDiagram.set(null);
+        this.isLoading.set(false);
+      },
+    });
   }
 
   /**
-   * Start diagram generation process
+   * Navigate to diagram generation page
    */
   protected generateDiagrams(): void {
-    if (this.projectIdFromCookie()) {
-      this.showDisplayComponent.set(false);
-      this.showGenerationComponent.set(true);
-    } else {
-      console.error('No project ID available');
-    }
+    console.log('Navigating to diagram generation page');
+    this.router.navigate(['/console/diagrams/generate']);
+  }
+
+  /**
+   * Navigate to projects page
+   */
+  protected goToProjects(): void {
+    console.log('Navigating to projects page');
+    this.router.navigate(['/console/projects']);
   }
 }

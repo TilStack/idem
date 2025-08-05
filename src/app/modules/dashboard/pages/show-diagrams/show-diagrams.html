@@ -10,19 +10,33 @@
       <p class="text-gray-600">Checking for existing diagrams</p>
     </div>
   </div>
-  } @else if(showDisplayComponent() && existingDiagram()) {
+  } @else if(existingDiagram()) {
   <!-- Display existing diagram -->
   <app-diagram-display [diagram]="existingDiagram()!"></app-diagram-display>
-  } @else if(showGenerationComponent() && projectIdFromCookie()) {
-  <!-- Generate new diagrams -->
-  <app-diagram-generation
-    [projectId]="projectIdFromCookie()!"
-  ></app-diagram-generation>
-  } @else { @if(projectIdFromCookie()) {
-  <!-- Has project ID but no diagram -->
+  } @else if(projectIdFromCookie()) {
+  <!-- Has project ID but no diagram - show generate button -->
   <div class="max-w-6xl mx-auto text-center py-10">
+    <div class="mb-6">
+      <svg
+        class="mx-auto h-16 w-16 text-blue-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        ></path>
+      </svg>
+    </div>
+    <h3 class="text-2xl font-bold text-gray-900 mb-4">No diagrams found</h3>
+    <p class="text-gray-600 mb-8">
+      Start by generating your first diagrams to visualize your architecture.
+    </p>
     <button
-      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-md transition-colors font-medium"
       (click)="generateDiagrams()"
     >
       Generate Diagrams
@@ -41,15 +55,21 @@
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
-          stroke-width="1.5"
-          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-        ></path>
+          stroke-width="2"
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"
+        />
       </svg>
     </div>
-    <h3 class="mt-2 text-lg font-medium text-gray-900">No diagrams yet</h3>
-    <p class="mt-1 text-sm text-gray-500">
-      Get started by generating a new set of diagrams.
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No Project Selected</h3>
+    <p class="text-gray-600 mb-4">
+      Please select a project first to view diagrams.
     </p>
+    <button
+      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+      (click)="goToProjects()"
+    >
+      Select Project
+    </button>
   </div>
-  } }
+  }
 </div>

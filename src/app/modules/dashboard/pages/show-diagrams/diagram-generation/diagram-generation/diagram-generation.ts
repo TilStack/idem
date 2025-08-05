@@ -4,6 +4,7 @@ import {
   inject,
   signal,
   input,
+  output,
   OnInit,
   OnDestroy,
   ElementRef,
@@ -25,6 +26,7 @@ import { GenerationService } from '../../../../../../shared/services/generation.
 import { SSEGenerationState } from '../../../../../../shared/models/sse-step.model';
 import { generatePdf } from '../../../../../../utils/pdf-generator';
 import { environment } from '../../../../../../../environments/environment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-diagram-generation',
@@ -46,12 +48,15 @@ export class DiagramGeneration implements OnInit, OnDestroy {
   private readonly diagramsService = inject(DiagramsService);
   private readonly generationService = inject(GenerationService);
   private readonly destroy$ = new Subject<void>();
-
+  private readonly router = inject(Router);
   // ViewChild for scroll container
   @ViewChild('scrollContainer', { static: false }) scrollContainer!: ElementRef;
 
   // Input for project ID
   readonly projectId = input.required<string>();
+
+  // Output to emit the final diagram to parent component
+  readonly diagramGenerated = output<DiagramModel>();
 
   // Generation state signal
   protected readonly generationState = signal<SSEGenerationState>({
@@ -96,7 +101,8 @@ export class DiagramGeneration implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Auto-start generation when component loads
+    // Component is ready, but wait for user to start generation
+    console.log('Diagram generation component loaded, waiting for user action');
     this.generateDiagrams();
   }
 
@@ -155,48 +161,7 @@ export class DiagramGeneration implements OnInit, OnDestroy {
    */
   private handleGenerationComplete(state: SSEGenerationState): void {
     console.log('Diagram generation completed:', state);
-
-    // Create final diagram from completed steps
-    if (state.steps.length > 0) {
-      this.completeGenerationFromSteps(state.steps);
-    }
-  }
-
-  /**
-   * Complete generation from individual steps
-   */
-  private completeGenerationFromSteps(steps: any[]): void {
-    console.log('Completing generation from steps:', steps);
-
-    // Filter completed steps with actual content
-    const completedSteps = steps.filter(
-      (step) =>
-        step.status === 'completed' &&
-        step.content &&
-        step.content !== 'step_started'
-    );
-
-    if (completedSteps.length === 0) {
-      console.warn('No completed steps with content found');
-      return;
-    }
-
-    // // Create final diagram from completed steps
-    // const finalDiagram: DiagramModel = {
-    //   content: completedSteps.map(step => step.content).join('\n\n'),
-    //   sections: completedSteps.map(step => ({
-    //     name: step.name,
-    //     type: 'text/markdown',
-    //     data: step.content,
-    //     summary: step.summary || ''
-    //   })),
-    //   title: 'Generated Diagrams',
-    //   id: `diagram_${this.projectId()}_${Date.now()}`,
-    //   createdAt: new Date(),
-    //   updatedAt: new Date()
-    // };
-
-    // this.finalDiagram.set(finalDiagram);
+    this.router.navigate(['/console/diagrams']);
   }
 
   /**

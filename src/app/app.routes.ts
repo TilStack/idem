@@ -16,7 +16,9 @@ export const routes: Routes = [
   {
     path: 'premium-beta',
     loadComponent: () =>
-      import('./modules/landing/pages/premium-beta-access/premium-beta-access').then((m) => m.PremiumBetaAccess),
+      import(
+        './modules/landing/pages/premium-beta-access/premium-beta-access'
+      ).then((m) => m.PremiumBetaAccess),
     data: { layout: 'empty' },
   },
   {
@@ -46,9 +48,9 @@ export const routes: Routes = [
   {
     path: 'console/business-plan',
     loadComponent: () =>
-      import('./modules/dashboard/pages/show-business-plan/show-business-plan').then(
-        (m) => m.ShowBusinessPlan
-      ),
+      import(
+        './modules/dashboard/pages/show-business-plan/show-business-plan'
+      ).then((m) => m.ShowBusinessPlan),
     data: { layout: 'dashboard' },
   },
   {
@@ -57,6 +59,14 @@ export const routes: Routes = [
       import('./modules/dashboard/pages/show-diagrams/show-diagrams').then(
         (m) => m.ShowDiagramsComponent
       ),
+    data: { layout: 'dashboard' },
+  },
+  {
+    path: 'console/diagrams/generate',
+    loadComponent: () =>
+      import(
+        './modules/dashboard/pages/show-diagrams/diagram-generation/diagram-generation-page'
+      ).then((m) => m.DiagramGenerationPage),
     data: { layout: 'dashboard' },
   },
   {
