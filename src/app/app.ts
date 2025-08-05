@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   RouterOutlet,
@@ -8,7 +8,8 @@ import {
 } from '@angular/router';
 import { SplashScreenComponent } from './components/splash-screen/splash-screen';
 import { filter, map, startWith, distinctUntilChanged } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { PublicLayoutComponent } from './layouts/public-layout/public-layout';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout';
 import { EmptyLayout } from "./layouts/empty-layout/empty-layout";
@@ -31,9 +32,10 @@ import { QuotaWarningComponent } from './shared/components/quota-warning/quota-w
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit, OnDestroy {
   protected readonly router = inject(Router);
   protected readonly activatedRoute = inject(ActivatedRoute);
+  private readonly destroy$ = new Subject<void>();
 
   /** Layout courant selon la route active */
   protected readonly currentLayout$: Observable<
@@ -56,8 +58,28 @@ export class App {
     distinctUntilChanged()
   );
 
+  ngOnInit(): void {
+    // Écouter les changements de route pour remettre le scroll en haut
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        // Utiliser setTimeout pour s'assurer que le DOM est mis à jour
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }, 0);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   protected resetPosition() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
   protected readonly title = 'idem';
