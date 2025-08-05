@@ -44,7 +44,7 @@ export class BrandingService {
    * @param projectId Project ID
    * @returns Observable with SSE events
    */
-  createBrandIdentityModel(projectId: string): Observable<BrandingStepEvent> {
+  createBrandIdentityModel(projectId: string): Observable<SSEStepEvent> {
     console.log('Starting branding generation with SSE...');
 
     // Close any existing SSE connection
@@ -56,11 +56,7 @@ export class BrandingService {
       reconnectionDelay: 1000,
     };
 
-    return this.sseService
-      .createConnection(config, 'branding')
-      .pipe(
-        map((sseEvent: SSEStepEvent) => this.mapToBrandingStepEvent(sseEvent))
-      );
+    return this.sseService.createConnection(config, 'branding');
   }
 
   /**

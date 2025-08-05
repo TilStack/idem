@@ -2,31 +2,16 @@
  * Generic SSE Step Event interface that can be used for all AI generation features
  */
 export interface SSEStepEvent {
-  type: 'started' | 'completed' | 'error' | 'steps_list' | 'progress' | 'completion' | 'complete';
-  stepName?: string;
-  data?: any;
-  summary?: string;
-  timestamp?: string;
-  steps?: SSEStep[];
-  diagram?: {
-    sections: {
-      name: string;
-      type: string;
-      data: string;
-      summary: string;
-    }[];
-    id: string;
-    createdAt: any;
-    updatedAt: any;
-  };
-  parsedData?: {
-    status?: string;
-    stepName?: string;
+  type: 'progress' | 'completed';
+  stepName: string;
+  data: string;
+  summary: string;
+  timestamp: string;
+  parsedData: {
+    status: 'progress' | 'completed';
     stepsInProgress?: string[];
     completedSteps?: string[];
-    message?: string;
-    totalSteps?: number;
-    projectId?: string;
+    stepName?: string;
   };
 }
 
@@ -34,28 +19,24 @@ export interface SSEStepEvent {
  * Generic SSE Step interface
  */
 export interface SSEStep {
-  stepName: string;
-  status: 'progress' | 'completed' | 'pending';
+  name: string;
+  status: 'pending' | 'in-progress' | 'completed';
   content?: string;
-  timestamp: string;
+  timestamp?: string;
   summary?: string;
-  order?: number;
 }
 
 /**
  * Generic SSE Generation State interface
  */
 export interface SSEGenerationState {
-  steps: SSEStep[];
-  currentStep: SSEStep | null;
   isGenerating: boolean;
-  error: string | null;
-  completed: boolean;
-  totalSteps: number;
-  completedSteps: number;
+  steps: SSEStep[];
   stepsInProgress: string[];
-  completedStepNames: string[];
-  finalData?: any; // Store complete diagram/final payload data
+  completedSteps: string[];
+  totalSteps: number;
+  completed: boolean;
+  error: string | null;
 }
 
 /**

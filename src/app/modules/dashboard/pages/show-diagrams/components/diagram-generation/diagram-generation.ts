@@ -22,10 +22,7 @@ import { Subject } from 'rxjs';
 import { DiagramsService } from '../../../../services/ai-agents/diagrams.service';
 import { DiagramModel } from '../../../../models/diagram.model';
 import { GenerationService } from '../../../../../../shared/services/generation.service';
-import {
-  SSEGenerationState,
-  SSEConnectionConfig,
-} from '../../../../../../shared/models/sse-step.model';
+import { SSEGenerationState } from '../../../../../../shared/models/sse-step.model';
 import { generatePdf } from '../../../../../../utils/pdf-generator';
 import { environment } from '../../../../../../../environments/environment';
 
@@ -58,15 +55,13 @@ export class DiagramGeneration implements OnInit, OnDestroy {
 
   // Generation state signal
   protected readonly generationState = signal<SSEGenerationState>({
-    steps: [],
-    currentStep: null,
     isGenerating: false,
-    error: null,
-    completed: false,
-    totalSteps: 0,
-    completedSteps: 0,
+    steps: [],
     stepsInProgress: [],
-    completedStepNames: [],
+    completedSteps: [],
+    totalSteps: 0,
+    completed: false,
+    error: null,
   });
 
   protected readonly finalDiagram = signal<DiagramModel | null>(null);
@@ -80,9 +75,6 @@ export class DiagramGeneration implements OnInit, OnDestroy {
   );
   protected readonly generationError = computed(
     () => this.generationState().error
-  );
-  protected readonly currentStep = computed(
-    () => this.generationState().currentStep
   );
   protected readonly completedSteps = computed(() =>
     this.generationState().steps.filter((step) => step.status === 'completed')
@@ -105,6 +97,7 @@ export class DiagramGeneration implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Auto-start generation when component loads
+    this.generateDiagrams();
   }
 
   ngOnDestroy(): void {
@@ -125,99 +118,116 @@ export class DiagramGeneration implements OnInit, OnDestroy {
     this.resetGenerationState();
     console.log('Starting diagram generation with SSE...');
 
-    const config: SSEConnectionConfig = {
-      url: `${
-        environment.services.api.url
-      }/project/diagrams/generate-stream/${this.projectId()}`,
-      keepAlive: true,
-      reconnectionDelay: 1000,
-    };
+    const sseConnection = this.diagramsService.createDiagramModel(
+      this.projectId()
+    );
 
     this.generationService
-      .startGeneration(config, 'diagram', this.destroy$)
+      .startGeneration('diagram', sseConnection)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (state: SSEGenerationState) => {
+        next: (state) => {
           console.log('Generation state updated:', state);
           this.generationState.set(state);
 
-          // Check if generation is completed - handle both scenarios
+          // Handle completion
           if (state.completed) {
-            if (state.finalData) {
-              // Complete event with full payload
-              this.completeGeneration(state.finalData);
-            } else if (state.steps.length > 0) {
-              // Fallback: use individual completed steps
-              this.completeGenerationFromSteps(state.steps);
-            }
+            this.handleGenerationComplete(state);
+          }
+
+          // Handle errors
+          if (state.error) {
+            this.handleGenerationError(state.error);
           }
         },
-        error: (err) => {
-          console.error(
-            `Error generating diagrams for project ID: ${this.projectId()}:`,
-            err
-          );
-          this.generationState.update((state) => ({
-            ...state,
-            error: 'Failed to generate diagrams',
-            isGenerating: false,
-          }));
+        error: (error) => {
+          console.error('Diagram generation error:', error);
+          this.handleGenerationError(error.message || 'Generation failed');
         },
         complete: () => {
-          console.log('Diagram generation completed');
-          // Force completion if stream ends without explicit completion event
-          this.generationState.update((state) => {
-            if (state.isGenerating && state.completedStepNames.length > 0 && state.stepsInProgress.length === 0) {
-              console.log('Forcing completion due to stream end');
-              return {
-                ...state,
-                isGenerating: false,
-                completed: true,
-                currentStep: null,
-              };
-            }
-            return state;
-          });
-          
-          // Trigger completion if we have completed steps
-          const currentState = this.generationState();
-          if (currentState.steps.length > 0 && !currentState.completed) {
-            this.completeGenerationFromSteps(currentState.steps);
-          }
+          console.log('Diagram generation stream completed');
         },
       });
   }
 
   /**
-   * Reset generation state for new generation
+   * Handle generation completion
+   */
+  private handleGenerationComplete(state: SSEGenerationState): void {
+    console.log('Diagram generation completed:', state);
+
+    // Create final diagram from completed steps
+    if (state.steps.length > 0) {
+      this.completeGenerationFromSteps(state.steps);
+    }
+  }
+
+  /**
+   * Complete generation from individual steps
+   */
+  private completeGenerationFromSteps(steps: any[]): void {
+    console.log('Completing generation from steps:', steps);
+
+    // Filter completed steps with actual content
+    const completedSteps = steps.filter(
+      (step) =>
+        step.status === 'completed' &&
+        step.content &&
+        step.content !== 'step_started'
+    );
+
+    if (completedSteps.length === 0) {
+      console.warn('No completed steps with content found');
+      return;
+    }
+
+    // // Create final diagram from completed steps
+    // const finalDiagram: DiagramModel = {
+    //   content: completedSteps.map(step => step.content).join('\n\n'),
+    //   sections: completedSteps.map(step => ({
+    //     name: step.name,
+    //     type: 'text/markdown',
+    //     data: step.content,
+    //     summary: step.summary || ''
+    //   })),
+    //   title: 'Generated Diagrams',
+    //   id: `diagram_${this.projectId()}_${Date.now()}`,
+    //   createdAt: new Date(),
+    //   updatedAt: new Date()
+    // };
+
+    // this.finalDiagram.set(finalDiagram);
+  }
+
+  /**
+   * Handle generation error
+   */
+  private handleGenerationError(error: string): void {
+    console.error('Generation error:', error);
+    this.generationState.update((state) => ({
+      ...state,
+      error: error,
+      isGenerating: false,
+    }));
+  }
+
+  /**
+   * Reset generation state
    */
   private resetGenerationState(): void {
     this.generationState.set({
-      steps: [],
-      currentStep: null,
       isGenerating: true,
-      error: null,
-      completed: false,
-      totalSteps: 0,
-      completedSteps: 0,
+      steps: [],
       stepsInProgress: [],
-      completedStepNames: [],
+      completedSteps: [],
+      totalSteps: 0,
+      completed: false,
+      error: null,
     });
     this.finalDiagram.set(null);
   }
 
   /**
-   * Complete the generation process and create final diagram
-   */
-  private completeGeneration(diagramPayload: any): void {
-    console.log('Processing final diagram payload:', diagramPayload);
-    
-    if (diagramPayload && diagramPayload.sections) {
-      // Extract only the diagram sections (not progress events)
-      const diagramSections = diagramPayload.sections.filter(
-        (section: any) => section.type === 'text/markdown' && 
-                          section.name !== 'progress' && 
-                          section.name !== 'completion'
       );
       
       // Combine all diagram content
@@ -248,45 +258,6 @@ export class DiagramGeneration implements OnInit, OnDestroy {
     // Auto-scroll to bottom after completion
     setTimeout(() => this.scrollToBottom(), 100);
   }
-
-  /**
-   * Complete generation from individual completed steps (fallback method)
-   */
-  private completeGenerationFromSteps(steps: any[]): void {
-    console.log('Processing completion from individual steps:', steps);
-    
-    // Filter only completed steps with content
-    const completedSteps = steps.filter(
-      (step: any) => step.status === 'completed' && step.content && step.content !== 'step_started'
-    );
-    
-    if (completedSteps.length > 0) {
-      // Combine all diagram content
-      const combinedContent = completedSteps
-        .map((step: any) => step.content)
-        .join('\n\n');
-      
-      // Create final diagram model
-      const finalDiagram: DiagramModel = {
-        id: `diagram-${Date.now()}`,
-        title: 'Generated Diagram',
-        content: combinedContent,
-        sections: completedSteps.map((step: any) => ({
-          id: `section-${step.stepName.replace(/\s+/g, '-').toLowerCase()}`,
-          name: step.stepName,
-          type: 'generated',
-          data: step.content,
-          summary: step.summary,
-        })),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      console.log('Final diagram created from steps:', finalDiagram);
-      this.finalDiagram.set(finalDiagram);
-    }
-    
-    // Auto-scroll to bottom after completion
     setTimeout(() => this.scrollToBottom(), 100);
   }
 

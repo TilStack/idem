@@ -108,7 +108,7 @@
     @if(hasCompletedSteps()) {
     <div class="space-y-6">
       <div class="grid gap-6">
-        @for (step of completedSteps(); track step.stepName) {
+        @for (step of completedSteps(); track step.name) {
         <div
           class="glass-card rounded-xl shadow-md border border-gray-800/30 overflow-hidden"
         >
@@ -122,7 +122,7 @@
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold text-green-900">
-                    {{ step.stepName }}
+                    {{ step.name }}
                   </h4>
                   <p class="text-sm text-green-700">{{ step.summary }}</p>
                 </div>
@@ -140,7 +140,7 @@
           @if(step.content && step.content !== 'step_started') {
           <div class="p-6">
             <div class="prose max-w-none">
-              <markdown mermaid [data]="step.content"></markdown>
+              <markdown mermaid [data]="step.content" class="mermaid"></markdown>
             </div>
           </div>
           }

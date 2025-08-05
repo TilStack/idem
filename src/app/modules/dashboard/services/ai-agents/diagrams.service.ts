@@ -31,10 +31,10 @@ export class DiagramsService {
    * @param projectId Project ID
    * @returns Observable with SSE events
    */
-  createDiagramModel(projectId: string): Observable<DiagramStepEvent> {
-    console.log('Starting diagram generation with SSE...');
+  createDiagramModel(projectId: string): Observable<SSEStepEvent> {
+    console.log('Creating diagram model with SSE for project:', projectId);
 
-    // Close any existing SSE connection
+    // Close any existing connection
     this.closeSSEConnection();
 
     const config: SSEConnectionConfig = {
@@ -43,32 +43,7 @@ export class DiagramsService {
       reconnectionDelay: 1000,
     };
 
-    return this.sseService
-      .createConnection(config, 'diagram')
-      .pipe(
-        map((sseEvent: SSEStepEvent) => this.mapToDigramStepEvent(sseEvent))
-      );
-  }
-
-  /**
-   * Map generic SSE event to DiagramStepEvent
-   * @param sseEvent Generic SSE event
-   * @returns DiagramStepEvent
-   */
-  private mapToDigramStepEvent(sseEvent: SSEStepEvent): DiagramStepEvent {
-    return {
-      type: sseEvent.type as 'started' | 'completed',
-      stepName: sseEvent.stepName || '',
-      data: sseEvent.data,
-      summary: sseEvent.summary || '',
-      timestamp: sseEvent.timestamp!,
-      parsedData: sseEvent.parsedData || {
-        status: sseEvent.type,
-        stepName: sseEvent.stepName || '',
-        stepsInProgress: sseEvent.parsedData!.stepsInProgress || [],
-        completedSteps: sseEvent.parsedData!.completedSteps || [],
-      },
-    };
+    return this.sseService.createConnection(config, 'diagram');
   }
 
   /**

@@ -35,7 +35,7 @@ export class BusinessPlanService {
    * @param projectId Project ID to create business plan for
    * @returns Observable with SSE events
    */
-  createBusinessplanItem(projectId: string): Observable<BusinessPlanStepEvent> {
+  createBusinessplanItem(projectId: string): Observable<SSEStepEvent> {
     console.log('Starting business plan generation with SSE...');
     
     // Close any existing SSE connection
@@ -47,9 +47,7 @@ export class BusinessPlanService {
       reconnectionDelay: 1000
     };
 
-    return this.sseService.createConnection(config, 'business-plan').pipe(
-      map((sseEvent: SSEStepEvent) => this.mapToBusinessPlanStepEvent(sseEvent))
-    );
+    return this.sseService.createConnection(config, 'business-plan');
   }
 
   /**

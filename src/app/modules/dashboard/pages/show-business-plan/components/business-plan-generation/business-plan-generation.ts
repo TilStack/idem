@@ -11,6 +11,7 @@ import {
 import { DatePipe } from '@angular/common';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { SkeletonModule } from 'primeng/skeleton';
 import { BusinessPlanService } from '../../../../services/ai-agents/business-plan.service';
 import { CookieService } from '../../../../../../shared/services/cookie.service';
 import { GenerationService } from '../../../../../../shared/services/generation.service';
@@ -21,7 +22,7 @@ import { environment } from '../../../../../../../environments/environment';
 @Component({
   selector: 'app-business-plan-generation',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, SkeletonModule],
   templateUrl: './business-plan-generation.html',
   styleUrl: './business-plan-generation.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,20 +40,17 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
   protected readonly projectId = signal<string | null>(null);
   protected readonly generationState = signal<SSEGenerationState>({
     steps: [],
-    currentStep: null,
-    isGenerating: false,
-    error: null,
-    completed: false,
-    totalSteps: 0,
-    completedSteps: 0,
     stepsInProgress: [],
-    completedStepNames: []
+    completedSteps: [],
+    totalSteps: 0,
+    completed: false,
+    error: null,
+    isGenerating: false
   });
 
   // Computed properties using the new generation state
   protected readonly isGenerating = computed(() => this.generationState().isGenerating);
   protected readonly generationError = computed(() => this.generationState().error);
-  protected readonly currentStep = computed(() => this.generationState().currentStep);
   protected readonly completedSteps = computed(() => 
     this.generationState().steps.filter(step => step.status === 'completed')
   );
@@ -87,14 +85,11 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
     this.resetGenerationState();
     console.log('Starting business plan generation with SSE...');
 
-    const config: SSEConnectionConfig = {
-      url: `${environment.services.api.url}/project/businessPlans/generate/${this.projectId()}`,
-      keepAlive: true,
-      reconnectionDelay: 1000
-    };
+    // Create SSE connection for business plan generation
+    const sseConnection = this.businessPlanService.createBusinessplanItem(this.projectId()!);
 
     this.generationService
-      .startGeneration(config, 'business-plan', this.destroy$)
+      .startGeneration('business-plan', sseConnection)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (state: SSEGenerationState) => {
@@ -129,14 +124,12 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
   private resetGenerationState(): void {
     this.generationState.set({
       steps: [],
-      currentStep: null,
-      isGenerating: true,
-      error: null,
-      completed: false,
-      totalSteps: 0,
-      completedSteps: 0,
       stepsInProgress: [],
-      completedStepNames: []
+      completedSteps: [],
+      totalSteps: 0,
+      completed: false,
+      error: null,
+      isGenerating: false
     });
   }
 
