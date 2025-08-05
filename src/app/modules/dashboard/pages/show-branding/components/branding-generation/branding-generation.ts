@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -31,6 +32,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
   private readonly brandingService = inject(BrandingService);
   private readonly generationService = inject(GenerationService);
   private readonly cookieService = inject(CookieService);
+  private readonly router = inject(Router);
   private readonly destroy$ = new Subject<void>();
 
   // Outputs
@@ -98,7 +100,7 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
           
           // Check if generation is completed
           if (state.completed && state.steps.length > 0) {
-            this.emitBrandingData(state.steps);
+            this.handleGenerationComplete(state);
           }
         },
         error: (err) => {
@@ -143,6 +145,14 @@ export class BrandingGenerationComponent implements OnInit, OnDestroy {
       isGenerating: false,
       error: 'Generation cancelled',
     }));
+  }
+
+  /**
+   * Handle generation completion - redirect to branding display page
+   */
+  private handleGenerationComplete(state: SSEGenerationState): void {
+    console.log('Branding generation completed:', state);
+    this.router.navigate(['/console/branding']);
   }
 
   /**

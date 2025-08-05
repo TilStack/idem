@@ -8,6 +8,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -31,6 +32,7 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
   private readonly businessPlanService = inject(BusinessPlanService);
   private readonly generationService = inject(GenerationService);
   private readonly cookieService = inject(CookieService);
+  private readonly router = inject(Router);
   private readonly destroy$ = new Subject<void>();
 
   // Outputs
@@ -99,6 +101,7 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
           // Check if generation is completed
           if (state.completed && state.steps.length > 0) {
             this.emitBusinessPlanData(state.steps);
+            this.handleGenerationComplete(state);
           }
         },
         error: (err) => {
@@ -172,5 +175,13 @@ export class BusinessPlanGenerationComponent implements OnInit, OnDestroy {
       isGenerating: false,
       error: 'Generation cancelled',
     }));
+  }
+
+  /**
+   * Handle generation completion - redirect to business plan display page
+   */
+  private handleGenerationComplete(state: SSEGenerationState): void {
+    console.log('Business plan generation completed:', state);
+    this.router.navigate(['/console/business-plan']);
   }
 }
